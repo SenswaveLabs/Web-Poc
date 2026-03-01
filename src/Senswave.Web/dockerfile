@@ -1,0 +1,25 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+ARG BUILD_CONFIGURATION=Release
+
+WORKDIR /src
+COPY Senswave.Web.slnx ./
+COPY src/Senswave.Web/Senswave.Web.csproj ./src/Senswave.Web/
+
+RUN dotnet restore ./src/Senswave.Web/Senswave.Web.csproj
+
+COPY ../src ./src
+WORKDIR /src/src/Senswave.Web
+
+RUN dotnet build -c $BUILD_CONFIGURATION
+RUN dotnet publish -c $BUILD_CONFIGURATION -o /app/publish
+
+FROM nginx:alpine AS final
+
+WORKDIR /usr/share/nginx/html
+RUN rm -rf ./*
+
+COPY --from=build /app/publish/wwwroot .
+COPY src/Senswave.Web/nginx.conf /etc/nginx/nginx.conf
+
+EXPOSE 80
+EXPOSE 443
