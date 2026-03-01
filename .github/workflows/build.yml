@@ -21,10 +21,10 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Build Docker Image
-        run: docker compose build --no-cache
+        run: cd docker && docker compose build --no-cache
 
       - name: Start Application
-        run: docker compose up -d
+        run: cd docker && docker compose up -d
 
       - name: Stop Application
-        run: docker compose stop
+        run: cd docker && docker compose stop
