@@ -1,0 +1,15 @@
+name: Sesnwave-Web
+
+
+services:
+  senswave.web:
+    container_name: Senswave.Web
+    build:
+      context: ..
+      dockerfile: src/Senswave.Web/dockerfile
+      args:
+        BUILD_CONFIGURATION: ${BUILD_CONFIGURATION}
+    env_file:
+      - .env
+    ports:
+      - 7777:80
