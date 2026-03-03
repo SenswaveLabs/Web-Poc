@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using MudBlazor.Services;
 using Senswave.Web;
+using Senswave.Web.Services.Shared.Loading;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -8,11 +10,8 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
-builder.Services.AddOidcAuthentication(options =>
-{
-    // Configure your authentication provider options here.
-    // For more information, see https://aka.ms/blazor-standalone-auth
-    builder.Configuration.Bind("Local", options.ProviderOptions);
-});
+builder.Services.AddMudServices();
+
+builder.Services.AddScoped<ILoadingService, LoadingService>();
 
 await builder.Build().RunAsync();
