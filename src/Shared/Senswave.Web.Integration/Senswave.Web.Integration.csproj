@@ -11,4 +11,8 @@
 		<PackageReference Include="Refit.HttpClientFactory" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\Senswave.Web.Shared\Senswave.Web.Shared.csproj" />
+	</ItemGroup>
+
 </Project>

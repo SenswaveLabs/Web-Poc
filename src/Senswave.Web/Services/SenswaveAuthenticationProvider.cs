@@ -3,6 +3,7 @@ using Senswave.Web.Shared.Resulting;
 using Senswave.Web.Shared.Services;
 using Senswave.Web.Users.Auth.Models;
 using Senswave.Web.Users.Auth.Services;
+using System.Security.Claims;
 
 namespace Senswave.Web.Services;
 
@@ -12,7 +13,11 @@ public class SenswaveAuthenticationProvider(ILogger<SenswaveAuthenticationProvid
 
     public override Task<AuthenticationState> GetAuthenticationStateAsync()
     {
-        throw new NotImplementedException();
+        var claims = new List<Claim>();
+
+        claims.Add(new Claim(ClaimTypes.Name, "Test User"));
+
+        return Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(claims, "jwt"))));
     }
 
     #endregion

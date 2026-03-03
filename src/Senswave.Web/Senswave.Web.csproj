@@ -19,6 +19,7 @@
     <ProjectReference Include="..\Modules\Senswave.Web.Users\Senswave.Web.Users.csproj" />
     <ProjectReference Include="..\Senswave.Web.Shared\Senswave.Web.Shared.csproj" />
     <ProjectReference Include="..\Senswave.Web.Users\Senswave.Web.Users.csproj" />
+    <ProjectReference Include="..\Shared\Senswave.Web.Integration\Senswave.Web.Integration.csproj" />
     <ProjectReference Include="..\Shared\Senswave.Web.Shared\Senswave.Web.Shared.csproj" />
   </ItemGroup>
 

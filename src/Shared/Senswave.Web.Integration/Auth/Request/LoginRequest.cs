@@ -1,4 +1,4 @@
-﻿namespace Senswave.Integration.Rest.Auth.Request;
+﻿namespace Senswave.Web.Integration.Auth.Request;
 
 public class LoginRequest
 {

@@ -3,7 +3,7 @@
     <Project Path="src/Modules/Senswave.Web.Users/Senswave.Web.Users.csproj" />
   </Folder>
   <Folder Name="/Shared/">
-    <Project Path="src/Shared/Senswave.Integration.Rest/Senswave.Integration.Rest.csproj" Id="2509e4ec-fc08-4502-a0e3-fc69f0fb95c5" />
+    <Project Path="src/Shared/Senswave.Web.Integration/Senswave.Web.Integration.csproj" Id="2509e4ec-fc08-4502-a0e3-fc69f0fb95c5" />
     <Project Path="src/Shared/Senswave.Web.Shared/Senswave.Web.Shared.csproj" Id="5db18ab8-9252-47cb-9ea6-a4ea04698f68" />
   </Folder>
   <Folder Name="/Solution Items/">

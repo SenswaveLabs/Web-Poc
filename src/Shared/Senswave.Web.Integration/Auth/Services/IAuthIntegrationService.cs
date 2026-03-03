@@ -1,11 +1,11 @@
 ﻿using Refit;
-using Senswave.Integration.Rest.Auth.Request;
-using Senswave.Integration.Rest.Auth.Response;
+using Senswave.Web.Integration.Auth.Request;
+using Senswave.Web.Integration.Auth.Response;
 
 
-namespace Senswave.Integration.Rest.Auth.Services;
+namespace Senswave.Web.Integration.Auth.Services;
 
-public interface IAuthRestService
+public interface IAuthIntegrationService
 {
     [Post("/api/v1/auth/login")]
     Task<LoginTokenResponse> Login([Body] LoginRequest request);
