@@ -1,14 +1,171 @@
 ﻿@page "/auth/login"
-@*
-    TODO:
-    - implement login view
-    - add custom auth state provider
-    - test loading view
-    - add senswave httpclient - hold token in memory / store in session stoorage 
-*@
+@using Senswave.Web.Services.Shared.Loading
+@using Senswave.Web.Users.Auth.Models
+@using Senswave.Web.Users.Auth.Services
+@using System.Text.RegularExpressions
+@using System.ComponentModel.DataAnnotations
 
-<h3>Login</h3>
+@inject IAuthenticationService AuthService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+@page "/login"
+@inject IAuthenticationService AuthService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@inject ILoadingService loadingService
+
+<MudGrid Style="min-height:100vh;">
+
+    <MudHidden Breakpoint="Breakpoint.MdAndDown">
+        <MudItem md="7" Class="d-flex align-center justify-center mud-theme-secondary">
+            <MudPaper Elevation="6" Class="hero-card overflow-hidden d-flex align-items-center justify-content-center p-0 m-0 rounded-lg">
+                <MudImage Src="icon-192.png"
+                            Alt="icon"
+                          Class="p-0 m-0 rounded-lg" />
+            </MudPaper>
+        </MudItem>
+    </MudHidden>
+
+    <MudItem xs="12" md="5"
+             Class="d-flex align-center justify-center"
+             Style="min-height:100vh;">
+
+        <MudPaper Elevation="6"
+                  Class="pa-6 rounded-lg"
+                  Style="width:100%;max-width:420px;">
+            <MudText Typo="Typo.h5" Class="mb-4">Login</MudText>
+
+            <MudForm @ref="_form">
+
+                <MudTextField @bind-Value="_model.Username"
+                              Label="Email"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              FullWidth="true"
+                              Class="mb-3"
+                              T="string"
+                              RequiredError="Email is required!"
+                              Validation="@(new EmailAddressAttribute { ErrorMessage = @"The email address is invalid" })"    />
+
+                <MudTextField @bind-Value="_model.Password"
+                              Label="Password"
+                              Variant="Variant.Outlined"
+                              InputType="InputType.Password"
+                              HelperText="Choose a strong password"
+                              Validation="@(new Func<string, IEnumerable<string>>(PasswordStrength))" 
+                              Required="true"
+                              RequiredError="Password is required!"
+                              FullWidth="true"
+                              Class="mb-4" />
+
+                <MudCheckBox @bind-Value="_model.RememberMe">Remember Me</MudCheckBox>
+
+                <MudButton Color="Color.Primary"
+                           Variant="Variant.Filled"
+                           FullWidth="true"
+                           Disabled="loadingService.Loading"
+                           OnClick="HandleLogin"
+                           Class="mb-3">
+                    Sign In
+                </MudButton>
+
+                <MudButton Variant="Variant.Outlined"
+                           FullWidth="true"
+                           Disabled="loadingService.Loading"
+                           Class="mb-4">
+                    Register
+                </MudButton>
+
+                <MudDivider Class="mb-4" />
+
+                <MudButton Variant="Variant.Outlined"
+                           StartIcon="@Icons.Material.Filled.Login"
+                           FullWidth="true"
+                           Disabled="loadingService.Loading"
+                           OnClick="HandleGoogleLogin">
+                    Sign in with Google
+                </MudButton>
+
+            </MudForm>
+        </MudPaper>
+
+    </MudItem>
+
+</MudGrid>
 
 @code {
+    private const string SyncKey = "Auth:Login";
 
+    private MudForm? _form;
+
+    private static IEnumerable<string> PasswordStrength(string pw)
+    {
+        if (string.IsNullOrWhiteSpace(pw))
+        {
+            yield return "Password is required!";
+            yield break;
+        }
+        if (pw.Length < 8)
+            yield return "Password must be at least of length 8";
+        if (!Regex.IsMatch(pw, @"[A-Z]"))
+            yield return "Password must contain at least one capital letter";
+        if (!Regex.IsMatch(pw, @"[a-z]"))
+            yield return "Password must contain at least one lowercase letter";
+        if (!Regex.IsMatch(pw, @"[0-9]"))
+            yield return "Password must contain at least one digit";
+    }
+
+    private LoginWithPasswordModel _model = new();
+
+    private async Task HandleLogin()
+    {
+        try
+        {
+            loadingService.Show(SyncKey);
+
+            await _form!.Validate();
+
+            if (!_form.IsValid)
+                return;
+
+            var result = await AuthService.Login(_model);
+
+            if (result.IsSuccess)
+            {
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                Snackbar.Add("Login failed", Severity.Error);
+            }
+        }
+        finally
+        {
+            loadingService.Hide(SyncKey);
+        }
+    }
+
+    private async Task HandleGoogleLogin()
+    {
+        try
+        {
+            
+            var result = await AuthService.Login(
+                new LoginWithGoogleModel());
+
+            if (result.IsSuccess)
+            {
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                Snackbar.Add("Google login failed", Severity.Error);
+            }
+        }
+        finally
+        {
+            
+        }
+    }
 }

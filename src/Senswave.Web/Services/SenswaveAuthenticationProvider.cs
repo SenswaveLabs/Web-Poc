@@ -36,16 +36,16 @@ public class SenswaveAuthenticationProvider(
 
         logger.LogDebug("Access token found, user is authenticated");
 
-        return Task.FromResult(AuthenticatedState("test"));
+        return Task.FromResult(AuthenticatedState("User"));
     }
 
     private static AuthenticationState NoAuthState() => new(new ClaimsPrincipal(new ClaimsIdentity()));
 
-    private static AuthenticationState AuthenticatedState(string username) 
+    private static AuthenticationState AuthenticatedState(string role) 
     {
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.Name, username)
+            new Claim(ClaimTypes.Role, role)
         };
         
         return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(claims, "jwt")));
@@ -77,6 +77,8 @@ public class SenswaveAuthenticationProvider(
             _accessToken = response.AccessToken;
             _refreshToken = response.RefreshToken;
             _expiresIn = DateTime.UtcNow.AddSeconds(response.ExpiresIn-30);
+
+            NotifyAuthenticationStateChanged(Task.FromResult(AuthenticatedState("User")));
 
             return Result.Success();
         }

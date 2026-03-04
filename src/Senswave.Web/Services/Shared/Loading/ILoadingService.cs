@@ -4,7 +4,9 @@ public interface ILoadingService
 {
     bool Loading { get; }
 
-    void StartLoading(string key);
+    Action? OnChange { get; set; }
 
-    void StopLoading(string key);
+    void Show(string key);
+
+    void Hide(string key);
 }

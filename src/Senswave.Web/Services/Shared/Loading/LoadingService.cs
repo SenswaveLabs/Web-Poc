@@ -2,21 +2,26 @@
 
 public class LoadingService(ILogger<LoadingService> logger) : ILoadingService
 {
+
     private HashSet<string> _loadingKeys = [];
 
     private bool _isLoading;
 
     public bool Loading => _isLoading;
+    
+    public Action? OnChange { get; set; }
 
-    public void StartLoading(string key)
+    public void Show(string key)
     {
         _isLoading = true;
         _loadingKeys.Add(key);
 
+        OnChange?.Invoke();
+
         logger.LogInformation("[Key: {key}] Starting loading.", key);
     }
 
-    public void StopLoading(string key)
+    public void Hide(string key)
     {
         _isLoading = false;
         _loadingKeys.Remove(key); 
@@ -24,6 +29,7 @@ public class LoadingService(ILogger<LoadingService> logger) : ILoadingService
 
         if (_loadingKeys.Count == 0)
         {
+            OnChange?.Invoke();
             _isLoading = false;
             logger.LogInformation("[Key: {key}] Loading stopped.", key);
         }

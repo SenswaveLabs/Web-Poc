@@ -8,6 +8,10 @@
 <MudDialogProvider />
 <MudSnackbarProvider />
 
+<MudOverlay Visible="_isLoading" DarkBackground="true">
+    <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" />
+</MudOverlay>
+
 <MudLayout Elevation="2">
     <AuthorizeView>
         <Authorized>
@@ -24,32 +28,38 @@
             </MudDrawer>
 
             <MudMainContent>
-                @if (loadingService.Loading)
-                {
-                    <MudProgressLinear Color="Color.Secondary" Indeterminate="true" />
-                }
-
                 @Body
             </MudMainContent>
         </Authorized>
         <NotAuthorized>
-            <MudMainContent>
-                @if (loadingService.Loading)
-                {
-                    <MudProgressLinear Color="Color.Secondary" Indeterminate="true" />
-                }
-
-                @Body
-            </MudMainContent>
+            @Body
         </NotAuthorized>
     </AuthorizeView>
 </MudLayout>
 
 @code {
     bool _drawerOpen = true;
+    private bool _isLoading;
 
     void DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
+    }
+
+    protected override void OnInitialized()
+    {
+        loadingService.OnChange += StateChanged;
+        _isLoading = loadingService.Loading;
+    }
+
+    private void StateChanged()
+    {
+        _isLoading = loadingService.Loading;
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        loadingService.OnChange -= StateChanged;
     }
 }
