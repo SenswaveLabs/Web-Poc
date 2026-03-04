@@ -9,26 +9,40 @@
 <MudSnackbarProvider />
 
 <MudLayout Elevation="2">
-    <MudAppBar>
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-        <MudSpacer />
-        <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
-    </MudAppBar>
+    <AuthorizeView>
+        <Authorized>
+            <MudAppBar>
+                <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+                <MudSpacer />
+                <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
+            </MudAppBar>
 
-    <MudDrawer @bind-Open="_drawerOpen" Elevation="2">
-        <MudDrawerHeader>
-            <MudText Typo="Typo.h5" Class="mt-1">Application</MudText>
-        </MudDrawerHeader>
-    </MudDrawer>
+            <MudDrawer @bind-Open="_drawerOpen" Elevation="2">
+                <MudDrawerHeader>
+                    <MudText Typo="Typo.h5" Class="mt-1">Application</MudText>
+                </MudDrawerHeader>
+            </MudDrawer>
 
-    <MudMainContent>
-        @if (loadingService.Loading)
-        {
-            <MudProgressLinear Color="Color.Secondary" Indeterminate="true" />
-        }
+            <MudMainContent>
+                @if (loadingService.Loading)
+                {
+                    <MudProgressLinear Color="Color.Secondary" Indeterminate="true" />
+                }
 
-        @Body
-    </MudMainContent>
+                @Body
+            </MudMainContent>
+        </Authorized>
+        <NotAuthorized>
+            <MudMainContent>
+                @if (loadingService.Loading)
+                {
+                    <MudProgressLinear Color="Color.Secondary" Indeterminate="true" />
+                }
+
+                @Body
+            </MudMainContent>
+        </NotAuthorized>
+    </AuthorizeView>
 </MudLayout>
 
 @code {

@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components.Authorization;
+using Senswave.Web.Integration.Auth.Request;
+using Senswave.Web.Integration.Auth.Services;
 using Senswave.Web.Shared.Resulting;
 using Senswave.Web.Shared.Services;
 using Senswave.Web.Users.Auth.Models;
@@ -7,26 +9,83 @@ using System.Security.Claims;
 
 namespace Senswave.Web.Services;
 
-public class SenswaveAuthenticationProvider(ILogger<SenswaveAuthenticationProvider> logger) : AuthenticationStateProvider, IAuthenticationService, ITokenStore
+public class SenswaveAuthenticationProvider(
+    IAuthIntegrationService authIntegrationService,
+    IErrorFactory errorFactory,
+    ILogger<SenswaveAuthenticationProvider> logger) : AuthenticationStateProvider, IAuthenticationService, ITokenStore
 {
+
+    private string _accessToken = string.Empty;
+    
+    private string _refreshToken = string.Empty;
+
+    private DateTime _expiresIn = DateTime.UtcNow;
+
     #region AuthenticationStateProvider
 
     public override Task<AuthenticationState> GetAuthenticationStateAsync()
     {
-        var claims = new List<Claim>();
+        //TODO: Load from storage?
 
-        claims.Add(new Claim(ClaimTypes.Name, "Test User"));
+        if (string.IsNullOrEmpty(_accessToken))
+        {
+            logger.LogInformation("No access token found, user is not authenticated");
 
-        return Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(claims, "jwt"))));
+            return Task.FromResult(NoAuthState());
+        }
+
+        logger.LogDebug("Access token found, user is authenticated");
+
+        return Task.FromResult(AuthenticatedState("test"));
+    }
+
+    private static AuthenticationState NoAuthState() => new(new ClaimsPrincipal(new ClaimsIdentity()));
+
+    private static AuthenticationState AuthenticatedState(string username) 
+    {
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, username)
+        };
+        
+        return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(claims, "jwt")));
     }
 
     #endregion
 
     #region IAuthenticationService
 
-    public Task<Result> Login(LoginWithPasswordModel model)
+    public async Task<Result> Login(LoginWithPasswordModel model)
     {
-        throw new NotImplementedException();
+        logger.LogInformation("Attempting to log in user {Username}", model.Username);
+
+        try
+        {
+            var response = await authIntegrationService.Login(new LoginRequest
+            {
+                Email = model.Username,
+                Password = model.Password
+            });
+
+            if (response == null) 
+            {
+                logger.LogWarning("Login failed for user {Username}: No response from authentication service", model.Username);
+
+                return errorFactory.Create("LoginFailedUnexpectedly");
+            }
+
+            _accessToken = response.AccessToken;
+            _refreshToken = response.RefreshToken;
+            _expiresIn = DateTime.UtcNow.AddSeconds(response.ExpiresIn-30);
+
+            return Result.Success();
+        }
+        catch (Exception ex) 
+        {
+            logger.LogError(ex, "Login failed for user {Username}", model.Username);
+
+            return errorFactory.Create("LoginFailed");
+        }
     }
 
     public Task<Result> Login(LoginWithGoogleModel model)
@@ -34,9 +93,19 @@ public class SenswaveAuthenticationProvider(ILogger<SenswaveAuthenticationProvid
         throw new NotImplementedException();
     }
 
-    public Task<Result> Logout()
+    public async Task<Result> Logout()
     {
-        throw new NotImplementedException();
+        try
+        {
+            await Task.Delay(5);
+
+            return Result.Success();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Logout failed");
+            return errorFactory.Create("LogoutFailed");
+        }
     }
 
     #endregion
@@ -45,8 +114,7 @@ public class SenswaveAuthenticationProvider(ILogger<SenswaveAuthenticationProvid
 
     public Task<Result<string>> GetBearerToken()
     {
-        // todo refresh token if expired with lcok
-        throw new NotImplementedException();
+        return Task.FromResult(Result<string>.Success(_accessToken));
     }
 
     #endregion

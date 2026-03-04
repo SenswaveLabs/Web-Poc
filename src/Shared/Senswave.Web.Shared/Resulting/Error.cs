@@ -2,33 +2,20 @@
 
 public record Error
 {
-    public static Error None => new("None", ErrorType.None);
-    public static Error Unknown => new("Unknown", ErrorType.Failure);
+    public static Error None => new("None");
+
+    public static Error Unknown => new("Unknown");
 
     public string Code { get; }
-    public ErrorType Type { get; }
+
     public string Description { get; }
 
-    public Error(string code, ErrorType type, string? description = null)
+    public Error(string code, string? description = null)
     {
         Code = code;
-        Type = type;
         Description = description ?? "No description provided.";
     }
 
-    public Result ToResult() => Result.Failure([this]);
-
-    public static Error NotFound(string code, string? description = null)
-        => new(code, ErrorType.NotFound, description);
-    public static Error Validation(string code, string? description = null)
-        => new(code, ErrorType.Validation, description);
-    public static Error Conflict(string code, string? description = null)
-        => new(code, ErrorType.Conflict, description);
-    public static Error Failure(string code, string? description = null)
-        => new(code, ErrorType.Failure, description);
-    public static Error ServerError(string code, string? description = null)
-        => new(code, ErrorType.ServerFail, description);
-
     public override string ToString() =>
-        $"Error Code: {Code}, Type: {Type}, Description: {Description}";
+        $"Error Code: {Code}, Description: {Description}";
 }

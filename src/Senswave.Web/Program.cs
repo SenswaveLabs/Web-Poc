@@ -6,6 +6,7 @@ using Senswave.Web;
 using Senswave.Web.Integration;
 using Senswave.Web.Services;
 using Senswave.Web.Services.Shared.Loading;
+using Senswave.Web.Shared.Extensions;
 using Senswave.Web.Shared.Services;
 using Senswave.Web.Users;
 using Senswave.Web.Users.Auth.Services;
@@ -25,6 +26,7 @@ builder.Services.AddSenswaveIntegration(builder.Configuration);
 builder.Services.AddScoped<ILoadingService, LoadingService>();
 
 // Modules
+builder.Services.AddSenswaveShared();
 builder.Services.AddUsers(builder.Configuration);
 
 // Services
