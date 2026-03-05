@@ -5,7 +5,7 @@ using MudBlazor.Services;
 using Senswave.Web;
 using Senswave.Web.Integration;
 using Senswave.Web.Services;
-using Senswave.Web.Services.Shared.Loading;
+using Senswave.Web.Services.Shared;
 using Senswave.Web.Shared.Extensions;
 using Senswave.Web.Shared.Services;
 using Senswave.Web.Users;
@@ -24,9 +24,11 @@ builder.Services.AddMudServices();
 // Shared
 builder.Services.AddSenswaveIntegration(builder.Configuration);
 builder.Services.AddScoped<ILoadingService, LoadingService>();
+builder.Services.AddScoped<ILocalStorageService, LocalStorageService>();
+builder.Services.AddScoped<ISessionStorageService, SessionStorageService>();
+builder.Services.AddSenswaveShared();
 
 // Modules
-builder.Services.AddSenswaveShared();
 builder.Services.AddUsers(builder.Configuration);
 
 // Services

@@ -1,4 +1,4 @@
-﻿namespace Senswave.Web.Services.Shared.Loading;
+﻿namespace Senswave.Web.Shared.Services;
 
 public interface ILoadingService
 {

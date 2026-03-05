@@ -1,4 +1,6 @@
-﻿namespace Senswave.Web.Services.Shared.Loading;
+﻿using Senswave.Web.Shared.Services;
+
+namespace Senswave.Web.Services.Shared;
 
 public class LoadingService(ILogger<LoadingService> logger) : ILoadingService
 {
