@@ -7,4 +7,6 @@ public interface IStorage
     ValueTask<Result> Set<T>(string key, T value);
 
     ValueTask<Result<T>> Get<T>(string key);
+
+    ValueTask<Result> Remove(string key);
 }

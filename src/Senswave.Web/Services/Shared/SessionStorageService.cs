@@ -15,7 +15,7 @@ public class SessionStorageService(
         try
         {
             var json = await js.InvokeAsync<string>(
-                "sessionStorageInterop.get",
+                "sessionStorage.geItemt",
                 key);
 
             if (string.IsNullOrEmpty(json))
@@ -42,7 +42,7 @@ public class SessionStorageService(
             var json = JsonSerializer.Serialize(value);
 
             await js.InvokeVoidAsync(
-                "sessionStorageInterop.set",
+                "sessionStorage.setItem",
                 key,
                 json);
 
@@ -55,6 +55,26 @@ public class SessionStorageService(
             logger.LogError(ex, "Failed to set value in session storage for key: {Key}", key);
 
             return errorFactory.Create("FailedToStoreSessionValue");
+        }
+    }
+
+    public async ValueTask<Result> Remove(string key)
+    {
+        try
+        {
+            await js.InvokeVoidAsync(
+                "sessionStorage.removeItem",
+                key);
+    
+            logger.LogInformation("Removed value from session storage for key: {Key}", key);
+    
+            return Result.Success();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to remove value from session storage for key: {Key}", key);
+    
+            return errorFactory.Create("FailedToRemoveSessionValue");
         }
     }
 }

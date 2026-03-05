@@ -15,7 +15,7 @@ public class LocalStorageService(
         try
         {
             var json = await js.InvokeAsync<string>(
-                "localStorage.get",
+                "localStorage.getItem",
                 key);
 
             if (string.IsNullOrEmpty(json))
@@ -42,7 +42,7 @@ public class LocalStorageService(
             var json = JsonSerializer.Serialize(value);
 
             await js.InvokeVoidAsync(
-                "localStorage.set",
+                "localStorage.setItem",
                 key,
                 json);
 
@@ -55,6 +55,23 @@ public class LocalStorageService(
             logger.LogError(ex, "Failed to set value in session storage for key: {Key}", key);
 
             return errorFactory.Create("FailedToStoreSessionValue");
+        }
+    }
+
+    public async ValueTask<Result> Remove(string key)
+    {
+        try
+        {
+            await js.InvokeVoidAsync(
+                "localStorage.removeItem",
+                key);
+            logger.LogInformation("Removed value from session storage for key: {Key}", key);
+            return Result.Success();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to remove value from session storage for key: {Key}", key);
+            return errorFactory.Create("FailedToRemoveSessionValue");
         }
     }
 }

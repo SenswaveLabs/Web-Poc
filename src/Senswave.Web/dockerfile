@@ -3,14 +3,18 @@ ARG BUILD_CONFIGURATION=Release
 
 WORKDIR /src
 COPY Senswave.Web.slnx ./
-COPY src/Senswave.Web/Senswave.Web.csproj ./src/Senswave.Web/
+COPY Directory.Packages.props ./
 
-RUN dotnet restore ./src/Senswave.Web/Senswave.Web.csproj
+COPY src/Senswave.Web/Senswave.Web.csproj src/Senswave.Web/
+COPY src/Modules/Senswave.Web.Users/Senswave.Web.Users.csproj src/Modules/Senswave.Web.Users/
+COPY src/Shared/Senswave.Web.Integration/Senswave.Web.Integration.csproj src/Shared/Senswave.Web.Integration/
+COPY src/Shared/Senswave.Web.Shared/Senswave.Web.Shared.csproj src/Shared/Senswave.Web.Shared/
 
-COPY ../src ./src
+RUN dotnet restore src/Senswave.Web/Senswave.Web.csproj
+
+COPY src ./src
 WORKDIR /src/src/Senswave.Web
 
-RUN dotnet build -c $BUILD_CONFIGURATION
 RUN dotnet publish -c $BUILD_CONFIGURATION -o /app/publish
 
 FROM nginx:alpine AS final

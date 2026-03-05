@@ -11,9 +11,18 @@ namespace Senswave.Web.Services;
 
 public class SenswaveAuthenticationProvider(
     IAuthIntegrationService authIntegrationService,
+    ILocalStorageService localStorageService,
+    ISessionStorageService sessionStorageService,
     IErrorFactory errorFactory,
     ILogger<SenswaveAuthenticationProvider> logger) : AuthenticationStateProvider, IAuthenticationService, ITokenStore
 {
+    private const string RememberMeKey = "senswave-remember-me";
+
+    private const string AccessTokenKey = "senswave-access-token";
+
+    private const string RefreshTokenKey = "senswave-refresh-token";
+
+    private bool _initialized = false;
 
     private string _accessToken = string.Empty;
     
@@ -23,32 +32,19 @@ public class SenswaveAuthenticationProvider(
 
     #region AuthenticationStateProvider
 
-    public override Task<AuthenticationState> GetAuthenticationStateAsync()
+    public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
-        //TODO: Load from storage?
+        await Initialize();
 
         if (string.IsNullOrEmpty(_accessToken))
         {
-            logger.LogInformation("No access token found, user is not authenticated");
-
-            return Task.FromResult(NoAuthState());
+            logger.LogInformation("No access token found, user is not authenticated.");
+            await FullLogout();
+            return await NoAuthState();
         }
 
         logger.LogDebug("Access token found, user is authenticated");
-
-        return Task.FromResult(AuthenticatedState("User"));
-    }
-
-    private static AuthenticationState NoAuthState() => new(new ClaimsPrincipal(new ClaimsIdentity()));
-
-    private static AuthenticationState AuthenticatedState(string role) 
-    {
-        var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.Role, role)
-        };
-        
-        return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(claims, "jwt")));
+        return await AuthenticatedState("User");
     }
 
     #endregion
@@ -74,12 +70,11 @@ public class SenswaveAuthenticationProvider(
                 return errorFactory.Create("LoginFailedUnexpectedly");
             }
 
-            _accessToken = response.AccessToken;
-            _refreshToken = response.RefreshToken;
-            _expiresIn = DateTime.UtcNow.AddSeconds(response.ExpiresIn-30);
+            await SaveTokens(response.AccessToken, response.RefreshToken, response.ExpiresIn, model.RememberMe);
 
-            NotifyAuthenticationStateChanged(Task.FromResult(AuthenticatedState("User")));
+            NotifyAuthenticationStateChanged(AuthenticatedState("User"));
 
+            logger.LogInformation("User {Username} logged in successfully. Access token expires at {ExpiresIn}. Remember me: {RememberMe}", model.Username, _expiresIn, model.RememberMe);
             return Result.Success();
         }
         catch (Exception ex) 
@@ -99,8 +94,10 @@ public class SenswaveAuthenticationProvider(
     {
         try
         {
-            await Task.Delay(5);
+            await FullLogout();
+            NotifyAuthenticationStateChanged(NoAuthState());
 
+            logger.LogInformation("User logged out successfully");
             return Result.Success();
         }
         catch (Exception ex)
@@ -114,10 +111,147 @@ public class SenswaveAuthenticationProvider(
 
     #region ITokenStore
 
-    public Task<Result<string>> GetBearerToken()
+    public async Task<Result<string>> GetBearerToken()
     {
-        return Task.FromResult(Result<string>.Success(_accessToken));
+        if (string.IsNullOrEmpty(_accessToken))
+        {
+            logger.LogInformation("No access token available");
+            return errorFactory.Create<string>("NoAccessToken");
+        }
+
+        return Result<string>.Success(_accessToken);
+    }
+
+    public async Task<Result> RefreshToken()
+    {
+        if (string.IsNullOrEmpty(_refreshToken))
+        {
+            logger.LogInformation("No refresh token available");
+
+            await FullLogout();
+            NotifyAuthenticationStateChanged(NoAuthState());
+            return errorFactory.Create("NoRefreshToken");
+        }
+
+        return await InternalRefresh();
+    }
+
+    private async Task<Result> InternalRefresh()
+    {
+        try
+        {
+            var response = await authIntegrationService.Refresh(new RefreshTokenRequest
+            {
+                RefreshToken = _refreshToken
+            });
+
+            if (response is null)
+            {
+                logger.LogWarning("Token refresh failed. No response from authentication service");
+
+                await FullLogout();
+                return errorFactory.Create("TokenRefreshFailedUnexpectedly");
+            }
+
+            var rememberMeResult = await localStorageService.Get<bool>(RememberMeKey);
+
+            var rememberMe = rememberMeResult.IsSuccess && rememberMeResult.Value;
+
+            await SaveTokens(response.AccessToken, response.RefreshToken, response.ExpiresIn, rememberMe);
+
+            return Result.Success();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Token refresh failed");
+            return errorFactory.Create("TokenRefreshFailed");
+        }
     }
 
     #endregion
+
+    private async Task Initialize()
+    {
+        if (_initialized)
+            return;
+
+        _initialized = true;
+
+        var rememberMeResult = await localStorageService.Get<bool>(RememberMeKey);
+
+        if (!rememberMeResult.Value)
+        {
+            logger.LogInformation("Remember me was disabled");
+            return;
+        }
+
+       
+        var accessTokenResult = await localStorageService.Get<string>(AccessTokenKey);
+        var refreshTokenResult = await localStorageService.Get<string>(RefreshTokenKey);
+
+        if (accessTokenResult.IsFailure || refreshTokenResult.IsFailure)
+        {
+            logger.LogInformation("Failed to load tokens from local storage. Access token found: {AccessTokenFound}, Refresh token found: {RefreshTokenFound}", 
+                accessTokenResult.IsSuccess, 
+                refreshTokenResult.IsSuccess);
+            return;
+        }
+
+        logger.LogInformation("Loaded tokens from local storage.");
+
+        _accessToken = accessTokenResult.Value;
+        _refreshToken = refreshTokenResult.Value;
+
+        var result = await InternalRefresh();
+
+        logger.LogInformation("Token refresh on initialization completed. Success: {Success}", result.IsSuccess);
+    }
+
+    private async Task SaveTokens(string accessToken, string refreshToken, int expiresIn, bool rememberMe)
+    {
+        _accessToken = accessToken;
+        _refreshToken = refreshToken;
+        _expiresIn = DateTime.UtcNow.AddSeconds(expiresIn-30);
+
+        if (rememberMe)
+        {
+            await localStorageService.Set(AccessTokenKey, accessToken);
+            await localStorageService.Set(RefreshTokenKey, refreshToken);
+            await localStorageService.Set(RememberMeKey, true);
+
+        }
+        else
+        {
+            await sessionStorageService.Set(AccessTokenKey, accessToken);
+            await sessionStorageService.Set(RefreshTokenKey, refreshToken);
+            await localStorageService.Set(RememberMeKey, false);
+        }
+
+        logger.LogInformation("Tokens saved. Access token expires at {ExpiresIn}. Remember me: {RememberMe}", expiresIn, rememberMe);
+    }
+
+    private async Task FullLogout()
+    {
+        _accessToken = string.Empty;
+        _refreshToken = string.Empty;
+        _expiresIn = DateTime.UtcNow;
+
+        await localStorageService.Remove(AccessTokenKey);
+        await localStorageService.Remove(RefreshTokenKey);
+        await localStorageService.Remove(RememberMeKey);
+        await sessionStorageService.Remove(AccessTokenKey);
+        await sessionStorageService.Remove(RefreshTokenKey);
+    }
+
+    private static Task<AuthenticationState> NoAuthState() => Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity())));
+
+    private static Task<AuthenticationState> AuthenticatedState(string role)
+    {
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.Role, role)
+        };
+
+        return Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(claims, "jwt"))));
+    }
 }

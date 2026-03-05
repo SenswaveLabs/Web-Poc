@@ -1,16 +1,17 @@
 ﻿@using Senswave.Web.Shared.Services
+@using Senswave.Web.Users.Auth.Services
 
 @inherits LayoutComponentBase
 @inject ILoadingService loadingService
-
-
+@inject IAuthenticationService authenticationService
+@inject ISnackbar Snackbar
 
 <MudThemeProvider />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
-<MudOverlay Visible="_isLoading" DarkBackground="true">
+<MudOverlay Visible="loadingService.Loading" DarkBackground="true">
     <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" />
 </MudOverlay>
 
@@ -27,6 +28,8 @@
             <MudDrawer @bind-Open="_drawerOpen" Elevation="2">
                 <MudDrawerHeader>
                     <MudText Typo="Typo.h5" Class="mt-1">Application</MudText>
+
+                    <MudButton OnClick="HandleLogout">Logout</MudButton>
                 </MudDrawerHeader>
             </MudDrawer>
 
@@ -44,23 +47,43 @@
 </AuthorizeView>
 
 @code {
+
+    #region Actions
+
     bool _drawerOpen = true;
-    private bool _isLoading;
 
     void DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
     }
 
+    string SyncKey = "Auth:Logout";
+
+    public async Task HandleLogout()
+    {
+        try
+        {
+            loadingService.Show(SyncKey);
+            await authenticationService.Logout();
+            Snackbar.Add("Logged out.", Severity.Info);
+        }
+        finally
+        {
+            loadingService.Hide(SyncKey);
+        }
+    }
+
+    #endregion
+
+    #region LifeManagement
+
     protected override void OnInitialized()
     {
         loadingService.OnChange += StateChanged;
-        _isLoading = loadingService.Loading;
     }
 
     private void StateChanged()
     {
-        _isLoading = loadingService.Loading;
         InvokeAsync(StateHasChanged);
     }
 
@@ -68,4 +91,7 @@
     {
         loadingService.OnChange -= StateChanged;
     }
+
+    #endregion
+
 }
