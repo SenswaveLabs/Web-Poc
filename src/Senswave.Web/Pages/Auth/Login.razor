@@ -13,7 +13,7 @@
 @inject IAuthenticationService AuthService
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
-@inject ILoadingService loadingService
+@inject ILoadingService LoadingService
 
 <MudGrid Class="d-flex h-100 p-0 m-0">
 
@@ -63,7 +63,7 @@
                 <MudButton Color="Color.Primary"
                            Variant="Variant.Filled"
                            FullWidth="true"
-                           Disabled="loadingService.Loading"
+                           Disabled="LoadingService.Loading"
                            OnClick="HandleLogin"
                            Class="mb-3">
                     Sign In
@@ -71,7 +71,7 @@
 
                 <MudButton Variant="Variant.Outlined"
                            FullWidth="true"
-                           Disabled="loadingService.Loading"
+                           Disabled="LoadingService.Loading"
                            Class="mb-4">
                     Register
                 </MudButton>
@@ -81,7 +81,7 @@
                 <MudButton Variant="Variant.Outlined"
                            StartIcon="@Icons.Material.Filled.Login"
                            FullWidth="true"
-                           Disabled="loadingService.Loading"
+                           Disabled="LoadingService.Loading"
                            OnClick="HandleGoogleLogin">
                     Sign in with Google
                 </MudButton>
@@ -121,7 +121,7 @@
     {
         try
         {
-            loadingService.Show(SyncKey);
+            LoadingService.Show(SyncKey);
 
             await _form!.Validate();
 
@@ -141,7 +141,7 @@
         }
         finally
         {
-            loadingService.Hide(SyncKey);
+            LoadingService.Hide(SyncKey);
         }
     }
 
