@@ -15,4 +15,8 @@
 	  <ProjectReference Include="..\Senswave.Web.Shared\Senswave.Web.Shared.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Homes\Requests\" />
+	</ItemGroup>
+
 </Project>

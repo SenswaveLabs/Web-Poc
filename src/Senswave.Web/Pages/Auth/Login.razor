@@ -15,25 +15,24 @@
 @inject ISnackbar Snackbar
 @inject ILoadingService loadingService
 
-<MudGrid Style="min-height:100vh;">
+<MudGrid Class="d-flex h-100 p-0 m-0">
 
-    <MudHidden Breakpoint="Breakpoint.MdAndDown">
-        <MudItem md="7" Class="d-flex align-center justify-center mud-theme-secondary">
+  
+    <MudHidden Breakpoint="Breakpoint.SmAndDown"> 
+        <MudItem xs=0 sm="0" md=6 lg="7" Class="d-flex align-center justify-center mud-theme-secondary p-0">
             <MudPaper Elevation="6" Class="hero-card overflow-hidden d-flex align-items-center justify-content-center p-0 m-0 rounded-lg">
                 <MudImage Src="icon-192.png"
-                            Alt="icon"
+                          Alt="icon"
                           Class="p-0 m-0 rounded-lg" />
             </MudPaper>
         </MudItem>
     </MudHidden>
+ 
 
-    <MudItem xs="12" md="5"
-             Class="d-flex align-center justify-center"
-             Style="min-height:100vh;">
-
+    <MudItem xs="12" sm="12" md="6" lg="5" Class="d-flex align-center justify-center p-0">
         <MudPaper Elevation="6"
-                  Class="pa-6 rounded-lg"
-                  Style="width:100%;max-width:420px;">
+                  Class="pa-6 rounded-lg left-shadow"
+                  Style="width:100%;max-width:400px;">
             <MudText Typo="Typo.h5" Class="mb-4">Login</MudText>
 
             <MudForm @ref="_form">

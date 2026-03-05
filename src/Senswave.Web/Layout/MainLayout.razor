@@ -3,6 +3,8 @@
 @inherits LayoutComponentBase
 @inject ILoadingService loadingService
 
+
+
 <MudThemeProvider />
 <MudPopoverProvider />
 <MudDialogProvider />
@@ -12,9 +14,10 @@
     <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" />
 </MudOverlay>
 
-<MudLayout Elevation="2">
-    <AuthorizeView>
-        <Authorized>
+<AuthorizeView>
+    <Authorized>
+        <MudLayout Elevation="2" Class="main-layout">
+
             <MudAppBar>
                 <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
                 <MudSpacer />
@@ -30,12 +33,15 @@
             <MudMainContent>
                 @Body
             </MudMainContent>
-        </Authorized>
-        <NotAuthorized>
+
+        </MudLayout>
+    </Authorized>
+    <NotAuthorized>
+        <MudLayout Class="main-layout" Style="overflow:hidden; height: 100vh;">
             @Body
-        </NotAuthorized>
-    </AuthorizeView>
-</MudLayout>
+        </MudLayout>
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
     bool _drawerOpen = true;
