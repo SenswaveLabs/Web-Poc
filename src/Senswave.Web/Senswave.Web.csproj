@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Modules\Senswave.Web.Homes\Senswave.Web.Homes.csproj" />
     <ProjectReference Include="..\Modules\Senswave.Web.Users\Senswave.Web.Users.csproj" />
     <ProjectReference Include="..\Shared\Senswave.Web.Integration\Senswave.Web.Integration.csproj" />
     <ProjectReference Include="..\Shared\Senswave.Web.Shared\Senswave.Web.Shared.csproj" />
@@ -32,7 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Services\Users\" />
+    <Folder Include="Pages\Homes\" />
   </ItemGroup>
 
 </Project>

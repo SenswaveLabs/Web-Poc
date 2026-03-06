@@ -3,8 +3,6 @@
 
 @inherits LayoutComponentBase
 @inject ILoadingService loadingService
-@inject IAuthenticationService authenticationService
-@inject ISnackbar Snackbar
 
 <MudThemeProvider />
 <MudPopoverProvider />
@@ -19,19 +17,7 @@
     <Authorized>
         <MudLayout Elevation="2" Class="main-layout">
 
-            <MudAppBar>
-                <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-                <MudSpacer />
-                <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
-            </MudAppBar>
-
-            <MudDrawer @bind-Open="_drawerOpen" Elevation="2">
-                <MudDrawerHeader>
-                    <MudText Typo="Typo.h5" Class="mt-1">Application</MudText>
-
-                    <MudButton OnClick="HandleLogout">Logout</MudButton>
-                </MudDrawerHeader>
-            </MudDrawer>
+            <NavigationLayout />
 
             <MudMainContent>
                 @Body
@@ -48,35 +34,6 @@
 
 @code {
 
-    #region Actions
-
-    bool _drawerOpen = true;
-
-    void DrawerToggle()
-    {
-        _drawerOpen = !_drawerOpen;
-    }
-
-    string SyncKey = "Auth:Logout";
-
-    public async Task HandleLogout()
-    {
-        try
-        {
-            loadingService.Show(SyncKey);
-            await authenticationService.Logout();
-            Snackbar.Add("Logged out.", Severity.Info);
-        }
-        finally
-        {
-            loadingService.Hide(SyncKey);
-        }
-    }
-
-    #endregion
-
-    #region LifeManagement
-
     protected override void OnInitialized()
     {
         loadingService.OnChange += StateChanged;
@@ -91,7 +48,4 @@
     {
         loadingService.OnChange -= StateChanged;
     }
-
-    #endregion
-
 }

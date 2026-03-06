@@ -3,8 +3,10 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
 using Senswave.Web;
+using Senswave.Web.Homes.Services;
 using Senswave.Web.Integration;
 using Senswave.Web.Services;
+using Senswave.Web.Services.Homes;
 using Senswave.Web.Services.Shared;
 using Senswave.Web.Shared.Extensions;
 using Senswave.Web.Shared.Services;
@@ -37,6 +39,8 @@ builder.Services.AddScoped<SenswaveAuthenticationProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<SenswaveAuthenticationProvider>());
 builder.Services.AddScoped<IAuthenticationService>(sp => sp.GetRequiredService<SenswaveAuthenticationProvider>());
 builder.Services.AddScoped<ITokenStore>(sp => sp.GetRequiredService<SenswaveAuthenticationProvider>());
+builder.Services.AddScoped<IHomeService, HomeService>();
+
 
 
 await builder.Build().RunAsync();

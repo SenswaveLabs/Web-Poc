@@ -1,0 +1,19 @@
+﻿<ion-icon name="@Name"
+          size="@Size"
+          style="@Style"
+          class="@CssClass"
+          @onclick="OnClick">
+</ion-icon>
+
+@code {
+
+    [Parameter] public string Name { get; set; } = "";
+
+    [Parameter] public string? Size { get; set; }
+
+    [Parameter] public string? Style { get; set; }
+
+    [Parameter] public string? CssClass { get; set; }
+
+    [Parameter] public EventCallback OnClick { get; set; }
+}
