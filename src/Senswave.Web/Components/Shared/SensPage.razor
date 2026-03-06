@@ -1,0 +1,32 @@
+﻿@inherits MudComponentBase
+
+@if (Loading)
+{
+    @LoadingContent
+}
+else if (FailedToLoad)
+{
+    @FailedContent
+}
+else
+{
+    @LoadedContent
+}
+
+@code 
+{
+    [Parameter]
+    public RenderFragment? LoadedContent { get; set; }
+
+    [Parameter]
+    public RenderFragment? FailedContent { get; set; }
+
+    [Parameter]
+    public RenderFragment? LoadingContent { get; set; }
+
+    [Parameter]
+    public bool FailedToLoad { get; set; } = false;
+
+    [Parameter]
+    public bool Loading { get; set; } = false;
+}

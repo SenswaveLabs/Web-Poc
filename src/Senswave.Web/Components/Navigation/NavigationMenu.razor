@@ -30,13 +30,11 @@
     <MudNavLink IconColor="Color.Error" Icon="@Icons.Material.Filled.Logout" OnClick="HandleLogout">Logout</MudNavLink>
 </MudNavMenu>
 
-<MudSpacer/>
-
-<MudItem Class="text-center p-2 pb-4">
-    <MudText Typo="Typo.subtitle2">© 2026 Senswave</MudText>
-</MudItem>
+<MudSpacer />
 
 @code {
+
+    // TODO: Home Switch Screen todo mate
 
     string SyncKey = "Auth:Logout";
 
@@ -44,7 +42,7 @@
     {
         await base.OnInitializedAsync();
         HomeService.OnChange += Rerender;
-    }  
+    }
 
     public async Task HandleLogout()
     {
