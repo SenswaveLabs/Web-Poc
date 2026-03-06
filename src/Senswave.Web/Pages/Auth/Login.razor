@@ -37,7 +37,7 @@
                               Variant="Variant.Outlined"
                               Required="true"
                               FullWidth="true"
-                              Class="mb-3"
+                              Class="mb-0"
                               T="string"
                               RequiredError="Email is required!"
                               Validation="@(new EmailAddressAttribute { ErrorMessage = @"The email address is invalid" })"    />
@@ -51,7 +51,7 @@
                               Required="true"
                               RequiredError="Password is required!"
                               FullWidth="true"
-                              Class="mb-4" />
+                              Class="mb-0" />
 
                 <MudCheckBox @bind-Value="_model.RememberMe">Remember Me</MudCheckBox>
 
