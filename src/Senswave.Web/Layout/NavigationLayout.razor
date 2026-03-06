@@ -1,0 +1,109 @@
+﻿@using Senswave.Web.Components.Navigation
+@using Senswave.Web.Homes.Services
+@using Senswave.Web.Shared.Services
+@using Senswave.Web.Users.Auth.Services
+
+@inject ILoadingService LoadingService
+@inject ISnackbar Snackbar
+@inject IAuthenticationService authenticationService
+@inject IHomeService HomeService
+@implements IDisposable
+
+@* Mobile Navigation *@
+<MudHidden Breakpoint="Breakpoint.Xs" Invert="true">
+    <MudAppBar>
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        <MudSpacer />
+        <MudText Typo="Typo.subtitle1" Class="pl-5">@HomeService.CurrentHome?.Name</MudText>
+        <MudSpacer />
+        <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
+    </MudAppBar>
+    <MudDrawer @bind-Open="_drawerOpen">
+        <MudDrawerHeader Class="justify-content-center pt-6 pb-10">
+            <MudPaper Elevation="6" Class="hero-card overflow-hidden d-flex align-items-center justify-content-center p-0 m-0 rounded-lg">
+                <MudImage Src="icon-192.png"
+                          Width="128"
+                          Alt="icon"
+                          Class="p-0 m-0 rounded-lg" />
+            </MudPaper>
+        </MudDrawerHeader>
+        <NavigationMenu />
+    </MudDrawer>
+</MudHidden>
+
+@* Tablet Navigation *@
+<MudHidden Breakpoint="Breakpoint.Xs">
+    <MudHidden Breakpoint="Breakpoint.LgAndUp">
+        <MudAppBar Class="pl-0">
+            <MudPaper Elevation="6" Class="hero-card overflow-hidden d-flex align-items-center justify-content-center p-0 m-0 rounded-lg">
+                <MudImage Src="icon-192.png"
+                          Width="48"
+                          Alt="icon"
+                          Class="p-0 m-0 rounded-lg" />
+            </MudPaper>
+            <MudText Typo="Typo.h6" Class="pl-5">@HomeService.CurrentHome?.Name</MudText>
+            <MudSpacer />
+            <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
+        </MudAppBar>
+        <MudDrawer Fixed="true" 
+                   Variant="@DrawerVariant.Mini" 
+                   OpenMiniOnHover="true" 
+                   Breakpoint="Breakpoint.None"
+                   ClipMode="DrawerClipMode.Always"
+                   Elevation="1">
+                <NavigationMenu />
+        </MudDrawer>
+    </MudHidden>
+</MudHidden>
+
+@* Desktop Navigation *@
+<MudHidden Breakpoint="Breakpoint.Xs">
+    <MudHidden Breakpoint="Breakpoint.MdAndDown">
+        <MudAppBar>
+            <MudText Typo="Typo.h6">@HomeService.CurrentHome?.Name</MudText>
+            <MudSpacer />
+            <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
+        </MudAppBar>
+        <MudDrawer Open="true"
+                   Width="220px"
+                   Variant="DrawerVariant.Persistent"
+                   Elevation="1">
+
+            <MudDrawerHeader Class="justify-content-center pt-6 pb-10">
+                <MudPaper Elevation="6" Class="hero-card overflow-hidden d-flex align-items-center justify-content-center p-0 m-0 rounded-lg">
+                    <MudImage Src="icon-192.png"
+                              Width="128"
+                              Alt="icon"
+                              Class="p-0 m-0 rounded-lg" />
+                </MudPaper>
+            </MudDrawerHeader>
+             <NavigationMenu/>
+        </MudDrawer>
+    </MudHidden>
+</MudHidden>
+
+@code {
+
+    bool _drawerOpen = true;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        HomeService.OnChange += Rerender;
+    }
+
+    public void Dispose()
+    {
+        HomeService.OnChange -= Rerender;
+    }
+
+    void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    void Rerender()
+    {
+        StateHasChanged();
+    }
+}

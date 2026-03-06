@@ -1,0 +1,38 @@
+﻿@page "/home/devices"
+@attribute [Authorize]
+
+@using Senswave.Web.Homes.Services
+@using Senswave.Web.Shared.Services
+
+@inject IHomeService HomeService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>Home Dashboard</PageTitle>
+
+
+@code {
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        if (HomeService.CurrentHome is null)
+        {
+            Navigation.NavigateTo("/home/list");
+            return;
+        }
+
+        try
+        {
+            isLoading = true;
+
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+}

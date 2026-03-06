@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Modules\Senswave.Web.Homes\Senswave.Web.Homes.csproj" />
     <ProjectReference Include="..\Modules\Senswave.Web.Users\Senswave.Web.Users.csproj" />
     <ProjectReference Include="..\Shared\Senswave.Web.Integration\Senswave.Web.Integration.csproj" />
     <ProjectReference Include="..\Shared\Senswave.Web.Shared\Senswave.Web.Shared.csproj" />
@@ -29,10 +30,6 @@
     <None Update="nginx.conf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Services\Users\" />
   </ItemGroup>
 
 </Project>

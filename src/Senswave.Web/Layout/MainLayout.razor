@@ -2,16 +2,14 @@
 @using Senswave.Web.Users.Auth.Services
 
 @inherits LayoutComponentBase
-@inject ILoadingService loadingService
-@inject IAuthenticationService authenticationService
-@inject ISnackbar Snackbar
+@inject ILoadingService LoadingService
 
 <MudThemeProvider />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
-<MudOverlay Visible="loadingService.Loading" DarkBackground="true">
+<MudOverlay Visible="LoadingService.Loading" DarkBackground="true">
     <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" />
 </MudOverlay>
 
@@ -19,19 +17,7 @@
     <Authorized>
         <MudLayout Elevation="2" Class="main-layout">
 
-            <MudAppBar>
-                <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-                <MudSpacer />
-                <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
-            </MudAppBar>
-
-            <MudDrawer @bind-Open="_drawerOpen" Elevation="2">
-                <MudDrawerHeader>
-                    <MudText Typo="Typo.h5" Class="mt-1">Application</MudText>
-
-                    <MudButton OnClick="HandleLogout">Logout</MudButton>
-                </MudDrawerHeader>
-            </MudDrawer>
+            <NavigationLayout />
 
             <MudMainContent>
                 @Body
@@ -48,38 +34,9 @@
 
 @code {
 
-    #region Actions
-
-    bool _drawerOpen = true;
-
-    void DrawerToggle()
-    {
-        _drawerOpen = !_drawerOpen;
-    }
-
-    string SyncKey = "Auth:Logout";
-
-    public async Task HandleLogout()
-    {
-        try
-        {
-            loadingService.Show(SyncKey);
-            await authenticationService.Logout();
-            Snackbar.Add("Logged out.", Severity.Info);
-        }
-        finally
-        {
-            loadingService.Hide(SyncKey);
-        }
-    }
-
-    #endregion
-
-    #region LifeManagement
-
     protected override void OnInitialized()
     {
-        loadingService.OnChange += StateChanged;
+        LoadingService.OnChange += StateChanged;
     }
 
     private void StateChanged()
@@ -89,9 +46,6 @@
 
     public void Dispose()
     {
-        loadingService.OnChange -= StateChanged;
+        LoadingService.OnChange -= StateChanged;
     }
-
-    #endregion
-
 }

@@ -1,4 +1,6 @@
-﻿@page "/auth/login"
+﻿@page "/login"
+@page "/auth/login"
+@using Senswave.Web.Homes.Services
 @using Senswave.Web.Shared.Services
 @using Senswave.Web.Users.Auth.Models
 @using Senswave.Web.Users.Auth.Services
@@ -8,16 +10,10 @@
 @inject IAuthenticationService AuthService
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
-
-@page "/login"
-@inject IAuthenticationService AuthService
-@inject NavigationManager Navigation
-@inject ISnackbar Snackbar
 @inject ILoadingService LoadingService
+@inject IHomeService HomeService
 
 <MudGrid Class="d-flex h-100 p-0 m-0">
-
-  
     <MudHidden Breakpoint="Breakpoint.SmAndDown"> 
         <MudItem xs=0 sm="0" md=6 lg="7" Class="d-flex align-center justify-center mud-theme-secondary p-0">
             <MudPaper Elevation="6" Class="hero-card overflow-hidden d-flex align-items-center justify-content-center p-0 m-0 rounded-lg">
@@ -28,7 +24,6 @@
         </MudItem>
     </MudHidden>
  
-
     <MudItem xs="12" sm="12" md="6" lg="5" Class="d-flex align-center justify-center p-0">
         <MudPaper Elevation="6"
                   Class="pa-6 rounded-lg left-shadow"
@@ -42,7 +37,7 @@
                               Variant="Variant.Outlined"
                               Required="true"
                               FullWidth="true"
-                              Class="mb-3"
+                              Class="mb-0"
                               T="string"
                               RequiredError="Email is required!"
                               Validation="@(new EmailAddressAttribute { ErrorMessage = @"The email address is invalid" })"    />
@@ -56,7 +51,7 @@
                               Required="true"
                               RequiredError="Password is required!"
                               FullWidth="true"
-                              Class="mb-4" />
+                              Class="mb-0" />
 
                 <MudCheckBox @bind-Value="_model.RememberMe">Remember Me</MudCheckBox>
 
@@ -85,12 +80,9 @@
                            OnClick="HandleGoogleLogin">
                     Sign in with Google
                 </MudButton>
-
             </MudForm>
         </MudPaper>
-
     </MudItem>
-
 </MudGrid>
 
 @code {
@@ -126,17 +118,25 @@
             await _form!.Validate();
 
             if (!_form.IsValid)
+            {
+                Snackbar.Add("Login failed. Invalid valie in required fields");
                 return;
+            }
 
             var result = await AuthService.Login(_model);
 
-            if (result.IsSuccess)
+            if (result.IsFailure)
+            {
+                Snackbar.Add("Login failed. Please check you email and password.", Severity.Error);
+                return;
+            }
+
+           
+            var initializationResult = await HomeService.Initialize();
+
+            if (initializationResult.IsSuccess)
             {
                 Navigation.NavigateTo("/");
-            }
-            else
-            {
-                Snackbar.Add("Login failed", Severity.Error);
             }
         }
         finally

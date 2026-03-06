@@ -1,4 +1,6 @@
-﻿<CascadingAuthenticationState>
+﻿@using Senswave.Web.Pages.Auth
+
+<CascadingAuthenticationState>
     <Router AppAssembly="@typeof(App).Assembly" NotFoundPage="typeof(Pages.NotFound)" >
         <Found Context="routeData">
             <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
