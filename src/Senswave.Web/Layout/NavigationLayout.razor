@@ -1,15 +1,20 @@
 ﻿@using Senswave.Web.Components.Navigation
+@using Senswave.Web.Homes.Services
 @using Senswave.Web.Shared.Services
 @using Senswave.Web.Users.Auth.Services
 
 @inject ILoadingService LoadingService
 @inject ISnackbar Snackbar
 @inject IAuthenticationService authenticationService
+@inject IHomeService HomeService
+@implements IDisposable
 
 @* Mobile Navigation *@
 <MudHidden Breakpoint="Breakpoint.Xs" Invert="true">
     <MudAppBar>
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        <MudSpacer />
+        <MudText Typo="Typo.subtitle1" Class="pl-5">@HomeService.CurrentHome?.Name</MudText>
         <MudSpacer />
         <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
     </MudAppBar>
@@ -36,6 +41,7 @@
                           Alt="icon"
                           Class="p-0 m-0 rounded-lg" />
             </MudPaper>
+            <MudText Typo="Typo.h6" Class="pl-5">@HomeService.CurrentHome?.Name</MudText>
             <MudSpacer />
             <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
         </MudAppBar>
@@ -54,6 +60,7 @@
 <MudHidden Breakpoint="Breakpoint.Xs">
     <MudHidden Breakpoint="Breakpoint.MdAndDown">
         <MudAppBar>
+            <MudText Typo="Typo.h6">@HomeService.CurrentHome?.Name</MudText>
             <MudSpacer />
             <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
         </MudAppBar>
@@ -79,8 +86,24 @@
 
     bool _drawerOpen = true;
 
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        HomeService.OnChange += Rerender;
+    }
+
+    public void Dispose()
+    {
+        HomeService.OnChange -= Rerender;
+    }
+
     void DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
+    }
+
+    void Rerender()
+    {
+        StateHasChanged();
     }
 }

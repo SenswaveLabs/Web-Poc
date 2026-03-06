@@ -21,8 +21,8 @@ public class HomeService(
     {
         set
         {
-            OnChange?.Invoke();
             _currentHome = value;
+            OnChange?.Invoke();
         }
         get => _currentHome;
     }

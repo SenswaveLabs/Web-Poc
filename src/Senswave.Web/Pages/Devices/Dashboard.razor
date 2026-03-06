@@ -5,7 +5,7 @@
 @using Senswave.Web.Shared.Services
 
 @inject IHomeService HomeService
-@inject NavigationManager NavigationManager
+@inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 
 <PageTitle>Home Dashboard</PageTitle>
@@ -18,19 +18,16 @@
     {
         await base.OnInitializedAsync();
 
+        if (HomeService.CurrentHome is null)
+        {
+            Navigation.NavigateTo("/home/list");
+            return;
+        }
+
         try
         {
             isLoading = true;
-            var initializationResult = await HomeService.Initialize();
 
-            if (initializationResult.IsSuccess)
-            {
-                
-            }
-            else
-            {
-                NavigationManager.NavigateTo("/home/list");
-            }
         }
         finally
         {

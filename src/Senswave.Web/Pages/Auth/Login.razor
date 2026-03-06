@@ -118,18 +118,25 @@
             await _form!.Validate();
 
             if (!_form.IsValid)
+            {
+                Snackbar.Add("Login failed. Invalid valie in required fields");
                 return;
+            }
 
             var result = await AuthService.Login(_model);
 
-            if (result.IsSuccess)
+            if (result.IsFailure)
             {
-                await HomeService.Initialize();
-                Navigation.NavigateTo("/");
+                Snackbar.Add("Login failed. Please check you email and password.", Severity.Error);
+                return;
             }
-            else
+
+           
+            var initializationResult = await HomeService.Initialize();
+
+            if (initializationResult.IsSuccess)
             {
-                Snackbar.Add("Login failed", Severity.Error);
+                Navigation.NavigateTo("/");
             }
         }
         finally

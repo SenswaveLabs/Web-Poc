@@ -32,34 +32,18 @@
 
 <MudSpacer/>
 
-@if (HomeService.CurrentHome is not null)
-{
-    <MudItem Class="d-flex align-items-center gap-2">
-        <MudText Typo="Typo.body2">Current Home: @HomeService.CurrentHome.Name</MudText>
-        <MudText Typo="Typo.body2">@CurrentTime.ToString("HH:mm:ss")</MudText>
-    </MudItem>
-}
+<MudItem Class="text-center p-2 pb-4">
+    <MudText Typo="Typo.subtitle2">© 2026 Senswave</MudText>
+</MudItem>
 
 @code {
 
     string SyncKey = "Auth:Logout";
 
-    private Timer? _timer;
-    private DateTime CurrentTime = DateTime.Now;
-
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-
-        //HomeService.OnChange += StateHasChanged;
-
-        var initializationResult = await HomeService.Initialize();
-
-        if (initializationResult)
-        {
-            StartClock();
-        }
-
+        HomeService.OnChange += Rerender;
     }  
 
     public async Task HandleLogout()
@@ -78,25 +62,11 @@
 
     public void Dispose()
     {
-        HomeService.OnChange -= StateHasChanged;
-        StopClock();
+        HomeService.OnChange -= Rerender;
     }
 
-    private void StartClock()
+    void Rerender()
     {
-        // if (_timer == null)
-        // {
-        //     _timer = new Timer(_ =>
-        //     {
-        //         CurrentTime = DateTime.Now;
-        //         InvokeAsync(StateHasChanged);
-        //     }, null, 0, 1000);
-        // }
-    }
-
-    private void StopClock()
-    {
-        _timer?.Dispose();
-        _timer = null;
+        StateHasChanged();
     }
 }
