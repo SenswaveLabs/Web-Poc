@@ -5,7 +5,11 @@ namespace Senswave.Web.Homes.Services;
 
 public interface IHomeService
 {
-    Task<Result<List<Home>>> GetHomes();
+    HomeDetails? CurrentHome { get; }
 
-    Task<Result<HomeDetails>> GetHome(string id);
+    event Action? OnChange;
+
+    Task<Result> Initialize();
+
+    Task<Result<List<Home>>> GetHomes();
 }

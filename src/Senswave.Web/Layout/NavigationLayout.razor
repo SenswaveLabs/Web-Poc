@@ -1,4 +1,4 @@
-﻿@using Senswave.Web.Layout.Navigation
+﻿@using Senswave.Web.Components.Navigation
 @using Senswave.Web.Shared.Services
 @using Senswave.Web.Users.Auth.Services
 
@@ -22,7 +22,7 @@
                           Class="p-0 m-0 rounded-lg" />
             </MudPaper>
         </MudDrawerHeader>
-        <MudDrawerContainer>
+        <MudDrawerContainer Class="d-flex flex-column flex-grow-1">
             <NavigationMenu />
         </MudDrawerContainer>
     </MudDrawer>
@@ -41,14 +41,13 @@
             <MudSpacer />
             <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
         </MudAppBar>
-        <MudDrawer @bind-Open="@_drawerOpen"
-                   Fixed="true" 
+        <MudDrawer Fixed="true" 
                    Variant="@DrawerVariant.Mini" 
                    OpenMiniOnHover="true" 
                    Breakpoint="Breakpoint.None"
                    ClipMode="DrawerClipMode.Always"
                    Elevation="1">
-            <MudDrawerContainer>
+            <MudDrawerContainer Class="d-flex flex-column flex-grow-1">
                 <NavigationMenu />
             </MudDrawerContainer>
         </MudDrawer>
@@ -75,7 +74,7 @@
                               Class="p-0 m-0 rounded-lg" />
                 </MudPaper>
             </MudDrawerHeader>
-            <MudDrawerContainer>
+            <MudDrawerContainer Class="d-flex flex-column flex-grow-1">
                 <NavigationMenu/>
             </MudDrawerContainer>
         </MudDrawer>

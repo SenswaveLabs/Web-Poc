@@ -22,6 +22,33 @@ public class AuthHeaderHandler(
 
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", tokenRequest.Value);
 
-        return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        var firstAttemptResponse = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+
+        if (firstAttemptResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        {
+            logger.LogInformation("Received 401 Unauthorized. Attempting to refresh token and retry request.");
+            var refreshResult = await tokenStore.RefreshToken();
+
+            if (refreshResult.IsFailure)
+            {
+                logger.LogError("Failed to refresh token: {Errors}", refreshResult.Errors);
+                return firstAttemptResponse;
+            }
+
+            var newTokenRequest = await tokenStore.GetBearerToken();
+
+            if (newTokenRequest.IsFailure)
+            {
+                logger.LogError("Failed to retrieve new bearer token after refresh: {Errors}", newTokenRequest.Errors);
+                return firstAttemptResponse;
+            }
+
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", newTokenRequest.Value);
+            logger.LogInformation("Retrying request with refreshed token.");
+
+            return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        }
+
+        return firstAttemptResponse;
     }
 }

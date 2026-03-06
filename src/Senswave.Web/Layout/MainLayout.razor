@@ -2,14 +2,14 @@
 @using Senswave.Web.Users.Auth.Services
 
 @inherits LayoutComponentBase
-@inject ILoadingService loadingService
+@inject ILoadingService LoadingService
 
 <MudThemeProvider />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
-<MudOverlay Visible="loadingService.Loading" DarkBackground="true">
+<MudOverlay Visible="LoadingService.Loading" DarkBackground="true">
     <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" />
 </MudOverlay>
 
@@ -36,7 +36,7 @@
 
     protected override void OnInitialized()
     {
-        loadingService.OnChange += StateChanged;
+        LoadingService.OnChange += StateChanged;
     }
 
     private void StateChanged()
@@ -46,6 +46,6 @@
 
     public void Dispose()
     {
-        loadingService.OnChange -= StateChanged;
+        LoadingService.OnChange -= StateChanged;
     }
 }

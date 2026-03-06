@@ -14,6 +14,8 @@ public static class SenswaveRestExtensions
         services.AddRefitClient<IAuthIntegrationService>()
             .ConfigureHttpClient(c => c.BaseAddress = new Uri(configuration["Api:BaseUrl"]!));
 
+        services.AddTransient<AuthHeaderHandler>();
+
         services.AddRefitClient<IUserIntegrationService>()
             .ConfigureHttpClient(c => c.BaseAddress = new Uri(configuration["Api:BaseUrl"]!))
             .AddHttpMessageHandler<AuthHeaderHandler>();

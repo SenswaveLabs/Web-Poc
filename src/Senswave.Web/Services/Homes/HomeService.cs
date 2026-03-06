@@ -1,45 +1,127 @@
 ﻿using Senswave.Web.Homes.Models;
 using Senswave.Web.Homes.Services;
 using Senswave.Web.Integration.Homes;
+using Senswave.Web.Integration.Homes.Response;
 using Senswave.Web.Shared.Resulting;
 
 namespace Senswave.Web.Services.Homes;
 
 public class HomeService(
     IErrorFactory errorFactory,
-    IHomesIntegrationService integrationService, 
+    IHomesIntegrationService integrationService,
     ILogger<HomeService> logger) : IHomeService
 {
-    private HomeDetails CurrentHome { get; set; } = new();
+    private bool _initialized = false;
 
-    public async Task<Result> Initialize
+    private HomeDetails? _currentHome;
 
-    public async Task<Result<HomeDetails>> GetHome(string id)
+    private readonly SemaphoreSlim _initLock = new(1, 1);
+
+    public HomeDetails? CurrentHome
     {
-        logger.LogInformation("Getting homes for user");
+        set
+        {
+            OnChange?.Invoke();
+            _currentHome = value;
+        }
+        get => _currentHome;
+    }
+
+    public event Action? OnChange;
+
+    public async Task<Result> Initialize()
+    {
+        await _initLock.WaitAsync();
 
         try
         {
-            if (!string.IsNullOrEmpty(CurrentHome.Id))
-                return Result<HomeDetails>.Success(CurrentHome);
+            if (_initialized)
+                return CurrentHome == null ? errorFactory.Create("InitializedWithNoHome") : Result.Success();
 
-            var response = await integrationService.GetHome(id);
+            _initialized = true;
 
-            if (response is null)
+            logger.LogInformation("Initializing home.");
+
+            string currentHomeId = string.Empty;
+
+            try
             {
-                logger.LogWarning("Get home failed for home {HomeId}: No response from integration service", id);
-                return errorFactory.Create<HomeDetails>("GetHomeFailedUnexpectedly");
+                var currentHomeResponse = await integrationService.GetCurrentHome();
+
+                if (currentHomeResponse is null || string.IsNullOrEmpty(currentHomeResponse.Id))
+                {
+                    logger.LogWarning("Get current home failed: No response from integration service");
+                    CurrentHome = null;
+                    return errorFactory.Create("GetCurrentHomeFailedUnexpectedly");
+                }
+
+                currentHomeId = currentHomeResponse.Id;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to get current home for user");
+                CurrentHome = null;
+                return errorFactory.Create("GetCurrentHomeFailedUnexpectedly");
             }
 
-            CurrentHome = (response as HomeDetails)!;
+            try
+            {
+                var response = await integrationService.GetHome(currentHomeId);
 
-            return Result<HomeDetails>.Success(CurrentHome!);
+                if (response is null)
+                {
+                    logger.LogWarning("Get home failed for home {HomeId}: No response from integration service", currentHomeId);
+                    return errorFactory.Create<HomeDetails>("GetHomeFailedUnexpectedly");
+                }
+
+                CurrentHome = new HomeDetails
+                {
+                    Id = response.Id,
+                    Name = response.Name,
+                    Icon = response.Icon,
+                    IsOwner = response.IsOwner,
+                    DataSource = response.DataSource is null ? null : new DataSource
+                    {
+                        Id = response.DataSource.Id,
+                        Name = response.DataSource.Name,
+                        State = response.DataSource.State
+                    },
+                    Location = response.Location is null ? null : new Location
+                    {
+                        Longitude = response.Location.Longitude,
+                        Latitude = response.Location.Latitude
+                    },
+                    Rooms = response.Rooms?.Select(r => new Room
+                    {
+                        Id = r.Id,
+                        Name = r.Name
+                    }).ToList() ?? []
+                };
+
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to get homes for user");
+                _currentHome = null;
+                return errorFactory.Create("FailedToLoadCurrentHomePleaseRefresh", "Failed to load current home please refresh.");
+            }
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to get homes for user");
-            return errorFactory.Create<HomeDetails>("GetHomesFailed");
+            logger.LogError(ex, "Unexpected error during home service initialization");
+            CurrentHome = null;
+            return errorFactory.Create("HomeServiceInitializationFailedUnexpectedly", "An unexpected error occurred during home service initialization.");
         }
+        finally
+        {
+            _initLock.Release();
+        }
+    }
+
+    public async Task<Result> ChangeHome(string newHomeId)
+    {
+        throw new NotImplementedException("Changing home is not implemented yet.");
     }
 
     public async Task<Result<List<Home>>> GetHomes()
@@ -63,7 +145,7 @@ public class HomeService(
 
             return Result<List<Home>>.Success(finalItems);
         }
-        catch (Exception ex) 
+        catch (Exception ex)
         {
             logger.LogError(ex, "Failed to get homes for user");
             return errorFactory.Create<List<Home>>("GetHomesFailed");
