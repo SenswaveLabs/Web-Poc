@@ -41,6 +41,7 @@
 
 @code {
     private bool _loading = true;
+    private bool _failedToLoad = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -62,7 +63,6 @@
         try
         {
             _loading = true;
-            _failedToLoad = true;
 
         }
         catch (Exception ex)
