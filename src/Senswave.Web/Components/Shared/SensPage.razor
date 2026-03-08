@@ -1,0 +1,63 @@
+﻿@inherits MudComponentBase
+
+<MudContainer 
+    MaxWidth="MaxWidth.False" Class="pl-0 pr-0 d-flex flex-column overflow-scroll" Style=" overflow-y: auto!important; overflow-x: hidden!important;">
+    <MudContainer 
+        MaxWidth="MaxWidth.False" Class="p-1 p-md-3 p-lg-4 pt-5 d-flex flex-column">
+        @if (Loading)
+        {
+            @LoadingContent
+        }
+        else if (FailedToLoad && FailedContent is null)
+        {
+            <MudContainer Class="d-flex flex-column align-items-center justify-content-center" Style="height:50vh;">
+                <MudText Typo="Typo.h6" Class="mb-2" Align="Align.Center">
+                    Failed to load.
+                </MudText>
+                <MudText Typo="Typo.body2" Class="mb-4" Align="Align.Center">
+                    Please check your connection or try again.
+                </MudText>
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           OnClick="RefreshContent">
+                    Retry
+                </MudButton>
+            </MudContainer>
+        }
+        else if (FailedToLoad)
+        {
+            @FailedContent
+        }
+        else
+        {
+            @LoadedContent
+        }
+    </MudContainer>
+</MudContainer>
+
+@code 
+{
+    [Parameter]
+    public RenderFragment? LoadedContent { get; set; }
+
+    [Parameter]
+    public RenderFragment? FailedContent { get; set; }
+
+    [Parameter]
+    public RenderFragment? LoadingContent { get; set; }
+
+    [Parameter]
+    public bool FailedToLoad { get; set; } = false;
+
+    [Parameter]
+    public bool Loading { get; set; } = false;
+
+    [Parameter]
+    public Func<Task> RefreshContent { get; set; } = default!;
+
+    protected override void OnParametersSet()
+    {
+        if (RefreshContent is null && FailedContent is null)
+            throw new ArgumentException("Refresh page function not provided");
+    }
+}

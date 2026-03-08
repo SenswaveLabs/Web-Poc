@@ -11,8 +11,6 @@ public class HomeService(
     IHomesIntegrationService integrationService,
     ILogger<HomeService> logger) : IHomeService
 {
-    private bool _initialized = false;
-
     private HomeDetails? _currentHome;
 
     private readonly SemaphoreSlim _initLock = new(1, 1);
@@ -35,11 +33,6 @@ public class HomeService(
 
         try
         {
-            if (_initialized)
-                return CurrentHome == null ? errorFactory.Create("InitializedWithNoHome") : Result.Success();
-
-            _initialized = true;
-
             logger.LogInformation("Initializing home.");
 
             string currentHomeId = string.Empty;
