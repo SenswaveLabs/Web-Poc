@@ -30,7 +30,7 @@
         }
         else
         {
-            @LoadedContent
+            @Content
         }
     </MudContainer>
 </MudContainer>
@@ -38,7 +38,7 @@
 @code 
 {
     [Parameter]
-    public RenderFragment? LoadedContent { get; set; }
+    public RenderFragment? Content { get; set; }
 
     [Parameter]
     public RenderFragment? FailedContent { get; set; }
