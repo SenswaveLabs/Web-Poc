@@ -15,11 +15,11 @@
 
 <AuthorizeView>
     <Authorized>
-        <MudLayout Elevation="2" Class="main-layout">
+        <MudLayout Elevation="2" Class="main-layout d-flex" Style="overflow:hidden; height: 100vh;">
 
             <NavigationLayout />
 
-            <MudMainContent Class="p-5">
+            <MudMainContent Class="d-flex flex-column">
                 @Body
             </MudMainContent>
 

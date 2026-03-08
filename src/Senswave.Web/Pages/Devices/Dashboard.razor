@@ -15,11 +15,16 @@
     <LoadingContent>
         @foreach(var i in new int[] { 1, 2, 3 })
         {
-            <MudSkeleton Class="pt-3" />
-            <MudItem Class="d-flex flex-row">
-                <MudSkeleton Class="pt-3" Style="height:200px"/>
-                <MudSkeleton Class="pt-3" />
-            </MudItem>
+            <MudContainer MaxWidth="MaxWidth.False" Class="d-flex flex-column" >
+                <MudContainer xs="12" MaxWidth="MaxWidth.False" Class="p-0">
+                    <MudSkeleton Width="50vh"/>
+                </MudContainer>
+                <MudContainer MaxWidth="MaxWidth.False" Class="p-0 d-flex flex-row">
+                    <MudSkeleton Class="mr-1" Height="128px" Width="192px" />
+                    <MudSkeleton Class="ml-1 mr-1" Width="192px" Height="128px" />
+                    <MudSkeleton Class="ml-1 mr-1" Width="192px" Height="128px" />
+                </MudContainer>
+            </MudContainer>
         }
     </LoadingContent>
     <LoadedContent>
