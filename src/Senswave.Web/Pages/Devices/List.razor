@@ -1,4 +1,4 @@
-﻿@page "/home/devices"
+﻿@page "/devices/list"
 @attribute [Authorize]
 
 @using Senswave.Web.Components.Shared
@@ -8,7 +8,7 @@
 @inject IHomeService HomeService
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
-@inject ILogger<Dashboard> Logger
+@inject ILogger<List> Logger
 
 <PageTitle>Home Dashboard</PageTitle>
 
@@ -51,7 +51,7 @@
 
         if (HomeService.CurrentHome is null)
         {
-            Navigation.NavigateTo("/home/list");
+            Navigation.NavigateTo("/homes/list");
             return;
         }
 
@@ -64,6 +64,8 @@
         {
             _loading = true;
 
+
+            _failedToLoad = false;
         }
         catch (Exception ex)
         {

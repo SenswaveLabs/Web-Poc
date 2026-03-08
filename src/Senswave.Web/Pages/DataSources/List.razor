@@ -1,13 +1,12 @@
-﻿@page "/homes/list"
+﻿@page "/datasources/list"
 @using Senswave.Web.Components.Shared
 @using Senswave.Web.Homes.Services
 
 @attribute [Authorize]
 
-@inject IHomeService HomeService
 @inject ILogger<List> Logger
 
-<PageTitle>Home Dashboard</PageTitle>
+<PageTitle>Data Sources</PageTitle>
 
 <SensPage Loading="@_loading" FailedToLoad="@_failedToLoad" RefreshContent="@RefreshPage">
     <LoadingContent>
@@ -53,7 +52,6 @@
         {
             _loading = true;
 
-            _failedToLoad = false;
         }
         catch (Exception ex)
         {
