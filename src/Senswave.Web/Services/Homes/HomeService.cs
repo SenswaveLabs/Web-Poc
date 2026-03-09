@@ -33,7 +33,14 @@ public class HomeService(
 
         try
         {
-            logger.LogInformation("Initializing home.");
+            if (_currentHome is not null)
+            {
+                logger.LogInformation("[Home: {homeId}] Skipping home initialization.", _currentHome.Id);
+                return Result.Success();
+            }
+
+
+            logger.LogInformation("No current home - initializing.");
 
             string currentHomeId = string.Empty;
 
@@ -63,7 +70,7 @@ public class HomeService(
 
                 if (response is null)
                 {
-                    logger.LogWarning("Get home failed for home {HomeId}: No response from integration service", currentHomeId);
+                    logger.LogWarning("[Home: {homeId}] Failed to get home. No response from integration service", currentHomeId);
                     return errorFactory.Create<HomeDetails>("GetHomeFailedUnexpectedly");
                 }
 
@@ -95,7 +102,7 @@ public class HomeService(
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Failed to get homes for user");
+                logger.LogError(ex, "[Home: {homeId}] Failed to get homes for user.", currentHomeId);
                 _currentHome = null;
                 return errorFactory.Create("FailedToLoadCurrentHomePleaseRefresh", "Failed to load current home please refresh.");
             }
@@ -153,7 +160,7 @@ public class HomeService(
 
             if (response is null)
             {
-                logger.LogWarning("Get home failed for home {HomeId}: No response from integration service", newHomeId);
+                logger.LogWarning("[Home: {homeId}] Home change failed. No response from integration service", newHomeId);
                 return errorFactory.Create<HomeDetails>("GetHomeFailedUnexpectedly");
             }
 
@@ -180,6 +187,8 @@ public class HomeService(
                     Name = r.Name
                 }).ToList() ?? []
             };
+
+            logger.LogInformation("[Home: {homeId}] Home changed.", newHomeId);
 
             return Result.Success();
 

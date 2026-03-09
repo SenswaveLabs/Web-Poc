@@ -22,13 +22,13 @@
                     <MudSkeleton Width="256px" />
                 </MudContainer>
                 <MudGrid Spacing="0" Class="p-0 d-flex flex-row flex-wrap">
-                    <MudItem xs="12" sm="12" md="6" lg="4" xl="4" xxl="2">
+                    <MudItem xs="12" sm="12" md="6" lg="4" xl="4" xxl="4">
                         <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;"  />
                     </MudItem>
-                    <MudItem xs="12" sm="12" md="6" lg="4" xl="4" xxl="2">
+                    <MudItem xs="12" sm="12" md="6" lg="4" xl="4" xxl="4">
                         <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;" />
                     </MudItem>
-                    <MudItem xs="12" sm="12" md="6" lg="4" xl="4" xxl="2">
+                    <MudItem xs="12" sm="12" md="6" lg="4" xl="4" xxl="4">
                         <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;" />
                     </MudItem>
                 </MudGrid>
@@ -51,16 +51,16 @@
               
                     @foreach (var home in Homes)
                     {
-                        <MudItem xs="12" sm="12" md="6" lg="4" xl="4" xxl="2">
+                        <MudItem xs="12" sm="12" md="6" lg="4" xl="4" xxl="4">
                             <SensHome Home="@home" OnClick="() => HomeSelected(home.Id)" />
                         </MudItem>
                     }
 
-                    <MudItem xs="6" sm="6" md="3" lg="2" xl="2" xxl="1">
+                    <MudItem xs="6" sm="6" md="3" lg="2" xl="2" xxl="2">
                         <SensListAction Title="Add Home" />
                     </MudItem>
 
-                    <MudItem xs="6" sm="6" md="3" lg="2" xl="2" xxl="1">
+                    <MudItem xs="6" sm="6" md="3" lg="2" xl="2" xxl="2">
                         <SensListAction Title="Join Home" Type="SensListActionType.Join" />
                     </MudItem>
 
