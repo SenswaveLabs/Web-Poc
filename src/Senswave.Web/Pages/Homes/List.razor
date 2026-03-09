@@ -1,4 +1,6 @@
 ﻿@page "/homes/list"
+@using Senswave.Web.Components.Enums
+@using Senswave.Web.Components.Homes
 @using Senswave.Web.Components.Shared
 @using Senswave.Web.Homes.Models
 @using Senswave.Web.Homes.Services
@@ -33,49 +35,36 @@
         }
     </LoadingContent>
     <Content>
-        @foreach (var homeSection in Sections)
-        {
-            <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column">
-                <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="m-0">
-                    <MudContainer Class="d-inline-flex align-items-center w-auto p-0">
-                        <MudText Typo="Typo.subtitle1" Class="me-1">@homeSection.Title</MudText>
+        <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column pb-3">
+            @* <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="m-0 pb-1">
+                <MudContainer Class="d-inline-flex align-items-center w-auto p-0">
+                    <MudText Typo="Typo.subtitle1" Class="me-1">@homeSection.Title</MudText>
 
-                        <MudTooltip Text="This section shows the current dashboard metrics" Placement="Placement.Bottom">
-                            <MudIconButton Icon="@Icons.Material.Filled.Info" Size="Size.Small" Edge="Edge.End" Color="Color.Primary" Style="padding: 0;" />
-                        </MudTooltip>
-                    </MudContainer>
+                    <MudTooltip Text="@homeSection.Description" Placement="Placement.Bottom">
+                        <MudIconButton Icon="@Icons.Material.Filled.Info" Size="Size.Small" Edge="Edge.End" Color="Color.Primary" Style="padding: 0;" />
+                    </MudTooltip>
                 </MudContainer>
-                <MudGrid Spacing="0" Class="p-0 d-flex flex-row flex-wrap">
+            </MudContainer> *@
+            <MudGrid Spacing="3" Class="p-0 d-flex flex-row flex-wrap">
 
-                    @if (homeSection.Title == Sections.First().Title)
+              
+                    @foreach (var home in Homes)
                     {
-                        <MudItem xs="12" sm="6" md="4" lg="3">
-                            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;" />
+                        <MudItem xs="12" sm="6" md="4" lg="4" xl="3" xxl="2">
+                            <SensHome Home="@home" />
                         </MudItem>
-
-                        @foreach (var home in Homes.Where(x => x.IsOwner))
-                        {
-                            <MudItem xs="12" sm="6" md="4" lg="3">
-                                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;" />
-                            </MudItem>
-                        }
                     }
-                    else
-                    {
-                        <MudItem xs="12" sm="6" md="4" lg="3">
-                            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;" />
-                        </MudItem>
 
-                        @foreach (var home in Homes.Where(x => !x.IsOwner))
-                        {
-                            <MudItem xs="12" sm="6" md="4" lg="3">
-                                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;" />
-                            </MudItem>
-                        }
-                    }
-                </MudGrid>
-            </MudContainer>
-        }
+                    <MudItem xs="12" sm="6" md="4" lg="4" xl="3" xxl="2">
+                        <SensListAction Title="Add Home" />
+                    </MudItem>
+
+                    <MudItem xs="12" sm="6" md="4" lg="4" xl="3" xxl="2">
+                        <SensListAction Title="Join Home" Type="SensListActionType.Join" />
+                    </MudItem>
+
+            </MudGrid>
+        </MudContainer>
     </Content>
 </SensPage>
 
