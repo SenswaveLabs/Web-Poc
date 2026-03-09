@@ -112,11 +112,6 @@ public class HomeService(
         }
     }
 
-    public async Task<Result> ChangeHome(string newHomeId)
-    {
-        throw new NotImplementedException("Changing home is not implemented yet.");
-    }
-
     public async Task<Result<List<Home>>> GetHomes()
     {
         logger.LogInformation("Getting homes for user");
@@ -143,6 +138,61 @@ public class HomeService(
         {
             logger.LogError(ex, "Failed to get homes for user");
             return errorFactory.Create<List<Home>>("GetHomesFailed");
+        }
+    }
+    
+    public async Task<Result> ChangeHome(string newHomeId)
+    {
+        await _initLock.WaitAsync();
+
+        try
+        {
+            logger.LogInformation("[Home: {homeId}] Switching home.", newHomeId);
+
+            var response = await integrationService.GetHome(newHomeId);
+
+            if (response is null)
+            {
+                logger.LogWarning("Get home failed for home {HomeId}: No response from integration service", newHomeId);
+                return errorFactory.Create<HomeDetails>("GetHomeFailedUnexpectedly");
+            }
+
+            CurrentHome = new HomeDetails
+            {
+                Id = response.Id,
+                Name = response.Name,
+                Icon = response.Icon,
+                IsOwner = response.IsOwner,
+                DataSource = response.DataSource is null ? null : new DataSource
+                {
+                    Id = response.DataSource.Id,
+                    Name = response.DataSource.Name,
+                    State = response.DataSource.State
+                },
+                Location = response.Location is null ? null : new Location
+                {
+                    Longitude = response.Location.Longitude,
+                    Latitude = response.Location.Latitude
+                },
+                Rooms = response.Rooms?.Select(r => new Room
+                {
+                    Id = r.Id,
+                    Name = r.Name
+                }).ToList() ?? []
+            };
+
+            return Result.Success();
+
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Unexpected error during home service initialization");
+            CurrentHome = null;
+            return errorFactory.Create("HomeServiceInitializationFailedUnexpectedly", "An unexpected error occurred during home service initialization.");
+        }
+        finally
+        {
+            _initLock.Release();
         }
     }
 }

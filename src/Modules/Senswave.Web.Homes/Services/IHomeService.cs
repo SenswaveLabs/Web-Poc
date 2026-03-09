@@ -12,4 +12,6 @@ public interface IHomeService
     Task<Result> Initialize();
 
     Task<Result<List<Home>>> GetHomes();
+
+    Task<Result> ChangeHome(string newHomeId);
 }

@@ -1,0 +1,55 @@
+﻿<MudTooltip Text="@Description">
+    <MudChip T="string"
+             Color="@ChipColor"
+             Variant="Variant.Outlined"
+             Icon="@ChipIcon"
+             Size="Size.Small">
+        @Message
+    </MudChip>
+</MudTooltip>
+
+@code {
+
+    [Parameter]
+    public string ConnectionStatus { get; set; } = "Unknown";
+
+    private string Message => ConnectionStatus switch
+    {
+        "Invalid" => "Invalid",
+        "Working" => "Working",
+        "Restarting" => "Restarting",
+        "Stopped" => "Stopped",
+        "NotStarted" => "Not started",
+        _ => "Unknown"
+    };
+
+    private string Description => ConnectionStatus switch
+    {
+        "Invalid" => "Invalid state failed to update.",
+        "Working" => "Connection is working correctly.",
+        "Restarting" => "Connection is restarting.",
+        "Stopped" => "Connections have been stopped",
+        "NotStarted" => "Connection in home has not been started",
+        _ => "Failed to load status for home"
+    };
+
+    private Color ChipColor => ConnectionStatus switch
+    {
+        "Invalid" => Color.Dark,
+        "Working" => Color.Success,
+        "Restarting" => Color.Warning,
+        "Stopped" => Color.Error,
+        "NotStarted" => Color.Default,
+        _ => Color.Default
+    };
+
+    private string ChipIcon => ConnectionStatus switch
+    {
+        "Invalid" => Icons.Material.Outlined.Error,
+        "Working" => Icons.Material.Outlined.CheckCircle,
+        "Restarting" => Icons.Material.Outlined.RestartAlt,
+        "Stopped" => Icons.Material.Outlined.Error,
+        "NotStarted" => Icons.Material.Outlined.PauseCircle,
+        _ => Icons.Material.Outlined.HelpOutline
+    };
+}

@@ -9,6 +9,7 @@
 
 @inject IHomeService HomeService
 @inject ILogger<List> Logger
+@inject NavigationManager Navigation
 
 <PageTitle>Home Dashboard</PageTitle>
 
@@ -21,13 +22,13 @@
                     <MudSkeleton Width="256px" />
                 </MudContainer>
                 <MudGrid Spacing="0" Class="p-0 d-flex flex-row flex-wrap">
-                    <MudItem  xs="12" sm="6" md="4" lg="3">
+                    <MudItem xs="12" sm="12" md="6" lg="4" xl="4" xxl="2">
                         <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;"  />
                     </MudItem>
-                    <MudItem   xs="12" sm="6" md="4" lg="3">
+                    <MudItem xs="12" sm="12" md="6" lg="4" xl="4" xxl="2">
                         <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;" />
                     </MudItem>
-                    <MudItem  xs="12" sm="6" md="4" lg="3">
+                    <MudItem xs="12" sm="12" md="6" lg="4" xl="4" xxl="2">
                         <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;" />
                     </MudItem>
                 </MudGrid>
@@ -36,30 +37,30 @@
     </LoadingContent>
     <Content>
         <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column pb-3">
-            @* <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="m-0 pb-1">
+           <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="m-0 pb-1">
                 <MudContainer Class="d-inline-flex align-items-center w-auto p-0">
-                    <MudText Typo="Typo.subtitle1" Class="me-1">@homeSection.Title</MudText>
+                    <MudText Typo="Typo.subtitle1" Class="me-1">My Homes</MudText>
 
-                    <MudTooltip Text="@homeSection.Description" Placement="Placement.Bottom">
+                    <MudTooltip Text="This is list of homes user is allowed to interact with. Owned homes are mared with 'Owner' chip." Placement="Placement.Bottom">
                         <MudIconButton Icon="@Icons.Material.Filled.Info" Size="Size.Small" Edge="Edge.End" Color="Color.Primary" Style="padding: 0;" />
                     </MudTooltip>
                 </MudContainer>
-            </MudContainer> *@
+            </MudContainer>
             <MudGrid Spacing="3" Class="p-0 d-flex flex-row flex-wrap">
 
               
                     @foreach (var home in Homes)
                     {
-                        <MudItem xs="12" sm="6" md="4" lg="4" xl="3" xxl="2">
-                            <SensHome Home="@home" />
+                        <MudItem xs="12" sm="12" md="6" lg="4" xl="4" xxl="2">
+                            <SensHome Home="@home" OnClick="() => HomeSelected(home.Id)" />
                         </MudItem>
                     }
 
-                    <MudItem xs="12" sm="6" md="4" lg="4" xl="3" xxl="2">
+                    <MudItem xs="6" sm="6" md="3" lg="2" xl="2" xxl="1">
                         <SensListAction Title="Add Home" />
                     </MudItem>
 
-                    <MudItem xs="12" sm="6" md="4" lg="4" xl="3" xxl="2">
+                    <MudItem xs="6" sm="6" md="3" lg="2" xl="2" xxl="1">
                         <SensListAction Title="Join Home" Type="SensListActionType.Join" />
                     </MudItem>
 
@@ -104,6 +105,34 @@
 
             Homes = result.Value;
 
+            _failedToLoad = false;
+        }
+        catch (Exception ex)
+        {
+            _failedToLoad = true;
+            Logger.LogError(ex, "Failed to load page.");
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task HomeSelected(string id)
+    {
+        try
+        {
+            _loading = true;
+
+            var result = await HomeService.ChangeHome(id);
+
+            if (result.IsFailure)
+            {
+                Logger.LogError("Failed to change home.");
+                return;
+            }
+
+            Navigation.NavigateTo("/devices/list");
             _failedToLoad = false;
         }
         catch (Exception ex)
