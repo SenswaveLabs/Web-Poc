@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Refit;
 using Senswave.Web.Integration.Auth.Services;
+using Senswave.Web.Integration.DataSources.Services;
 using Senswave.Web.Integration.Handlers;
 using Senswave.Web.Integration.Homes;
 
@@ -21,6 +22,10 @@ public static class SenswaveRestExtensions
             .AddHttpMessageHandler<AuthHeaderHandler>();
 
         services.AddRefitClient<IHomesIntegrationService>()
+            .ConfigureHttpClient(c => c.BaseAddress = new Uri(configuration["Api:BaseUrl"]!))
+            .AddHttpMessageHandler<AuthHeaderHandler>();
+
+        services.AddRefitClient<IBrokerIntegrationService>()
             .ConfigureHttpClient(c => c.BaseAddress = new Uri(configuration["Api:BaseUrl"]!))
             .AddHttpMessageHandler<AuthHeaderHandler>();
 

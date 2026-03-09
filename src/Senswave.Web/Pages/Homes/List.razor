@@ -1,44 +1,86 @@
-﻿@page "/home/list"
+﻿@page "/homes/list"
+@using Senswave.Web.Components.Enums
+@using Senswave.Web.Components.Homes
 @using Senswave.Web.Components.Shared
+@using Senswave.Web.Homes.Models
 @using Senswave.Web.Homes.Services
 
 @attribute [Authorize]
 
 @inject IHomeService HomeService
 @inject ILogger<List> Logger
+@inject NavigationManager Navigation
 
 <PageTitle>Home Dashboard</PageTitle>
 
 <SensPage Loading="@_loading" FailedToLoad="@_failedToLoad" RefreshContent="@RefreshPage">
     <LoadingContent>
-        @foreach(var i in new int[] { 1, 2, 3 })
+        @foreach(var i in new int[] { 1, 2 })
         {
             <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column">
-                <MudContainer xs="12" MaxWidth="MaxWidth.False" Gutters="false" Class="m-1">
+                <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="m-1">
                     <MudSkeleton Width="256px" />
                 </MudContainer>
                 <MudGrid Spacing="0" Class="p-0 d-flex flex-row flex-wrap">
-                    <MudItem  xs="12" sm="6" md="4" lg="3">
+                    <MudItem xs="12" sm="12" md="6" lg="4" xl="4" xxl="4">
                         <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;"  />
                     </MudItem>
-                    <MudItem   xs="12" sm="6" md="4" lg="3">
+                    <MudItem xs="12" sm="12" md="6" lg="4" xl="4" xxl="4">
                         <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;" />
                     </MudItem>
-                    <MudItem  xs="12" sm="6" md="4" lg="3">
+                    <MudItem xs="12" sm="12" md="6" lg="4" xl="4" xxl="4">
                         <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;" />
                     </MudItem>
                 </MudGrid>
             </MudContainer>
         }
     </LoadingContent>
-    <LoadedContent>
+    <Content>
+        <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column pb-3">
+           <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="m-0 pb-1">
+                <MudContainer Class="d-inline-flex align-items-center w-auto p-0">
+                    <MudText Typo="Typo.subtitle1" Class="me-1">My Homes</MudText>
 
-    </LoadedContent>
+                    <MudTooltip Text="This is list of homes user is allowed to interact with. Owned homes are mared with 'Owner' chip." Placement="Placement.Bottom">
+                        <MudIconButton Icon="@Icons.Material.Filled.Info" Size="Size.Small" Edge="Edge.End" Color="Color.Primary" Style="padding: 0;" />
+                    </MudTooltip>
+                </MudContainer>
+            </MudContainer>
+            <MudGrid Spacing="3" Class="p-0 d-flex flex-row flex-wrap">
+
+              
+                    @foreach (var home in Homes)
+                    {
+                        <MudItem xs="12" sm="12" md="6" lg="4" xl="4" xxl="4">
+                            <SensHome Home="@home" OnClick="() => HomeSelected(home.Id)" />
+                        </MudItem>
+                    }
+
+                    <MudItem xs="6" sm="6" md="3" lg="2" xl="2" xxl="2">
+                        <SensListAction Title="Add Home" />
+                    </MudItem>
+
+                    <MudItem xs="6" sm="6" md="3" lg="2" xl="2" xxl="2">
+                        <SensListAction Title="Join Home" Type="SensListActionType.Join" />
+                    </MudItem>
+
+            </MudGrid>
+        </MudContainer>
+    </Content>
 </SensPage>
 
 @code {
     private bool _loading = true;
     private bool _failedToLoad = true;
+
+    private record Section(string Title, string Description);
+
+    private List<Section> Sections { get; set; } = [
+        new("My Homes", "Under this section you can find all of your homes."),
+        new("Shared Homes", "This section shows all homes that are shared with you but don't belong to you.")
+    ];
+
+    private List<Home> Homes { get; set; } = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -53,6 +95,45 @@
         {
             _loading = true;
 
+            var result = await HomeService.GetHomes();
+
+            if (result.IsFailure)
+            {
+                Logger.LogError("Failed to load page.");
+                return;
+            }
+
+            Homes = result.Value;
+
+            _failedToLoad = false;
+        }
+        catch (Exception ex)
+        {
+            _failedToLoad = true;
+            Logger.LogError(ex, "Failed to load page.");
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task HomeSelected(string id)
+    {
+        try
+        {
+            _loading = true;
+
+            var result = await HomeService.ChangeHome(id);
+
+            if (result.IsFailure)
+            {
+                Logger.LogError("Failed to change home.");
+                return;
+            }
+
+            Navigation.NavigateTo("/devices/list");
+            _failedToLoad = false;
         }
         catch (Exception ex)
         {

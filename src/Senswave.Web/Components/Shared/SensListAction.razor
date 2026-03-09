@@ -1,0 +1,67 @@
+﻿@using Senswave.Web.Components.Enums
+<MudPaper Class="d-flex flex-grow-1 align-items-center p-3 gap-3 cursor-pointer"
+          Style="height:100%; width:100%;"
+          Elevation="1"
+          @onclick="HandleClick">
+
+    <MudIcon Icon="@GetIcon()" Color="Color.Primary" Size="Size.Large" />
+
+    <div class="d-flex flex-column flex-grow-1">
+        <MudText Typo="Typo.subtitle1">@DisplayTitle</MudText>
+
+        @if (!string.IsNullOrWhiteSpace(Description))
+        {
+            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                @Description
+            </MudText>
+        }
+    </div>
+
+</MudPaper>
+
+@code {
+
+    [Parameter]
+    public string? Title { get; set; }
+
+    [Parameter]
+    public string? Description { get; set; }
+
+    [Parameter]
+    public SensListActionType Type { get; set; } = SensListActionType.Add;
+
+    [Parameter]
+    public EventCallback OnClick { get; set; }
+
+    private string DisplayTitle => !string.IsNullOrWhiteSpace(Title)
+        ? Title
+        : GetDefaultTitle();
+
+    private async Task HandleClick()
+    {
+        if (OnClick.HasDelegate)
+            await OnClick.InvokeAsync();
+    }
+
+    private string GetDefaultTitle()
+    {
+        return Type switch
+        {
+            SensListActionType.Add => "Add",
+            SensListActionType.Edit => "Edit",
+            SensListActionType.Join => "Join",
+            _ => "Action"
+        };
+    }
+
+    private string GetIcon()
+    {
+        return Type switch
+        {
+            SensListActionType.Add => Icons.Material.Outlined.Add,
+            SensListActionType.Edit => Icons.Material.Outlined.Edit,
+            SensListActionType.Join => Icons.Material.Outlined.Link,
+            _ => Icons.Material.Filled.Add
+        };
+    }
+}
