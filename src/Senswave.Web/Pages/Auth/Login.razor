@@ -6,11 +6,13 @@
 @using Senswave.Web.Users.Auth.Services
 @using System.Text.RegularExpressions
 @using System.ComponentModel.DataAnnotations
+@using Senswave.Web.Users.Users.Services
 
 @inject IAuthenticationService AuthService
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 @inject ILoadingService LoadingService
+@inject IUserService UserService
 
 <MudGrid Class="d-flex h-100 p-0 m-0">
     <MudHidden Breakpoint="Breakpoint.SmAndDown"> 
@@ -129,6 +131,8 @@
                 Snackbar.Add("Login failed. Please check you email and password.", Severity.Error);
                 return;
             }
+
+            await UserService.Initialize();
 
             Navigation.NavigateTo("/");
         }

@@ -8,10 +8,13 @@ using Senswave.Web.Integration;
 using Senswave.Web.Services;
 using Senswave.Web.Services.Homes;
 using Senswave.Web.Services.Shared;
+using Senswave.Web.Services.Users;
 using Senswave.Web.Shared.Extensions;
 using Senswave.Web.Shared.Services;
+using Senswave.Web.Themes;
 using Senswave.Web.Users;
 using Senswave.Web.Users.Auth.Services;
+using Senswave.Web.Users.Users.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
@@ -29,16 +32,19 @@ builder.Services.AddSingleton<ILoadingService, LoadingService>();
 builder.Services.AddTransient<ILocalStorageService, LocalStorageService>();
 builder.Services.AddTransient<ISessionStorageService, SessionStorageService>();
 builder.Services.AddSenswaveShared();
+builder.Services.AddSingleton<IThemeService, ThemeService>();
 
-// Modules
+// Modules - Users
 builder.Services.AddUsers(builder.Configuration);
+builder.Services.AddSingleton<IUserService, UserService>();
 
-// Services
 builder.Services.AddAuthorizationCore();
 builder.Services.AddSingleton<SenswaveAuthenticationProvider>();
 builder.Services.AddSingleton<AuthenticationStateProvider>(sp => sp.GetRequiredService<SenswaveAuthenticationProvider>());
 builder.Services.AddSingleton<IAuthenticationService>(sp => sp.GetRequiredService<SenswaveAuthenticationProvider>());
 builder.Services.AddSingleton<ITokenStore>(sp => sp.GetRequiredService<SenswaveAuthenticationProvider>());
+
+// Modules - Homes
 builder.Services.AddSingleton<IHomeService, HomeService>();
 
 

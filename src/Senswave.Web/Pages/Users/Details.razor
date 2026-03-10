@@ -1,0 +1,199 @@
+﻿@page "/users/details"
+@attribute [Authorize]
+
+@using Senswave.Web.Components.Shared
+@using Senswave.Web.Homes.Services
+
+@inject NavigationManager Navigation
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-6">
+
+    <MudGrid>
+
+        <!-- Profile header -->
+        <MudItem xs="12">
+            <MudCard Class="pa-6">
+
+                <MudStack AlignItems="AlignItems.Center" Spacing="2">
+
+                    <MudAvatar Size="Size.Large"
+                               Image="@UserImageUrl"
+                               Alt="Profile image" />
+
+                    <MudText Typo="Typo.h6">@UserEmail</MudText>
+
+                </MudStack>
+
+            </MudCard>
+        </MudItem>
+
+
+        <!-- Settings -->
+        <MudItem xs="12">
+            <MudCard Class="pa-4">
+
+                <MudStack Spacing="3">
+
+                    <MudSelect T="string"
+                               Label="Theme"
+                               Value="@SelectedTheme"
+                               ValueChanged="OnThemeChanged">
+
+                        @foreach (var theme in ThemeOptions)
+                        {
+                            <MudSelectItem Value="@theme">@theme</MudSelectItem>
+                        }
+
+                    </MudSelect>
+
+                    <MudSelect T="string"
+                               Label="Language"
+                               Value="@SelectedLanguage"
+                               ValueChanged="OnLanguageChanged">
+
+                        @foreach (var lang in LanguageOptions)
+                        {
+                            <MudSelectItem Value="@lang">@lang</MudSelectItem>
+                        }
+
+                    </MudSelect>
+
+                </MudStack>
+
+            </MudCard>
+        </MudItem>
+
+
+        <!-- Data sources -->
+        <MudItem xs="12">
+            <MudCard Class="pa-4">
+
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           FullWidth="true"
+                           OnClick="ManageDataSources">
+
+                    Manage My Data Sources
+
+                </MudButton>
+
+            </MudCard>
+        </MudItem>
+
+
+        <!-- Account actions -->
+        <MudItem xs="12">
+            <MudCard Class="pa-4">
+
+                <MudStack Spacing="2">
+
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               FullWidth="true"
+                               OnClick="Logout">
+
+                        Logout
+
+                    </MudButton>
+
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Error"
+                               FullWidth="true"
+                               OnClick="ConfirmRemoveAccount">
+
+                        Remove Account
+
+                    </MudButton>
+
+                </MudStack>
+
+            </MudCard>
+        </MudItem>
+
+
+        <!-- App info -->
+        <MudItem xs="12">
+            <MudCard Class="pa-4">
+
+                <MudButton Variant="Variant.Text"
+                           FullWidth="true"
+                           OnClick="OpenAppInformation">
+
+                    App Information
+
+                </MudButton>
+
+            </MudCard>
+        </MudItem>
+
+    </MudGrid>
+
+</MudContainer>
+
+@code {
+
+    string UserEmail = "user@email.com";
+    string UserImageUrl = "/images/avatar.png";
+
+    string SelectedTheme = "Default";
+    string SelectedLanguage = "English";
+
+    List<string> ThemeOptions = new()
+    {
+        "Default",
+        "Light",
+        "Dark"
+    };
+
+    List<string> LanguageOptions = new()
+    {
+        "English"
+    };
+
+    void OnThemeChanged(string theme)
+    {
+        SelectedTheme = theme;
+        Console.WriteLine($"Theme changed to {theme}");
+    }
+
+    void OnLanguageChanged(string lang)
+    {
+        SelectedLanguage = lang;
+        Console.WriteLine($"Language changed to {lang}");
+    }
+
+    void Logout()
+    {
+        Console.WriteLine("Logout");
+    }
+
+    void ManageDataSources()
+    {
+        Navigation.NavigateTo("/dataSource/list");
+    }
+
+    void OpenAppInformation()
+    {
+        Navigation.NavigateTo("/user/info");
+    }
+
+    async Task ConfirmRemoveAccount()
+    {
+        // var result = await DialogService.ShowMessageBox(
+        //     "Confirm Removal",
+        //     "Are you sure you want to remove your account? All of your data will be removed.",
+        //     yesText: "Remove",
+        //     cancelText: "Cancel");
+
+        // if (result == true)
+        // {
+        //     await RemoveAccount();
+        // }
+    }
+
+    async Task RemoveAccount()
+    {
+        Console.WriteLine("Removing account...");
+    }
+
+}

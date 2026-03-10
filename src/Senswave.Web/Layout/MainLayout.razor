@@ -1,10 +1,12 @@
 ﻿@using Senswave.Web.Shared.Services
+@using Senswave.Web.Themes
 @using Senswave.Web.Users.Auth.Services
 
 @inherits LayoutComponentBase
 @inject ILoadingService LoadingService
+@inject IThemeService ThemeService
 
-<MudThemeProvider />
+<MudThemeProvider IsDarkMode="false" Theme="@_currentTheme"/>
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
@@ -30,10 +32,21 @@
 </AuthorizeView>
 
 @code {
+    private MudTheme _currentTheme = new();
 
-    protected override void OnInitialized()
+
+    protected override async Task OnInitializedAsync()
     {
         LoadingService.OnChange += StateChanged;
+        ThemeService.OnChange += ThemeChanged;
+
+        await ThemeService.Initialize();
+    }
+
+    private void ThemeChanged()
+    {
+        _currentTheme = ThemeService.CurrentTheme;
+        InvokeAsync(StateHasChanged);
     }
 
     private void StateChanged()
