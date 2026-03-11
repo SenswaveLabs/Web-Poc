@@ -1,4 +1,5 @@
-﻿using Senswave.Web.Homes.Models;
+﻿using Refit;
+using Senswave.Web.Homes.Models;
 using Senswave.Web.Homes.Services;
 using Senswave.Web.Integration.Homes;
 using Senswave.Web.Integration.Homes.Response;
@@ -140,6 +141,10 @@ public class HomeService(
             }).ToList();
 
             return Result<List<Home>>.Success(finalItems);
+        }
+        catch (ApiException apiEx) when (apiEx.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            return Result<List<Home>>.Success(new List<Home>());
         }
         catch (Exception ex)
         {

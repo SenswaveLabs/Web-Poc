@@ -10,6 +10,8 @@
 @inject IUserService UserService
 @inject ISnackbar Snackbar
 @inject IAuthenticationService AuthenticationService
+@inject IDialogService DialogService
+@inject ILogger<Details> Logger
 
 <MudContainer MaxWidth="MaxWidth.Medium" Class="mt-6">
     <MudGrid>
@@ -19,7 +21,7 @@
 
                 <MudStack AlignItems="AlignItems.Center" Spacing="2">
 
-                    <MudAvatar Color="Color.Primary" Size="Size.Large">@UserEmail?.First().ToString().ToUpper()</MudAvatar>
+                    <MudAvatar Elevation="2" Color="Color.Primary" Size="Size.Large">@UserEmail?.First().ToString().ToUpper()</MudAvatar>
 
                     <MudText Typo="Typo.h6">@UserEmail</MudText>
 
@@ -86,16 +88,6 @@
 
                     </MudButton>
 
-
-
-                    <MudButton Variant="Variant.Outlined"
-                               Color="Color.Primary"
-                               FullWidth="true"
-                               OnClick="OpenAppInformation">
-
-                        App Information
-
-                    </MudButton>
                 </MudStack>
             </MudCard>
         </MudItem>
@@ -164,29 +156,32 @@
         await AuthenticationService.Logout();
     }
 
-
-    void OpenAppInformation()
-    {
-        Navigation.NavigateTo("/user/info");
-    }
-
     async Task ConfirmRemoveAccount()
     {
-        // var result = await DialogService.ShowMessageBox(
-        //     "Confirm Removal",
-        //     "Are you sure you want to remove your account? All of your data will be removed.",
-        //     yesText: "Remove",
-        //     cancelText: "Cancel");
+        var result = await DialogService.ShowMessageBoxAsync(
+            "Confirm Removal",
+            "Are you sure you want to remove your account? All of your data will be removed.",
+            yesText: "Remove",
+            cancelText: "Cancel");
 
-        // if (result == true)
-        // {
-        //     await RemoveAccount();
-        // }
+        if (result == true)
+        {
+            await RemoveAccount();
+        }
     }
 
     async Task RemoveAccount()
     {
-        Console.WriteLine("Removing account...");
+        try
+        {
+            await UserService.RemoveAccount();
+
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to remove account.");
+            Snackbar.Add("Failed to remove account.", Severity.Error);
+        }
     }
 
 }

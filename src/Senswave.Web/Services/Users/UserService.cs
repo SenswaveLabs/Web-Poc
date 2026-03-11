@@ -1,12 +1,14 @@
 ﻿using Senswave.Web.Integration.Users;
 using Senswave.Web.Shared.Resulting;
 using Senswave.Web.Themes;
+using Senswave.Web.Users.Auth.Services;
 using Senswave.Web.Users.Users.Models;
 using Senswave.Web.Users.Users.Services;
 
 namespace Senswave.Web.Services.Users;
 
 public class UserService(
+    IAuthenticationService authenticationService,
     IErrorFactory errorFactory,
     IUserIntegrationService userService, 
     IThemeService themeService, 
@@ -48,6 +50,21 @@ public class UserService(
         }
     }
 
+    public async Task<Result> RemoveAccount()
+    {
+        try
+        {
+            await userService.DeleteAccount();
+
+            return await authenticationService.Logout();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to remove user account");
+            return errorFactory.Create("Failed to remove user account.");
+        }
+    }
+
     public async Task<Result> OverrideSettings(string? theme = null, string? language = null)
     {
         try
@@ -64,7 +81,7 @@ public class UserService(
                 settings.Language = language;
             }
 
-            //await userService.UpdateSettings(settings);
+            await userService.UpdateSettings(settings);
 
             if (!string.IsNullOrEmpty(theme))
             {

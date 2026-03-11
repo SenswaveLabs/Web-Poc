@@ -10,5 +10,7 @@ public interface IUserService
 
     Task<Result> Initialize();
 
+    Task<Result> RemoveAccount();
+
     Task<Result> OverrideSettings(string? theme = null, string? language = null);
 }

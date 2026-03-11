@@ -15,25 +15,30 @@
 
 <SensPage Loading="@_loading" FailedToLoad="@_failedToLoad" RefreshContent="@RefreshPage">
     <LoadingContent>
-        @foreach(var i in new int[] { 1, 2 })
-        {
-            <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column">
-                <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="m-1">
-                    <MudSkeleton Width="256px" />
-                </MudContainer>
-                <MudGrid Spacing="0" Class="p-0 d-flex flex-row flex-wrap">
-                    <MudItem xs="12" sm="12" md="6" lg="4" xl="4" xxl="4">
-                        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;"  />
-                    </MudItem>
-                    <MudItem xs="12" sm="12" md="6" lg="4" xl="4" xxl="4">
-                        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;" />
-                    </MudItem>
-                    <MudItem xs="12" sm="12" md="6" lg="4" xl="4" xxl="4">
-                        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;" />
-                    </MudItem>
-                </MudGrid>
+
+        <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column">
+            <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="m-1">
+                <MudSkeleton Width="256px" />
             </MudContainer>
-        }
+            <MudGrid Spacing="0" Class="p-0 d-flex flex-row flex-wrap">
+                <MudItem xs="12" sm="12" md="6" lg="4" xl="4" xxl="4">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;"  />
+                </MudItem>
+                <MudItem xs="12" sm="12" md="6" lg="4" xl="4" xxl="4">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;" />
+                </MudItem>
+                <MudItem xs="12" sm="12" md="6" lg="4" xl="4" xxl="4">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;" />
+                </MudItem>
+                <MudItem xs="12" sm="12" md="6" lg="4" xl="4" xxl="4">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;" />
+                </MudItem>
+                <MudItem xs="12" sm="12" md="6" lg="4" xl="4" xxl="4">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;" />
+                </MudItem>
+            </MudGrid>
+        </MudContainer>
+        
     </LoadingContent>
     <Content>
         <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column pb-3">
