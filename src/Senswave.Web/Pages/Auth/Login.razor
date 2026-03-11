@@ -6,15 +6,17 @@
 @using Senswave.Web.Users.Auth.Services
 @using System.Text.RegularExpressions
 @using System.ComponentModel.DataAnnotations
+@using Senswave.Web.Users.Users.Services
 
 @inject IAuthenticationService AuthService
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 @inject ILoadingService LoadingService
+@inject IUserService UserService
 
 <MudGrid Class="d-flex h-100 p-0 m-0">
     <MudHidden Breakpoint="Breakpoint.SmAndDown"> 
-        <MudItem xs=0 sm="0" md=6 lg="7" Class="d-flex align-center justify-center mud-theme-secondary p-0">
+        <MudItem xs=0 sm="0" md=6 lg="7" Class="d-flex align-center justify-center mud-theme-primary p-0">
             <MudPaper Elevation="6" Class="hero-card overflow-hidden d-flex align-items-center justify-content-center p-0 m-0 rounded-lg">
                 <MudImage Src="icon-192.png"
                           Alt="icon"
@@ -129,6 +131,8 @@
                 Snackbar.Add("Login failed. Please check you email and password.", Severity.Error);
                 return;
             }
+
+            await UserService.Initialize();
 
             Navigation.NavigateTo("/");
         }

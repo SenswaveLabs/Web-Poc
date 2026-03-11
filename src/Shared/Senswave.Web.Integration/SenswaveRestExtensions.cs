@@ -5,6 +5,7 @@ using Senswave.Web.Integration.Auth.Services;
 using Senswave.Web.Integration.DataSources.Services;
 using Senswave.Web.Integration.Handlers;
 using Senswave.Web.Integration.Homes;
+using Senswave.Web.Integration.Users;
 
 namespace Senswave.Web.Integration;
 

@@ -1,4 +1,5 @@
 ﻿@using Senswave.Web.Components.Navigation
+@using Senswave.Web.Extensions
 @using Senswave.Web.Homes.Services
 @using Senswave.Web.Shared.Services
 @using Senswave.Web.Users.Auth.Services
@@ -14,9 +15,7 @@
     <MudAppBar>
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         <MudSpacer />
-        <MudText Typo="Typo.subtitle1" Class="pl-5">@HomeService.CurrentHome?.Name</MudText>
-        <MudSpacer />
-        <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
+        @* <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" /> *@
     </MudAppBar>
     <MudDrawer @bind-Open="_drawerOpen">
         <MudDrawerHeader Class="justify-content-center pt-6 pb-10">
@@ -27,6 +26,22 @@
                           Class="p-0 m-0 rounded-lg" />
             </MudPaper>
         </MudDrawerHeader>
+        <MudDivider Class="my-1" />
+
+        @if (HomeService.CurrentHome is not null)
+        {
+            <div class="d-flex justify-center py-2">
+                <MudChip T="string"
+                         Icon="@HomeService.CurrentHome!.Icon.TranslateIcon()"
+                         Color="Color.Primary"
+                         Variant="Variant.Outlined"
+                         Size="Size.Medium">
+                    @HomeService.CurrentHome!.Name
+                </MudChip>
+            </div>
+        }
+
+        <MudDivider Class="my-1" />
         <NavigationMenu />
         <MudItem Class="text-center p-2 pb-4">
             <MudText Typo="Typo.subtitle2">© 2026 Senswave</MudText>
@@ -38,23 +53,40 @@
 <MudHidden Breakpoint="Breakpoint.Xs">
     <MudHidden Breakpoint="Breakpoint.LgAndUp">
         <MudAppBar Class="pl-0">
-            <MudPaper Elevation="6" Class="hero-card overflow-hidden d-flex align-items-center justify-content-center p-0 m-0 rounded-lg">
-                <MudImage Src="icon-192.png"
-                          Width="48"
-                          Alt="icon"
-                          Class="p-0 m-0 rounded-lg" />
-            </MudPaper>
-            <MudText Typo="Typo.h6" Class="pl-5">@HomeService.CurrentHome?.Name</MudText>
+            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
             <MudSpacer />
-            <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
+            @* <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" /> *@
         </MudAppBar>
         <MudDrawer Fixed="true" 
                    Variant="@DrawerVariant.Mini" 
+                   @bind-Open="_drawerOpen"
                    OpenMiniOnHover="true" 
                    Breakpoint="Breakpoint.None"
                    ClipMode="DrawerClipMode.Always"
                    Elevation="1">
-                <NavigationMenu />
+
+            @if (_drawerOpen)
+            {
+                <div class="d-flex justify-center py-2">
+                    <MudChip T="string"
+                             Icon="@HomeService.CurrentHome!.Icon.TranslateIcon()"
+                             Color="Color.Primary"
+                             Variant="Variant.Outlined"
+                             Size="Size.Medium">
+                        @HomeService.CurrentHome!.Name
+                    </MudChip>
+                </div>
+            }
+
+            <NavigationMenu />
+
+            @if (_drawerOpen)
+            {
+                <MudItem Class="text-center p-2 pb-4">
+                    <MudText Typo="Typo.subtitle2">© 2026 Senswave</MudText>
+                </MudItem>
+            }
+
         </MudDrawer>
     </MudHidden>
 </MudHidden>
@@ -63,9 +95,10 @@
 <MudHidden Breakpoint="Breakpoint.Xs">
     <MudHidden Breakpoint="Breakpoint.MdAndDown">
         <MudAppBar>
-            <MudText Typo="Typo.h6">@HomeService.CurrentHome?.Name</MudText>
             <MudSpacer />
-            <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
+            @*
+                <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
+            *@
         </MudAppBar>
         <MudDrawer Open="true"
                    Width="220px"
@@ -80,7 +113,19 @@
                               Class="p-0 m-0 rounded-lg" />
                 </MudPaper>
             </MudDrawerHeader>
-             <NavigationMenu/>
+            @if (HomeService.CurrentHome is not null)
+            {
+                <div class="d-flex justify-center py-2">
+                    <MudChip T="string"
+                             Icon="@HomeService.CurrentHome!.Icon.TranslateIcon()"
+                             Color="Color.Primary"
+                             Variant="Variant.Outlined"
+                             Size="Size.Medium">
+                        @HomeService.CurrentHome!.Name
+                    </MudChip>
+                </div>
+            }
+            <NavigationMenu/>
             <MudItem Class="text-center p-2 pb-4">
                 <MudText Typo="Typo.subtitle2">© 2026 Senswave</MudText>
             </MudItem>

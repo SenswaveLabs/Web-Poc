@@ -1,0 +1,187 @@
+﻿@page "/users/details"
+@attribute [Authorize]
+
+@using Senswave.Web.Components.Shared
+@using Senswave.Web.Homes.Services
+@using Senswave.Web.Users.Auth.Services
+@using Senswave.Web.Users.Users.Services
+
+@inject NavigationManager Navigation
+@inject IUserService UserService
+@inject ISnackbar Snackbar
+@inject IAuthenticationService AuthenticationService
+@inject IDialogService DialogService
+@inject ILogger<Details> Logger
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-6">
+    <MudGrid>
+        <!-- Profile header -->
+        <MudItem xs="12">
+            <MudCard Class="pa-6">
+
+                <MudStack AlignItems="AlignItems.Center" Spacing="2">
+
+                    <MudAvatar Elevation="2" Color="Color.Primary" Size="Size.Large">@UserEmail?.First().ToString().ToUpper()</MudAvatar>
+
+                    <MudText Typo="Typo.h6">@UserEmail</MudText>
+
+                </MudStack>
+
+            </MudCard>
+        </MudItem>
+
+        <!-- Settings -->
+        <MudItem xs="12">
+            <MudCard Class="pa-4">
+
+                <MudStack Spacing="3">
+
+                    <MudSelect T="string"
+                               Label="Theme"
+                               Value="@SelectedTheme"
+                               ValueChanged="OnThemeChanged">
+
+                        @foreach (var theme in ThemeOptions)
+                        {
+                            <MudSelectItem Value="@theme.Item2">@theme.Item1</MudSelectItem>
+                        }
+
+                    </MudSelect>
+
+                    <MudSelect T="string"
+                               Label="Language"
+                               Value="@SelectedLanguage"
+                               ValueChanged="OnLanguageChanged">
+
+                        @foreach (var lang in LanguageOptions)
+                        {
+                            <MudSelectItem Value="@lang.Item2">@lang.Item1</MudSelectItem>
+                        }
+
+                    </MudSelect>
+
+                </MudStack>
+
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudCard Class="pa-4">
+
+                <MudStack Spacing="2">
+
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Warning"
+                               FullWidth="true"
+                               OnClick="Logout">
+
+                        Logout
+
+                    </MudButton>
+
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Error"
+                               FullWidth="true"
+                               OnClick="ConfirmRemoveAccount">
+
+                        Remove Account
+
+                    </MudButton>
+
+                </MudStack>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+
+    string UserEmail = "";
+    string SelectedTheme = "default";
+    string SelectedLanguage = "english";
+
+    List<(string, string)> ThemeOptions = new()
+    {
+        ("Default", "default"),
+        ("Light", "light"),
+        ("Dark", "dark"),
+        ("High Contrast", "highcontrast"),
+    };
+
+    List<(string, string)> LanguageOptions = new()
+    {
+        ("English", "en")
+    };
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        UserEmail = UserService.Details.Email;
+        SelectedTheme = UserService.Details.Theme;
+        SelectedLanguage = UserService.Details.Language; 
+
+    }
+
+    async Task OnThemeChanged(string theme)
+    {
+        var result = await UserService.OverrideSettings(theme, SelectedLanguage);
+
+        if (result.IsFailure)
+        {
+            Snackbar.Add("Failed to update theme", Severity.Error);
+        } 
+        else
+        {
+            SelectedTheme = theme;
+        }
+    }
+
+    async Task OnLanguageChanged(string lang)
+    {
+        var result = await UserService.OverrideSettings(SelectedTheme, lang);
+
+        if (result.IsFailure)
+        {
+            Snackbar.Add("Failed to update language.", Severity.Error);
+        }
+        else
+        {
+            SelectedLanguage = lang;
+        }
+    }
+
+    async Task Logout()
+    {
+        await AuthenticationService.Logout();
+    }
+
+    async Task ConfirmRemoveAccount()
+    {
+        var result = await DialogService.ShowMessageBoxAsync(
+            "Confirm Removal",
+            "Are you sure you want to remove your account? All of your data will be removed.",
+            yesText: "Remove",
+            cancelText: "Cancel");
+
+        if (result == true)
+        {
+            await RemoveAccount();
+        }
+    }
+
+    async Task RemoveAccount()
+    {
+        try
+        {
+            await UserService.RemoveAccount();
+
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to remove account.");
+            Snackbar.Add("Failed to remove account.", Severity.Error);
+        }
+    }
+
+}

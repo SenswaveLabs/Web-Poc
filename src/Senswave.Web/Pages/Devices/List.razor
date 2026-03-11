@@ -4,7 +4,9 @@
 @using Senswave.Web.Components.Shared
 @using Senswave.Web.Homes.Services
 @using Senswave.Web.Shared.Services
+@using Senswave.Web.Users.Users.Services
 
+@inject IUserService UserService
 @inject IHomeService HomeService
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
@@ -46,7 +48,7 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-
+        await UserService.Initialize();
         await HomeService.Initialize();
 
         if (HomeService.CurrentHome is null)
@@ -64,6 +66,7 @@
         {
             _loading = true;
 
+            // TODO: Load devices for the current home here
 
             _failedToLoad = false;
         }

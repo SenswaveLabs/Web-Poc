@@ -1,39 +1,57 @@
 ﻿@using Senswave.Web.Shared.Services
+@using Senswave.Web.Themes
 @using Senswave.Web.Users.Auth.Services
 
 @inherits LayoutComponentBase
 @inject ILoadingService LoadingService
+@inject IThemeService ThemeService
 
-<MudThemeProvider />
-<MudPopoverProvider />
-<MudDialogProvider />
-<MudSnackbarProvider />
+<div class="@ThemeClass">
+    <MudThemeProvider IsDarkMode="false" Theme="@Theme"/>
+    <MudPopoverProvider />
+    <MudDialogProvider />
+    <MudSnackbarProvider />
 
-<MudOverlay Visible="LoadingService.Loading" DarkBackground="true">
-    <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" />
-</MudOverlay>
+    <MudOverlay Visible="LoadingService.Loading" DarkBackground="true">
+        <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" />
+    </MudOverlay>
 
-<AuthorizeView>
-    <Authorized>
-        <MudLayout Elevation="2" Class="main-layout d-flex" Style="overflow:hidden; height: 100vh;">
-            <NavigationLayout />
-            <MudMainContent Class="d-flex flex-column">
+    <AuthorizeView>
+        <Authorized>
+            <MudLayout Elevation="2" Class="main-layout d-flex" Style="overflow:hidden; height: 100vh;">
+                <NavigationLayout />
+                <MudMainContent Class="d-flex flex-column">
+                    @Body
+                </MudMainContent>
+            </MudLayout>
+        </Authorized>
+        <NotAuthorized>
+            <MudLayout Class="main-layout" Style="overflow:hidden; height: 100vh;">
                 @Body
-            </MudMainContent>
-        </MudLayout>
-    </Authorized>
-    <NotAuthorized>
-        <MudLayout Class="main-layout" Style="overflow:hidden; height: 100vh;">
-            @Body
-        </MudLayout>
-    </NotAuthorized>
-</AuthorizeView>
+            </MudLayout>
+        </NotAuthorized>
+    </AuthorizeView>
+</div>
 
 @code {
+    private MudTheme Theme = new();
 
-    protected override void OnInitialized()
+    string ThemeClass = "";
+
+
+    protected override async Task OnInitializedAsync()
     {
         LoadingService.OnChange += StateChanged;
+        ThemeService.OnChange += ThemeChanged;
+
+        await ThemeService.Initialize();
+    }
+
+    private void ThemeChanged()
+    {
+        Theme = ThemeService.CurrentTheme;
+        ThemeClass = ThemeService.ThemeClass;
+        InvokeAsync(StateHasChanged);
     }
 
     private void StateChanged()

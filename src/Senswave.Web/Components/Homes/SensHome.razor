@@ -9,8 +9,10 @@
 @inject IHomeService HomeService
 
 <MudPaper Class="d-flex align-items-center p-3 gap-3 cursor-pointer"
+          tabindex="0"
           Style="width:100%; height:100%;"
           Elevation="1"
+          @onkeydown="(e) => OnKeyDown(e)"
           @onclick="HandleClick">
 
     <!-- Icon -->
@@ -68,26 +70,6 @@
         </div>
 
     </div>
-
-    <!-- Actions -->
-    <MudMenu Icon="@Icons.Material.Filled.MoreVert"
-             Dense="true"
-             AnchorOrigin="Origin.TopRight"
-             TransformOrigin="Origin.TopRight"
-             @onclick:stopPropagation="true">
-
-        <MudMenuItem OnClick="HandleEdit">
-            <MudIcon Icon="@Icons.Material.Filled.Edit" Class="me-2" />
-            Edit
-        </MudMenuItem>
-
-        <MudMenuItem OnClick="HandleRemove">
-            <MudIcon Icon="@Icons.Material.Filled.Delete" Class="me-2" />
-            Remove
-        </MudMenuItem>
-
-    </MudMenu>
-
 </MudPaper>
 
 @code {
@@ -151,4 +133,12 @@
         return icon.TranslateIcon();
     }
 
+    async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" || e.Key == " ")
+        {
+            if (OnClick.HasDelegate)
+                await OnClick.InvokeAsync(Home);
+        }
+    }
 }
