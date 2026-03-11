@@ -10,5 +10,5 @@ public interface IUserService
 
     Task<Result> Initialize();
 
-    Task<Result> OverrideSettings(string theme, string language);
+    Task<Result> OverrideSettings(string? theme = null, string? language = null);
 }

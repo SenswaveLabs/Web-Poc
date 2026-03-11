@@ -46,25 +46,33 @@
                     </MudTooltip>
                 </MudContainer>
             </MudContainer>
-            <MudGrid Spacing="3" Class="p-0 d-flex flex-row flex-wrap">
+
+            <MudGrid Spacing="3" Class="p-0 d-flex flex-row flex-wrap" Style="padding-bottom: 64px!important;">
 
               
-                    @foreach (var home in Homes)
-                    {
-                        <MudItem xs="12" sm="12" md="6" lg="4" xl="4" xxl="4">
-                            <SensHome Home="@home" OnClick="() => HomeSelected(home.Id)" />
-                        </MudItem>
-                    }
-
-                    <MudItem xs="6" sm="6" md="3" lg="2" xl="2" xxl="2">
-                        <SensListAction Title="Add Home" />
+                @foreach (var home in Homes)
+                {
+                    <MudItem xs="12" sm="12" md="6" lg="4" xl="4" xxl="4">
+                        <SensHome Home="@home" OnClick="() => HomeSelected(home.Id)" />
                     </MudItem>
+                }
 
-                    <MudItem xs="6" sm="6" md="3" lg="2" xl="2" xxl="2">
-                        <SensListAction Title="Join Home" Type="SensListActionType.Join" />
-                    </MudItem>
+                <MudItem xs="6" sm="6" md="3" lg="2" xl="2" xxl="2">
+                    <SensListAction Title="Add Home" />
+                </MudItem>
+
+                <MudItem xs="6" sm="6" md="3" lg="2" xl="2" xxl="2">
+                    <SensListAction Title="Join Home" Type="SensListActionType.Join" />
+                </MudItem>
 
             </MudGrid>
+
+            <MudFab StartIcon="@Icons.Material.Filled.Refresh"
+                    Color="Color.Primary"
+                    OnClick="RefreshPage"
+                    Class="position-absolute m-3 m-lg-4"
+                    Style="right:0;bottom:0;" />
+  
         </MudContainer>
     </Content>
 </SensPage>

@@ -1,0 +1,13 @@
+﻿.high-contrast .mud-paper,
+.high-contrast .mud-card,
+.high-contrast .mud-drawer-content,
+.high-contrast .mud-toolbar,
+.high-contrast a.mud-nav-link.mud-ripple.active,
+.high-contrast .mud-input-control {
+    border: 1px solid #EBAB17;
+}
+
+.high-contrast :focus-visible {
+    outline: 3px solid #FF00FF;
+    outline-offset: 2px;
+}

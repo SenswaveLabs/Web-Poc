@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Components.Authorization;
-using Senswave.Web.Homes.Services;
+﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using Senswave.Web.Integration.Auth.Request;
 using Senswave.Web.Integration.Auth.Services;
 using Senswave.Web.Shared.Resulting;
@@ -10,7 +10,9 @@ using System.Security.Claims;
 
 namespace Senswave.Web.Services;
 
+
 public class SenswaveAuthenticationProvider(
+    NavigationManager navigation,
     IAuthIntegrationService authIntegrationService,
     ILocalStorageService localStorageService,
     ISessionStorageService sessionStorageService,
@@ -71,7 +73,7 @@ public class SenswaveAuthenticationProvider(
                 return errorFactory.Create("LoginFailedUnexpectedly");
             }
 
-            await SaveTokens(response.AccessToken, response.RefreshToken, response.ExpiresIn, model.RememberMe);
+            await InitializeSession(response.AccessToken, response.RefreshToken, response.ExpiresIn, model.RememberMe);
 
             NotifyAuthenticationStateChanged(AuthenticatedState("User"));
 
@@ -158,7 +160,7 @@ public class SenswaveAuthenticationProvider(
 
             var rememberMe = rememberMeResult.IsSuccess && rememberMeResult.Value;
 
-            await SaveTokens(response.AccessToken, response.RefreshToken, response.ExpiresIn, rememberMe);
+            await InitializeSession(response.AccessToken, response.RefreshToken, response.ExpiresIn, rememberMe);
 
             return Result.Success();
         }
@@ -206,9 +208,14 @@ public class SenswaveAuthenticationProvider(
         var result = await InternalRefresh();
 
         logger.LogInformation("Token refresh on initialization completed. Success: {Success}", result.IsSuccess);
+
+        if (result.IsSuccess)
+        {
+            navigation.NavigateTo("/");
+        }
     }
 
-    private async Task SaveTokens(string accessToken, string refreshToken, int expiresIn, bool rememberMe)
+    private async Task InitializeSession(string accessToken, string refreshToken, int expiresIn, bool rememberMe)
     {
         _accessToken = accessToken;
         _refreshToken = refreshToken;
@@ -219,7 +226,6 @@ public class SenswaveAuthenticationProvider(
             await localStorageService.Set(AccessTokenKey, accessToken);
             await localStorageService.Set(RefreshTokenKey, refreshToken);
             await localStorageService.Set(RememberMeKey, true);
-
         }
         else
         {

@@ -6,6 +6,8 @@ public interface IThemeService
 {
     MudTheme CurrentTheme { get; }
 
+    string ThemeClass { get; }
+
     event Action? OnChange;
 
     Task SetCurrentTheme(Theme types);

@@ -12,12 +12,18 @@ public class UserService(
     IThemeService themeService, 
     ILogger<UserService> logger) : IUserService
 {
+    private bool _initialized = false;
+
     public UserDetails Details { get; private set; } = new();
 
     public async Task<Result> Initialize()
     {
+        if (_initialized)
+            return Result.Success();
+
         try
         {
+            _initialized = true;
             var userData = await userService.GetInfo();
 
             Details = new UserDetails
@@ -42,23 +48,36 @@ public class UserService(
         }
     }
 
-    public async Task<Result> OverrideSettings(string theme, string language)
+    public async Task<Result> OverrideSettings(string? theme = null, string? language = null)
     {
         try
         {
-            var parsedTheme = theme.ToThemeEnum();
-            var settings = new UserSettingUpdateRequest
+            var settings = new UserSettingUpdateRequest();
+
+            if (!string.IsNullOrEmpty(theme))
             {
-                Language = language,
-                Theme = theme
-            };
+                settings.Theme = theme;
+            }
 
-            await userService.UpdateSettings(settings);
+            if (!string.IsNullOrEmpty(language)) 
+            {
+                settings.Language = language;
+            }
 
-            Details.Theme = settings.Theme;
-            Details.Language = settings.Language;
+            //await userService.UpdateSettings(settings);
 
-            await themeService.SetCurrentTheme(parsedTheme);
+            if (!string.IsNullOrEmpty(theme))
+            {
+                var parsedTheme = theme.ToThemeEnum();
+                Details.Theme = theme;
+
+                await themeService.SetCurrentTheme(parsedTheme);
+            }
+
+            if (!string.IsNullOrEmpty(language))
+            {
+                Details.Language = language; 
+            }
 
             return Result.Success();
         }

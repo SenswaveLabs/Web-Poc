@@ -3,22 +3,23 @@
 
 @using Senswave.Web.Components.Shared
 @using Senswave.Web.Homes.Services
+@using Senswave.Web.Users.Auth.Services
+@using Senswave.Web.Users.Users.Services
 
 @inject NavigationManager Navigation
+@inject IUserService UserService
+@inject ISnackbar Snackbar
+@inject IAuthenticationService AuthenticationService
 
 <MudContainer MaxWidth="MaxWidth.Medium" Class="mt-6">
-
     <MudGrid>
-
         <!-- Profile header -->
         <MudItem xs="12">
             <MudCard Class="pa-6">
 
                 <MudStack AlignItems="AlignItems.Center" Spacing="2">
 
-                    <MudAvatar Size="Size.Large"
-                               Image="@UserImageUrl"
-                               Alt="Profile image" />
+                    <MudAvatar Color="Color.Primary" Size="Size.Large">@UserEmail?.First().ToString().ToUpper()</MudAvatar>
 
                     <MudText Typo="Typo.h6">@UserEmail</MudText>
 
@@ -26,7 +27,6 @@
 
             </MudCard>
         </MudItem>
-
 
         <!-- Settings -->
         <MudItem xs="12">
@@ -41,7 +41,7 @@
 
                         @foreach (var theme in ThemeOptions)
                         {
-                            <MudSelectItem Value="@theme">@theme</MudSelectItem>
+                            <MudSelectItem Value="@theme.Item2">@theme.Item1</MudSelectItem>
                         }
 
                     </MudSelect>
@@ -53,7 +53,7 @@
 
                         @foreach (var lang in LanguageOptions)
                         {
-                            <MudSelectItem Value="@lang">@lang</MudSelectItem>
+                            <MudSelectItem Value="@lang.Item2">@lang.Item1</MudSelectItem>
                         }
 
                     </MudSelect>
@@ -63,32 +63,13 @@
             </MudCard>
         </MudItem>
 
-
-        <!-- Data sources -->
-        <MudItem xs="12">
-            <MudCard Class="pa-4">
-
-                <MudButton Variant="Variant.Filled"
-                           Color="Color.Primary"
-                           FullWidth="true"
-                           OnClick="ManageDataSources">
-
-                    Manage My Data Sources
-
-                </MudButton>
-
-            </MudCard>
-        </MudItem>
-
-
-        <!-- Account actions -->
         <MudItem xs="12">
             <MudCard Class="pa-4">
 
                 <MudStack Spacing="2">
 
                     <MudButton Variant="Variant.Outlined"
-                               Color="Color.Primary"
+                               Color="Color.Warning"
                                FullWidth="true"
                                OnClick="Logout">
 
@@ -105,72 +86,84 @@
 
                     </MudButton>
 
+
+
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               FullWidth="true"
+                               OnClick="OpenAppInformation">
+
+                        App Information
+
+                    </MudButton>
                 </MudStack>
-
             </MudCard>
         </MudItem>
-
-
-        <!-- App info -->
-        <MudItem xs="12">
-            <MudCard Class="pa-4">
-
-                <MudButton Variant="Variant.Text"
-                           FullWidth="true"
-                           OnClick="OpenAppInformation">
-
-                    App Information
-
-                </MudButton>
-
-            </MudCard>
-        </MudItem>
-
     </MudGrid>
-
 </MudContainer>
 
 @code {
 
-    string UserEmail = "user@email.com";
-    string UserImageUrl = "/images/avatar.png";
+    string UserEmail = "";
+    string SelectedTheme = "default";
+    string SelectedLanguage = "english";
 
-    string SelectedTheme = "Default";
-    string SelectedLanguage = "English";
-
-    List<string> ThemeOptions = new()
+    List<(string, string)> ThemeOptions = new()
     {
-        "Default",
-        "Light",
-        "Dark"
+        ("Default", "default"),
+        ("Light", "light"),
+        ("Dark", "dark"),
+        ("High Contrast", "highcontrast"),
     };
 
-    List<string> LanguageOptions = new()
+    List<(string, string)> LanguageOptions = new()
     {
-        "English"
+        ("English", "en")
     };
 
-    void OnThemeChanged(string theme)
+    protected override void OnInitialized()
     {
-        SelectedTheme = theme;
-        Console.WriteLine($"Theme changed to {theme}");
+        base.OnInitialized();
+
+        UserEmail = UserService.Details.Email;
+        SelectedTheme = UserService.Details.Theme;
+        SelectedLanguage = UserService.Details.Language; 
+
     }
 
-    void OnLanguageChanged(string lang)
+    async Task OnThemeChanged(string theme)
     {
-        SelectedLanguage = lang;
-        Console.WriteLine($"Language changed to {lang}");
+        var result = await UserService.OverrideSettings(theme, SelectedLanguage);
+
+        if (result.IsFailure)
+        {
+            Snackbar.Add("Failed to update theme", Severity.Error);
+        } 
+        else
+        {
+            SelectedTheme = theme;
+        }
     }
 
-    void Logout()
+    async Task OnLanguageChanged(string lang)
     {
-        Console.WriteLine("Logout");
+        var result = await UserService.OverrideSettings(SelectedTheme, lang);
+
+        if (result.IsFailure)
+        {
+            Snackbar.Add("Failed to update language.", Severity.Error);
+        }
+        else
+        {
+            SelectedLanguage = lang;
+        }
     }
 
-    void ManageDataSources()
+    async Task Logout()
     {
-        Navigation.NavigateTo("/dataSource/list");
+        await AuthenticationService.Logout();
     }
+
 
     void OpenAppInformation()
     {

@@ -12,6 +12,8 @@ internal sealed class ThemeService(
 
     private MudTheme _theme = Light;
 
+    public string ThemeClass => CurrentTheme == HighContrast ? "high-contrast" : string.Empty;
+
     public MudTheme CurrentTheme
     {
         get => _theme;
@@ -53,6 +55,7 @@ internal sealed class ThemeService(
                 "window.matchMedia('(prefers-color-scheme: dark)').matches");
 
             CurrentTheme = prefersDark ? Dark : Light;
+            
             return;
         }
 
@@ -69,15 +72,15 @@ internal sealed class ThemeService(
     {
         PaletteLight = new PaletteLight()
         {
-            Primary = "#3F51B5",        
-            Secondary = "#009688",      
-            Tertiary = "#FF9800",       
+            Primary = "#EBAB17",      // Brand amber
+            Secondary = "#00695C",    // Teal 800
+            Tertiary = "#3949AB",     // Indigo 600
 
-            Background = "#F5F5F5",
+            Background = "#FAFAFA",
             Surface = "#FFFFFF",
 
-            AppbarBackground = "#3F51B5",
-            AppbarText = "#FFFFFF",
+            AppbarBackground = "#EBAB17",
+            AppbarText = "#1A1A1A",
 
             DrawerBackground = "#FFFFFF",
             DrawerText = "rgba(0,0,0,0.87)",
@@ -85,10 +88,10 @@ internal sealed class ThemeService(
             TextPrimary = "rgba(0,0,0,0.87)",
             TextSecondary = "rgba(0,0,0,0.60)",
 
-            Success = "#4CAF50",
-            Warning = "#FF9800",
-            Error = "#F44336",
-            Info = "#2196F3"
+            Success = "#2E7D32",
+            Warning = "#F57C00",
+            Error = "#D32F2F",
+            Info = "#1976D2"
         }
     };
 
@@ -96,39 +99,39 @@ internal sealed class ThemeService(
     {
         PaletteLight = new PaletteDark()
         {
-            Primary = "#90CAF9",        
-            Secondary = "#80CBC4",     
-            Tertiary = "#FFB74D",     
+            Primary = "#F2C94C",      // Soft amber
+            Secondary = "#4DB6AC",    // Teal 300
+            Tertiary = "#9FA8DA",     // Indigo 200
 
             Background = "#121212",
             Surface = "#1E1E1E",
 
-            AppbarBackground = "#1E1E1E",
+            AppbarBackground = "#1B1B1B",
             AppbarText = "#FFFFFF",
 
-            DrawerBackground = "#1E1E1E",
+            DrawerBackground = "#1B1B1B",
             DrawerText = "#FFFFFF",
 
             TextPrimary = "#FFFFFF",
             TextSecondary = "rgba(255,255,255,0.70)",
 
-            Success = "#81C784",
-            Warning = "#FFB74D",
-            Error = "#EF9A9A",
-            Info = "#64B5F6"
+            Success = "#66BB6A",
+            Warning = "#FFA726",
+            Error = "#EF5350",
+            Info = "#42A5F5"
         }
     };
 
     public static MudTheme HighContrast = new()
     {
-        PaletteLight = new PaletteLight()
+        PaletteLight = new PaletteDark()
         {
-            Primary = "#0000FF",
-            Secondary = "#008000",
-            Tertiary = "#FF8C00",
+            Primary = "#EBAB17",      // brand accent
+            Secondary = "#00E5FF",    // bright for focus / borders
+            Tertiary = "#7C4DFF",
 
-            Background = "#FFFFFF",
-            Surface = "#FFFFFF",
+            Background = "#000000",   // dark page
+            Surface = "#121212",      // dark cards/panels
 
             AppbarBackground = "#000000",
             AppbarText = "#FFFFFF",
@@ -136,13 +139,13 @@ internal sealed class ThemeService(
             DrawerBackground = "#000000",
             DrawerText = "#FFFFFF",
 
-            TextPrimary = "#000000",
-            TextSecondary = "#000000",
+            TextPrimary = "#FFFFFF",
+            TextSecondary = "#FFFFFF",
 
-            Success = "#008000",
-            Warning = "#FF8C00",
-            Error = "#FF0000",
-            Info = "#0000FF"
+            Success = "#00E676",
+            Warning = "#FFAB00",
+            Error = "#FF1744",
+            Info = "#00B0FF"
         }
     };
 }
