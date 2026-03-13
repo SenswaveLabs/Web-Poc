@@ -15,6 +15,7 @@
 
     private string Message => ConnectionStatus switch
     {
+        "Loading" => "Loading",
         "Invalid" => "Invalid",
         "Working" => "Working",
         "Restarting" => "Restarting",
@@ -25,6 +26,7 @@
 
     private string Description => ConnectionStatus switch
     {
+        "Loading" => "Loading",
         "Invalid" => "Invalid state failed to update.",
         "Working" => "Connection is working correctly.",
         "Restarting" => "Connection is restarting.",
@@ -35,6 +37,7 @@
 
     private Color ChipColor => ConnectionStatus switch
     {
+        "Loading" => Color.Secondary,
         "Invalid" => Color.Dark,
         "Working" => Color.Success,
         "Restarting" => Color.Warning,
@@ -45,6 +48,7 @@
 
     private string ChipIcon => ConnectionStatus switch
     {
+        "Loading" => Icons.Material.Outlined.Replay,
         "Invalid" => Icons.Material.Outlined.Error,
         "Working" => Icons.Material.Outlined.CheckCircle,
         "Restarting" => Icons.Material.Outlined.RestartAlt,

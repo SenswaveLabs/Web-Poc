@@ -2,7 +2,6 @@
 using Senswave.Web.Homes.Models;
 using Senswave.Web.Homes.Services;
 using Senswave.Web.Integration.Homes;
-using Senswave.Web.Integration.Homes.Response;
 using Senswave.Web.Shared.Resulting;
 
 namespace Senswave.Web.Services.Homes;
@@ -40,7 +39,6 @@ public class HomeService(
                 return Result.Success();
             }
 
-
             logger.LogInformation("No current home - initializing.");
 
             string currentHomeId = string.Empty;
@@ -48,21 +46,13 @@ public class HomeService(
             try
             {
                 var currentHomeResponse = await integrationService.GetCurrentHome();
-
-                if (currentHomeResponse is null || string.IsNullOrEmpty(currentHomeResponse.Id))
-                {
-                    logger.LogWarning("Get current home failed: No response from integration service");
-                    CurrentHome = null;
-                    return errorFactory.Create("GetCurrentHomeFailedUnexpectedly");
-                }
-
                 currentHomeId = currentHomeResponse.Id;
             }
-            catch (Exception ex)
+            catch (ApiException ex)
             {
                 logger.LogError(ex, "Failed to get current home for user");
                 CurrentHome = null;
-                return errorFactory.Create("GetCurrentHomeFailedUnexpectedly");
+                return await errorFactory.FromApiExceptionAsync(ex, "GetCurrentHomeFailedUnexpectedly");
             }
 
             try
@@ -101,11 +91,11 @@ public class HomeService(
 
                 return Result.Success();
             }
-            catch (Exception ex)
+            catch (ApiException ex)
             {
                 logger.LogError(ex, "[Home: {homeId}] Failed to get homes for user.", currentHomeId);
                 _currentHome = null;
-                return errorFactory.Create("FailedToLoadCurrentHomePleaseRefresh", "Failed to load current home please refresh.");
+                return await errorFactory.FromApiExceptionAsync(ex, "FailedToLoadCurrentHomePleaseRefresh");
             }
         }
         catch (Exception ex)
@@ -144,12 +134,12 @@ public class HomeService(
         }
         catch (ApiException apiEx) when (apiEx.StatusCode == System.Net.HttpStatusCode.NotFound)
         {
-            return Result<List<Home>>.Success(new List<Home>());
+            return Result<List<Home>>.Success([]);
         }
-        catch (Exception ex)
+        catch (ApiException ex)
         {
             logger.LogError(ex, "Failed to get homes for user");
-            return errorFactory.Create<List<Home>>("GetHomesFailed");
+            return await errorFactory.FromApiExceptionAsync<List<Home>>(ex, "GetHomesFailed");
         }
     }
     
@@ -198,15 +188,52 @@ public class HomeService(
             return Result.Success();
 
         }
-        catch (Exception ex)
+        catch (ApiException ex)
         {
             logger.LogError(ex, "Unexpected error during home service initialization");
-            CurrentHome = null;
-            return errorFactory.Create("HomeServiceInitializationFailedUnexpectedly", "An unexpected error occurred during home service initialization.");
+            CurrentHome = null; 
+            return await errorFactory.FromApiExceptionAsync(ex, "HomeServiceInitializationFailedUnexpectedly");
         }
         finally
         {
             _initLock.Release();
         }
+    }
+
+    public async Task<Result> CreateHome(string name, string icon, double? lattitude, double? longitude)
+    {
+        try
+        {
+            var request = new CreateHomeRequest(null, name, icon, null, null);
+
+            if (lattitude is not null && longitude is not null)
+            {
+                request = new CreateHomeRequest(null, name, icon, lattitude, longitude);
+            }
+
+            await integrationService.CreateHome(request);
+
+            return Result.Success();
+        }
+        catch (ApiException ex) 
+        {
+            logger.LogError(ex, "Failed to create home");
+            return await errorFactory.FromApiExceptionAsync(ex,"FailedToCreateHome");
+        }
+    }
+
+    public async Task<Result> JoinHome(string code)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<Result> UpdateHomeDataSources(string dataSourceId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<Result> UpdateHome(string name, string icon, double? lattitude, double? longitude)
+    {
+        throw new NotImplementedException();
     }
 }

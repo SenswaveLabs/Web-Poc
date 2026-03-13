@@ -7,6 +7,7 @@
 
 @attribute [Authorize]
 
+@inject IDialogService DialogService
 @inject IHomeService HomeService
 @inject ILogger<List> Logger
 @inject NavigationManager Navigation
@@ -54,7 +55,6 @@
 
             <MudGrid Spacing="3" Class="p-0 d-flex flex-row flex-wrap" Style="padding-bottom: 64px!important;">
 
-              
                 @foreach (var home in Homes)
                 {
                     <MudItem xs="12" sm="12" md="6" lg="4" xl="4" xxl="4">
@@ -62,15 +62,33 @@
                     </MudItem>
                 }
 
-                <MudItem xs="6" sm="6" md="3" lg="2" xl="2" xxl="2">
+                <MudItem xs="6" sm="6" md="3" lg="2" xl="2" xxl="2" @onclick="AddHomeDialog">
                     <SensListAction Title="Add Home" />
                 </MudItem>
 
-                <MudItem xs="6" sm="6" md="3" lg="2" xl="2" xxl="2">
+                <MudItem xs="6" sm="6" md="3" lg="2" xl="2" xxl="2" @onclick="JoinHomeDialog">
                     <SensListAction Title="Join Home" Type="SensListActionType.Join" />
                 </MudItem>
 
             </MudGrid>
+
+            <MudFabMenu Class="position-absolute m-3 m-lg-4"
+                        Style="right:0;bottom:0;"
+                        StartIcon="@Icons.Material.Rounded.MoreVert" 
+                        Color="Color.Secondary"
+                        @bind-Open="@_open" Fixed="@_fixed">
+                <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Refresh"
+                                Color="Color.Secondary"
+                                OnClick="RefreshPage" />
+
+                <MudFabMenuItem StartIcon="@Icons.Material.Rounded.AddHome"
+                                Color="Color.Secondary"
+                                OnClick="AddHomeDialog"/>
+
+                <MudFabMenuItem StartIcon="@Icons.Material.Filled.Attachment"
+                                Color="Color.Secondary"
+                                OnClick="JoinHomeDialog" />
+            </MudFabMenu>
 
             <MudFab StartIcon="@Icons.Material.Filled.Refresh"
                     Color="Color.Primary"
@@ -83,6 +101,9 @@
 </SensPage>
 
 @code {
+    private bool _open;
+    private bool _fixed;
+
     private bool _loading = true;
     private bool _failedToLoad = true;
 
@@ -156,6 +177,32 @@
         finally
         {
             _loading = false;
+        }
+    }
+
+    private async Task AddHomeDialog()
+    {
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+
+        var dialog = await DialogService.ShowAsync<AddHomeDialog>("Create Home", options);
+
+        var result = await dialog.Result;
+
+        if (!result!.Canceled)
+        {
+            await RefreshPage();
+        }
+    }
+
+    private async Task JoinHomeDialog()
+    {
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+
+        var result = await DialogService.ShowAsync<JoinHomeDialog>("Join Home", options);
+
+        if (!result.Result.IsCanceled)
+        {
+            await RefreshPage();
         }
     }
 }

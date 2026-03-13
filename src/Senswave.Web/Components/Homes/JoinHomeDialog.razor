@@ -1,0 +1,125 @@
+﻿@using Senswave.Web.Homes.Services
+
+@inject IHomeService HomeService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+
+    <DialogContent>
+
+        <MudForm @ref="_form">
+
+            <MudStack Spacing="3">
+
+                <MudText Typo="Typo.body2">
+                    Enter the invitation code to join a home.
+                </MudText>
+
+                <MudTextField T="string"
+                              Label="Join Code"
+                              Placeholder="ABCDEFGH"
+                              @bind-Value="_code"
+                              Immediate="true"
+                              Required="true"
+                              RequiredError="Code is required"
+                              MaxLength="8"
+                              Style="text-transform:uppercase"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Key"
+                              OnBlur="NormalizeCode"
+                              Validation="ValidateCode" />
+
+            </MudStack>
+
+        </MudForm>
+
+    </DialogContent>
+
+    <DialogActions>
+
+        <MudButton Variant="Variant.Text"
+                   OnClick="Cancel">
+            Cancel
+        </MudButton>
+
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Disabled="_loading"
+                   OnClick="Submit">
+
+            @if (_loading)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+            }
+            else
+            {
+                <span>Join</span>
+            }
+
+        </MudButton>
+
+    </DialogActions>
+
+</MudDialog>
+
+
+@code {
+
+    [CascadingParameter]
+    IMudDialogInstance? MudDialog { get; set; }
+
+    MudForm? _form;
+
+    string _code = "";
+
+    bool _loading = false;
+
+    async Task Submit()
+    {
+        await _form!.Validate();
+
+        if (!_form.IsValid)
+            return;
+
+        _loading = true;
+
+        try
+        {
+            var result = await HomeService.JoinHome(_code);
+
+            if (result.IsSuccess)
+            {
+                MudDialog!.Close(DialogResult.Ok(_code));
+                return;
+            }
+
+            Snackbar.Add(result.Errors!.First().Description, Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    void Cancel()
+    {
+        MudDialog!.Cancel();
+    }
+
+    void NormalizeCode()
+    {
+        if (!string.IsNullOrWhiteSpace(_code))
+            _code = _code.ToUpper();
+    }
+
+    string ValidateCode(string code)
+    {
+        if (string.IsNullOrWhiteSpace(code))
+            return "Code is required";
+
+        if (code.Length > 12)
+            return "Code must be shorter than 12 characters";
+
+        return null;
+    }
+}
