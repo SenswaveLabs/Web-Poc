@@ -1,19 +1,53 @@
-﻿<ion-icon name="@Name"
-          size="@Size"
-          style="@Style"
-          class="@CssClass"
-          @onclick="OnClick">
-</ion-icon>
+﻿@using Senswave.Web.Extensions
+<MudIcon Icon="@ResolveIcon()"
+         Size="@Size"
+         Style="@Style"
+         Color="@Color"
+         Class="@Class"
+         @onclick="OnClick" />
 
 @code {
 
-    [Parameter] public string Name { get; set; } = "";
+    [Parameter] 
+    public string Icon { get; set; } = "";
 
-    [Parameter] public string? Size { get; set; }
+    [Parameter] 
+    public Size Size { get; set; } = Size.Medium;
 
-    [Parameter] public string? Style { get; set; }
+    [Parameter] 
+    public string? Style { get; set; }
 
-    [Parameter] public string? CssClass { get; set; }
+    [Parameter] 
+    public string? Class { get; set; }
 
-    [Parameter] public EventCallback OnClick { get; set; }
+    [Parameter]
+    public Color Color { get; set; } = Color.Primary;
+
+    [Parameter] 
+    public EventCallback OnClick { get; set; }
+
+    private string ResolveIcon()
+    {
+        if (Icon.Contains("-outline") ||Icon.Contains("-outlined") || Icon.Contains("-filled") || Icon.Contains("-sharp"))
+            return Icon.TranslateIcon();
+        
+        return IconToIconTranslator[Icon];
+    }
+
+    public Dictionary<string, string> IconToIconTranslator = new Dictionary<string, string>
+    {
+        ["home"] = Icons.Material.Rounded.Home,
+        ["work"] = Icons.Material.Rounded.HomeRepairService,
+        ["flat"] = Icons.Material.Rounded.HomeWork,
+        ["settings"] = Icons.Material.Rounded.Settings,
+        ["info"] = Icons.Material.Rounded.Info,
+        ["add"] = Icons.Material.Rounded.Add,
+        ["delete"] = Icons.Material.Rounded.Delete,
+        ["edit"] = Icons.Material.Rounded.Edit,
+        ["refresh"] = Icons.Material.Rounded.Refresh,
+        ["search"] = Icons.Material.Rounded.Search,
+        ["account_circle"] = Icons.Material.Rounded.AccountCircle,
+        ["notifications"] = Icons.Material.Rounded.Notifications,
+        ["help"] = Icons.Material.Rounded.Help
+    };
 }

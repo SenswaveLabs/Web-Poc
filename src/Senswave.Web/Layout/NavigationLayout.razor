@@ -26,8 +26,6 @@
                           Class="p-0 m-0 rounded-lg" />
             </MudPaper>
         </MudDrawerHeader>
-        <MudDivider Class="my-1" />
-
         @if (HomeService.CurrentHome is not null)
         {
             <div class="d-flex justify-center py-2">
@@ -40,8 +38,6 @@
                 </MudChip>
             </div>
         }
-
-        <MudDivider Class="my-1" />
         <NavigationMenu />
         <MudItem Class="text-center p-2 pb-4">
             <MudText Typo="Typo.subtitle2">© 2026 Senswave</MudText>

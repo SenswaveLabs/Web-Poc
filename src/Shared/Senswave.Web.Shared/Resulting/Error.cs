@@ -13,7 +13,7 @@ public record Error
     public Error(string code, string? description = null)
     {
         Code = code;
-        Description = description ?? "No description provided.";
+        Description = description ?? $"Error: {code}. No Description";
     }
 
     public override string ToString() =>
