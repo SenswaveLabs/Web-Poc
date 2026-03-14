@@ -6,7 +6,6 @@ using Senswave.Web;
 using Senswave.Web.Homes.Services;
 using Senswave.Web.Integration;
 using Senswave.Web.Services;
-using Senswave.Web.Services.Homes;
 using Senswave.Web.Services.Shared;
 using Senswave.Web.Services.Users;
 using Senswave.Web.Shared.Extensions;

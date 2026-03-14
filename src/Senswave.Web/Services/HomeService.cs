@@ -4,7 +4,7 @@ using Senswave.Web.Homes.Services;
 using Senswave.Web.Integration.Homes;
 using Senswave.Web.Shared.Resulting;
 
-namespace Senswave.Web.Services.Homes;
+namespace Senswave.Web.Services;
 
 public class HomeService(
     IErrorFactory errorFactory,
