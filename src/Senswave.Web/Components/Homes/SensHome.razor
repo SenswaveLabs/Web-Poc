@@ -1,9 +1,9 @@
 ﻿@using Senswave.Web.Components.DataSources
 @using Senswave.Web.Components.Shared
+@using Senswave.Web.DataSources.Integration
 @using Senswave.Web.Extensions
 @using Senswave.Web.Homes.Models
 @using Senswave.Web.Homes.Services
-@using Senswave.Web.Integration.DataSources.Services
 
 @inject IBrokerIntegrationService BrokerIntegrationService
 @inject ILogger<SensHome> Logger
@@ -99,7 +99,7 @@
     {
         try
         {
-            var result = await BrokerIntegrationService.GetClientState(Home.DataSourceId);
+            var result = await BrokerIntegrationService.GetClientStateAsync(Home.DataSourceId);
 
             ConnectionState = result.ConnectionStatus;
         }

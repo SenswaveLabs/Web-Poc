@@ -4,4 +4,5 @@ namespace Senswave.Web.Services;
 
 public class DeviceService : IDeviceListService
 {
+
 }

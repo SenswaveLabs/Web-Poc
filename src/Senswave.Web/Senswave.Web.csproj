@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Modules\Senswave.Web.DataSources\Senswave.Web.DataSources.csproj" />
     <ProjectReference Include="..\Modules\Senswave.Web.Devices\Senswave.Web.Devices.csproj" />
     <ProjectReference Include="..\Modules\Senswave.Web.Homes\Senswave.Web.Homes.csproj" />
     <ProjectReference Include="..\Modules\Senswave.Web.Users\Senswave.Web.Users.csproj" />

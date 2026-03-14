@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
 using Senswave.Web;
+using Senswave.Web.Devices;
+using Senswave.Web.DataSources;
 using Senswave.Web.Homes.Services;
 using Senswave.Web.Integration;
 using Senswave.Web.Services;
@@ -45,6 +47,13 @@ builder.Services.AddSingleton<ITokenStore>(sp => sp.GetRequiredService<SenswaveA
 
 // Modules - Homes
 builder.Services.AddSingleton<IHomeService, HomeService>();
+
+// Modules - Data Sources
+builder.Services.AddDataSources(builder.Configuration);
+
+// Modules - Devices
+builder.Services.AddDevices(builder.Configuration);
+
 
 
 
