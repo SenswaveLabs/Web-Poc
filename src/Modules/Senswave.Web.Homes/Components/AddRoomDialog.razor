@@ -1,0 +1,101 @@
+﻿@using MudBlazor
+@using Senswave.Web.Shared.Components
+@using Senswave.Web.Homes.Services
+
+@inject IRoomService RoomService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form" Model="_model">
+            <MudStack Spacing="3">
+                <MudTextField T="string"
+                              Label="Name"
+                              @bind-Value="_model.Name"
+                              For="@(() => _model.Name)"
+                              Required="true"
+                              RequiredError="Name is required"
+                              MaxLength="32"
+                              Immediate="true" />
+            </MudStack>
+        </MudForm>
+    </DialogContent>
+
+    <DialogActions>
+
+        <MudButton Variant="Variant.Text"
+                   Color="Color.Default"
+                   OnClick="Cancel">
+            Cancel
+        </MudButton>
+
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Disabled="_loading"
+                   OnClick="Submit">
+
+            @if (_loading)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+            }
+            else
+            {
+                @(Edit ? "Save" : "Add")
+            }
+
+        </MudButton>
+
+    </DialogActions>
+</MudDialog>
+
+@code {
+
+    [CascadingParameter]
+    public IMudDialogInstance? MudDialog { get; set; }
+
+    [Parameter]
+    public bool Edit { get; set; }
+
+    MudForm? _form;
+
+    bool _loading = false;
+
+    RoomModel _model = new();
+
+    async Task Submit()
+    {
+        await _form!.Validate();
+
+        if (!_form.IsValid)
+            return;
+
+        _loading = true;
+
+        try
+        {
+            var result = await RoomService.CreateRoom(_model.Name);
+
+            if (result.IsSuccess)
+            {
+                MudDialog!.Close(DialogResult.Ok(_model));
+                return;
+            }
+
+            Snackbar.Add(result.Errors!.First().Description, Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    void Cancel()
+    {
+        MudDialog!.Cancel();
+    }
+
+    public class RoomModel
+    {
+        public string Name { get; set; } = string.Empty;
+    }
+}

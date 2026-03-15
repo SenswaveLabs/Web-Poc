@@ -4,6 +4,7 @@
 @using Senswave.Web.Devices.Components
 @using Senswave.Web.Devices.Integration
 @using Senswave.Web.Devices.Services
+@using Senswave.Web.Homes.Components
 @using Senswave.Web.Homes.Integration
 @using Senswave.Web.Homes.Services
 @using Senswave.Web.Shared.Components
@@ -17,6 +18,7 @@
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 @inject ILogger<List> Logger
+@inject IDialogService DialogService
 
 <PageTitle>Home Dashboard</PageTitle>
 
@@ -71,17 +73,17 @@
                 </MudContainer>
             </MudContainer>
 
-            <div class="mb-4">
+            <div class="mb-4 overflow-auto">
                 <MudChipSet Class="d-flex flex-row"  T="string" SelectionMode="SelectionMode.SingleSelection" CheckMark="true" @bind-SelectedValue="_selectedRoomId" Color="Color.Primary" Variant="Variant.Text">
 
                     <MudIconButton Icon="@Icons.Material.Filled.AddHomeWork"
-                                   OnClick="AddRoomDialog"
+                                   OnClick="AddRoomDialogHandler"
                                    Color="Color.Secondary"
                                    Size="Size.Medium" />
 
                     <MudDivider Vertical="true" FlexItem="true" Class="mx-2 my-2" />
 
-                    <MudChip Value="@("")" Text="All Rooms" Default="true" Size="Size.Medium"/>
+                    <MudChip Value="@(string.Empty)" Text="All Rooms" Default="true" Size="Size.Medium" />
                     @foreach (var room in displayRooms)
                     {
                         <MudChip Value="@room.Id" Text="@room.Name" Size="Size.Medium" />
@@ -174,9 +176,18 @@
         return Task.CompletedTask;
     }
 
-    private Task AddRoomDialog()
+    private async Task AddRoomDialogHandler()
     {
-        return Task.CompletedTask;
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+
+        var dialog = await DialogService.ShowAsync<AddRoomDialog>("Create Room", options);
+
+        var result = await dialog.Result;
+
+        if (!result!.Canceled)
+        {
+            await RefreshPage();
+        }
     }
 
     private async Task RefreshPage()
@@ -184,7 +195,7 @@
         try
         {
             _loading = true;
-            _selectedRoomId = null;
+            _selectedRoomId = string.Empty;
 
             var roomResult = await RoomService.LoadRooms();
 

@@ -8,4 +8,6 @@ public interface IRoomService
     List<RoomDto> Rooms { get; }
 
     Task<Result> LoadRooms();
+
+    Task<Result> CreateRoom(string name);
 }

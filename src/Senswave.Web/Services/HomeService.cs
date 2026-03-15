@@ -271,5 +271,24 @@ public class HomeService(
         }
     }
 
+    public async Task<Result> CreateRoom(string name)
+    {
+        try
+        {
+            var homeId = CurrentHome!.Id;
+
+            var dto = new CreateRoomRequest(name);
+
+            await roomsIntegrationService.CreateRoomAsync(homeId, dto);
+
+            return Result.Success();
+        }
+        catch (ApiException ex)
+        {
+            logger.LogError(ex, "Failed to load rooms");
+            return await errorFactory.FromApiExceptionAsync(ex, "FailedToCreateRoom");
+        }
+    }
+
     #endregion
 }
