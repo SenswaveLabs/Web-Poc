@@ -1,4 +1,4 @@
-﻿using Senswave.Web.Integration.Homes;
+﻿using Senswave.Web.Homes.Integration;
 using Senswave.Web.Shared.Resulting;
 
 namespace Senswave.Web.Homes.Services;

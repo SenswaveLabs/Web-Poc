@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using Senswave.Web.Integration.Auth.Request;
-using Senswave.Web.Integration.Auth.Services;
 using Senswave.Web.Shared.Resulting;
 using Senswave.Web.Shared.Services;
+using Senswave.Web.Users.Auth.Integration;
 using Senswave.Web.Users.Auth.Models;
 using Senswave.Web.Users.Auth.Services;
 using System.Security.Claims;

@@ -1,4 +1,4 @@
-﻿namespace Senswave.Web.Integration.Auth.Request;
+﻿namespace Senswave.Web.Users.Auth.Models;
 
 public class LoginGoogleRequest
 {

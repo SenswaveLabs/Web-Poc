@@ -1,7 +1,7 @@
 ﻿using Refit;
+using Senswave.Web.Homes.Integration;
 using Senswave.Web.Homes.Models;
 using Senswave.Web.Homes.Services;
-using Senswave.Web.Integration.Homes;
 using Senswave.Web.Shared.Resulting;
 using Senswave.Web.Themes;
 using System.Net;

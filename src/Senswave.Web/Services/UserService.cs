@@ -1,8 +1,7 @@
-﻿using Senswave.Web.Integration.Users;
-using Senswave.Web.Integration.Users.Request;
-using Senswave.Web.Shared.Resulting;
+﻿using Senswave.Web.Shared.Resulting;
 using Senswave.Web.Themes;
 using Senswave.Web.Users.Auth.Services;
+using Senswave.Web.Users.Users.Integration;
 using Senswave.Web.Users.Users.Models;
 using Senswave.Web.Users.Users.Services;
 
