@@ -10,7 +10,8 @@ public class DeviceService(
     ILogger<DeviceService> logger, 
     IDeviceIntegrationService integrationService,
     IHomeService homeService, 
-    IErrorFactory errorFactory) : IDeviceListService
+    IRoomService roomService,
+    IErrorFactory errorFactory) : IDeviceListService, IDeviceDetailsService
 {
     public async Task<Result<List<DisplayDeviceDto>>> GetListDevicesForHome()
     {
@@ -33,5 +34,15 @@ public class DeviceService(
             logger.LogError(ex, "Failed to get devices.");
             return await errorFactory.FromApiExceptionAsync<List<DisplayDeviceDto>>(ex, "FailedToGetDevices");
         }
+    }
+
+    public Task<string> GetRoomNameById(string id)
+    {
+        var room = roomService.Rooms.Where(x => x.Id == id).FirstOrDefault();
+
+        if (room is null)
+            return Task.FromResult("");
+
+        return Task.FromResult(room.Name);
     }
 }

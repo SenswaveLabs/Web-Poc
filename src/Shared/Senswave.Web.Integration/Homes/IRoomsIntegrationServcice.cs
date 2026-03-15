@@ -10,9 +10,6 @@ public record DisplayRoomsResponse(List<RoomDto> Items);
 
 public interface IRoomsIntegrationServcice
 {
-    [Get("/api/v1/homes/{homeId}/rooms")]
-    Task<DisplayRoomsResponse> GetRoomsAsync([AliasAs("homeId")] string homeId);
-
     [Post("/api/v1/homes/{homeId}/rooms")]
     Task CreateRoomAsync([AliasAs("homeId")] string homeId, [Body] CreateRoomRequest request);
 

@@ -5,5 +5,7 @@ namespace Senswave.Web.Homes.Services;
 
 public interface IRoomService
 {
-    Task<Result<List<RoomDto>>> GetRooms();
+    List<RoomDto> Rooms { get; }
+
+    Task<Result> LoadRooms();
 }

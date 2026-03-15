@@ -72,26 +72,22 @@ internal sealed class ThemeService(
     {
         PaletteLight = new PaletteLight()
         {
-            Primary = "#EBAB17",      // Brand amber
-            Secondary = "#00695C",    // Teal 800
-            Tertiary = "#3949AB",     // Indigo 600
+            Primary = "#EBAB17",
+            PrimaryContrastText = "#1A1A1A",
+            Secondary = "#00695C",
 
-            Background = "#FAFAFA",
-            Surface = "#FFFFFF",
+            Background = "#E0E0E0",   
+            Surface = "#FFFFFF",         
+            DrawerBackground = "#FFFFFF", 
 
             AppbarBackground = "#EBAB17",
             AppbarText = "#1A1A1A",
 
-            DrawerBackground = "#FFFFFF",
-            DrawerText = "rgba(0,0,0,0.87)",
+            TextPrimary = "#000000",      
+            TextSecondary = "#424242",    
 
-            TextPrimary = "rgba(0,0,0,0.87)",
-            TextSecondary = "rgba(0,0,0,0.60)",
-
-            Success = "#2E7D32",
-            Warning = "#F57C00",
-            Error = "#D32F2F",
-            Info = "#1976D2"
+            ActionDefault = "#1A1A1A",
+            Divider = "rgba(0,0,0,0.12)"
         }
     };
 
@@ -99,9 +95,10 @@ internal sealed class ThemeService(
     {
         PaletteLight = new PaletteDark()
         {
-            Primary = "#F2C94C",      // Soft amber
-            Secondary = "#4DB6AC",    // Teal 300
-            Tertiary = "#9FA8DA",     // Indigo 200
+            Primary = "#FFC107",     
+            PrimaryContrastText = "#000000", 
+            Secondary = "#80CBC4",    
+            Tertiary = "#C5CAE9",     
 
             Background = "#121212",
             Surface = "#1E1E1E",
@@ -112,13 +109,13 @@ internal sealed class ThemeService(
             DrawerBackground = "#1B1B1B",
             DrawerText = "#FFFFFF",
 
-            TextPrimary = "#FFFFFF",
+            TextPrimary = "#E0E0E0",
             TextSecondary = "rgba(255,255,255,0.70)",
 
-            Success = "#66BB6A",
-            Warning = "#FFA726",
-            Error = "#EF5350",
-            Info = "#42A5F5"
+            Success = "#81C784",
+            Warning = "#FFB74D",
+            Error = "#E57373",
+            Info = "#64B5F6"
         }
     };
 
