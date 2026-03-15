@@ -25,6 +25,10 @@ public static class SenswaveRestExtensions
             .ConfigureHttpClient(c => c.BaseAddress = new Uri(configuration["Api:BaseUrl"]!))
             .AddHttpMessageHandler<AuthHeaderHandler>();
 
+        services.AddRefitClient<IRoomsIntegrationServcice>()
+            .ConfigureHttpClient(c => c.BaseAddress = new Uri(configuration["Api:BaseUrl"]!))
+            .AddHttpMessageHandler<AuthHeaderHandler>();
+
         return services;
     }
 }

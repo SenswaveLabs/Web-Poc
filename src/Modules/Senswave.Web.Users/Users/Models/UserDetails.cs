@@ -1,4 +1,4 @@
-﻿namespace Senswave.Web.Services.Users;
+﻿namespace Senswave.Web.Users.Users.Models;
 
 public class UserDetails
 {

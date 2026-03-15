@@ -1,4 +1,6 @@
-﻿@using Senswave.Web.Components.Enums
+﻿@using MudBlazor
+@using Senswave.Web.Shared.Components.Enums
+
 <MudPaper Class="d-flex flex-grow-1 align-items-center p-3 gap-3 cursor-pointer"
           Style="height:100%; width:100%;"
           Elevation="1"
@@ -58,7 +60,7 @@
     {
         return Type switch
         {
-            SensListActionType.Add => Icons.Material.Outlined.AddHome,
+            SensListActionType.Add => Icons.Material.Outlined.Add,
             SensListActionType.Edit => Icons.Material.Outlined.Edit,
             SensListActionType.Join => Icons.Material.Outlined.Link,
             _ => Icons.Material.Filled.Add

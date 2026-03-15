@@ -1,4 +1,4 @@
-﻿namespace Senswave.Web.Components.Enums;
+﻿namespace Senswave.Web.Shared.Components.Enums;
 
 public enum SensListActionType
 {

@@ -11,20 +11,22 @@ public record DisplayRoomsResponse(List<RoomDto> Items);
 public interface IRoomsIntegrationServcice
 {
     [Get("/api/v1/homes/{homeId}/rooms")]
-    Task<DisplayRoomsResponse> GetRoomsAsync(string homeId);
+    Task<DisplayRoomsResponse> GetRoomsAsync([AliasAs("homeId")] string homeId);
 
     [Post("/api/v1/homes/{homeId}/rooms")]
-    Task CreateRoomAsync(string homeId, [Body] CreateRoomRequest request);
+    Task CreateRoomAsync([AliasAs("homeId")] string homeId, [Body] CreateRoomRequest request);
 
     [Get("/api/v1/homes/{homeId}/rooms/{roomId}")]
-    Task<GetRoomResponse> GetRoomAsync(string homeId, string roomId);
+    Task<GetRoomResponse> GetRoomAsync([AliasAs("homeId")] string homeId, [AliasAs("roomId")] string roomId);
 
     [Patch("/api/v1/homes/{homeId}/rooms/{roomId}")]
-    Task UpdateRoomAsync(string roomId, [Body] UpdateRoomRequest request);
+    Task UpdateRoomAsync(
+        [AliasAs("homeId")] string homeId,
+        [AliasAs("roomId")] string roomId, [Body] UpdateRoomRequest request);
 
     [Delete("/api/v1/homes/{homeId}/rooms/{roomId}")]
-    Task DeleteRoomAsync(string homeId, string roomId);
+    Task DeleteRoomAsync([AliasAs("homeId")] string homeId, [AliasAs("roomId")] string roomId);
 
     [Get("/api/v1/homes/{homeId}/rooms/display")]
-    Task<DisplayRoomsResponse> DisplayRoomsAsync(string homeId);
+    Task<DisplayRoomsResponse> DisplayRoomsAsync([AliasAs("homeId")] string homeId);
 }

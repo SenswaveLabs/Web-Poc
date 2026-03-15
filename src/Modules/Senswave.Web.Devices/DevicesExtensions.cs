@@ -16,6 +16,22 @@ public static class DevicesExtensions
             .ConfigureHttpClient(c => c.BaseAddress = new Uri(configuration["Api:BaseUrl"]!))
             .AddHttpMessageHandler<AuthHeaderHandler>();
 
+        services.AddRefitClient<IDashboardIntegrationService>()
+            .ConfigureHttpClient(c => c.BaseAddress = new Uri(configuration["Api:BaseUrl"]!))
+            .AddHttpMessageHandler<AuthHeaderHandler>();
+
+        services.AddRefitClient<IDeviceSharingIntegrationService>()
+            .ConfigureHttpClient(c => c.BaseAddress = new Uri(configuration["Api:BaseUrl"]!))
+            .AddHttpMessageHandler<AuthHeaderHandler>();
+
+        services.AddRefitClient<IOperationIntegrationService>()
+            .ConfigureHttpClient(c => c.BaseAddress = new Uri(configuration["Api:BaseUrl"]!))
+            .AddHttpMessageHandler<AuthHeaderHandler>();
+
+        services.AddRefitClient<IWidgetIntegrationService>()
+            .ConfigureHttpClient(c => c.BaseAddress = new Uri(configuration["Api:BaseUrl"]!))
+            .AddHttpMessageHandler<AuthHeaderHandler>();
+
         return services;
     }
 }

@@ -2,7 +2,7 @@
 using System.Reflection;
 using System.Text;
 
-namespace Senswave.Web.Extensions;
+namespace Senswave.Web.Shared.Extensions;
 
 public static class StringExtensions
 {

@@ -1,11 +1,11 @@
 ﻿@page "/homes/list"
-@using Senswave.Web.Components.Enums
+@attribute [Authorize]
+
 @using Senswave.Web.Components.Homes
-@using Senswave.Web.Components.Shared
 @using Senswave.Web.Homes.Models
 @using Senswave.Web.Homes.Services
-
-@attribute [Authorize]
+@using Senswave.Web.Shared.Components
+@using Senswave.Web.Shared.Components.Enums
 
 @inject IDialogService DialogService
 @inject IHomeService HomeService
@@ -89,12 +89,6 @@
                                 Color="Color.Secondary"
                                 OnClick="JoinHomeDialog" />
             </MudFabMenu>
-
-            <MudFab StartIcon="@Icons.Material.Filled.Refresh"
-                    Color="Color.Primary"
-                    OnClick="RefreshPage"
-                    Class="position-absolute m-3 m-lg-4"
-                    Style="right:0;bottom:0;" />
   
         </MudContainer>
     </Content>

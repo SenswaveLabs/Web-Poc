@@ -1,6 +1,5 @@
-﻿
-using Senswave.Web.Services.Users;
-using Senswave.Web.Shared.Resulting;
+﻿using Senswave.Web.Shared.Resulting;
+using Senswave.Web.Users.Users.Models;
 
 namespace Senswave.Web.Users.Users.Services;
 

@@ -1,12 +1,7 @@
-﻿@using Senswave.Web.Components.DataSources
-@using Senswave.Web.DataSources.Integration
-@using Senswave.Web.Homes.Models
-@using Senswave.Web.Homes.Services
+﻿@using Microsoft.AspNetCore.Components.Web
+@using MudBlazor
+@using Senswave.Web.Devices.Integration
 @using Senswave.Web.Shared.Components
-
-@inject IBrokerIntegrationService BrokerIntegrationService
-@inject ILogger<SensHome> Logger
-@inject IHomeService HomeService
 
 <MudPaper Class="d-flex align-items-center p-3 gap-3 cursor-pointer"
           tabindex="0"
@@ -15,17 +10,19 @@
           @onkeydown="(e) => OnKeyDown(e)"
           @onclick="HandleClick">
 
-    <SensIcon Icon="@Home.Icon"
+    <!-- Icon -->
+    <SensIcon Icon="@Device.Icon"
               Size="Size.Large"
               Color="Color.Primary" />
 
+    <!-- Content -->
     <div class="d-flex flex-column flex-grow-1">
 
-        <MudText Typo="Typo.subtitle1" Class="fw-bold">@Home.Name</MudText>
+        <MudText Typo="Typo.subtitle1" Class="fw-bold">@Device.Name</MudText>
 
         <div class="d-flex flex-wrap gap-0 mt-1">
 
-            @if (IsCurrentHome())
+            @* @if (IsCurrentHome())
             {
                 <MudTooltip Text="Currently you see status and devices of this home.">
                     <MudChip T="string"
@@ -61,9 +58,8 @@
                         Member
                     </MudChip>
                 </MudTooltip>
-            }
+            } *@
 
-            <SensDataSourcesStateChip ConnectionStatus="@ConnectionState" />
 
         </div>
 
@@ -73,62 +69,20 @@
 @code {
 
     [Parameter]
-    public Home Home { get; set; } = default!;
+    public DeviceDto Device { get; set; } = default!;
 
     [Parameter]
-    public EventCallback<Home> OnClick { get; set; }
-
-    [Parameter]
-    public EventCallback<Home> OnEdit { get; set; }
-
-    [Parameter]
-    public EventCallback<Home> OnRemove { get; set; }
-
-    private string ConnectionState { get; set; } = "Loading";
+    public EventCallback<DeviceDto> OnClick { get; set; }
 
     protected override void OnInitialized()
     {
-        base.OnInitialized();
-        _ = LoadConnectionState();
+
     }
-
-    private async Task LoadConnectionState()
-    {
-        try
-        {
-            var result = await BrokerIntegrationService.GetClientStateAsync(Home.DataSourceId);
-
-            ConnectionState = result.ConnectionStatus;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Failed to get state for data source");
-            ConnectionState = "Unknown";
-        }
-        finally
-        {
-            await InvokeAsync(StateHasChanged);
-        }
-    }
-
-    private bool IsCurrentHome() => HomeService.CurrentHome?.Id == Home.Id;
-
+   
     private async Task HandleClick()
     {
         if (OnClick.HasDelegate)
-            await OnClick.InvokeAsync(Home);
-    }
-
-    private async Task HandleEdit()
-    {
-        if (OnEdit.HasDelegate)
-            await OnEdit.InvokeAsync(Home);
-    }
-
-    private async Task HandleRemove()
-    {
-        if (OnRemove.HasDelegate)
-            await OnRemove.InvokeAsync(Home);
+            await OnClick.InvokeAsync(Device);
     }
 
     async Task OnKeyDown(KeyboardEventArgs e)
@@ -136,7 +90,7 @@
         if (e.Key == "Enter" || e.Key == " ")
         {
             if (OnClick.HasDelegate)
-                await OnClick.InvokeAsync(Home);
+                await OnClick.InvokeAsync(Device);
         }
     }
 }
