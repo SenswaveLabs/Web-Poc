@@ -1,11 +1,13 @@
 <Solution>
   <Folder Name="/Modules/">
-    <Project Path="src/Modules/Senswave.Web.Homes/Senswave.Web.Homes.csproj" Id="870363fb-03b6-4ee7-aa4a-5b0c242a5068" />
-    <Project Path="src/Modules/Senswave.Web.Users/Senswave.Web.Users.csproj" />
+    <Project Path="E:/Projects/Web-Poc/src/Modules/Senswave.Web.Devices/Senswave.Web.Devices.csproj" Id="925b5755-5730-450c-8359-275ed2f0569c" />
+    <Project Path="E:/Projects/Web-Poc/src/Modules/Senswave.Web.Homes/Senswave.Web.Homes.csproj" Id="870363fb-03b6-4ee7-aa4a-5b0c242a5068" />
+    <Project Path="E:/Projects/Web-Poc/src/Modules/Senswave.Web.Users/Senswave.Web.Users.csproj" />
+    <Project Path="src/Modules/Senswave.Web.DataSources/Senswave.Web.DataSources.csproj" Id="2e9331e7-99d0-4617-9518-b3ddab9aee4c" />
   </Folder>
   <Folder Name="/Shared/">
-    <Project Path="src/Shared/Senswave.Web.Integration/Senswave.Web.Integration.csproj" Id="2509e4ec-fc08-4502-a0e3-fc69f0fb95c5" />
-    <Project Path="src/Shared/Senswave.Web.Shared/Senswave.Web.Shared.csproj" Id="5db18ab8-9252-47cb-9ea6-a4ea04698f68" />
+    <Project Path="E:/Projects/Web-Poc/src/Shared/Senswave.Web.Integration/Senswave.Web.Integration.csproj" Id="2509e4ec-fc08-4502-a0e3-fc69f0fb95c5" />
+    <Project Path="E:/Projects/Web-Poc/src/Shared/Senswave.Web.Shared/Senswave.Web.Shared.csproj" Id="5db18ab8-9252-47cb-9ea6-a4ea04698f68" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
@@ -14,5 +16,5 @@
     <File Path="LICENSE" />
     <File Path="README.md" />
   </Folder>
-  <Project Path="src/Senswave.Web/Senswave.Web.csproj" />
+  <Project Path="E:/Projects/Web-Poc/src/Senswave.Web/Senswave.Web.csproj" />
 </Solution>

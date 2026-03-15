@@ -1,4 +1,4 @@
-﻿namespace Senswave.Web.Users.Users.Models;
+﻿namespace Senswave.Web.Integration.Users.Request;
 
 public class UserSettingUpdateRequest
 {

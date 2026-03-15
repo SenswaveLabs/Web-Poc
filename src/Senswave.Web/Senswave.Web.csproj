@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -9,6 +9,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Components\Users\**" />
+    <Content Remove="Components\Users\**" />
+    <EmbeddedResource Remove="Components\Users\**" />
+    <None Remove="Components\Users\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" />
@@ -16,6 +23,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Modules\Senswave.Web.DataSources\Senswave.Web.DataSources.csproj" />
+    <ProjectReference Include="..\Modules\Senswave.Web.Devices\Senswave.Web.Devices.csproj" />
     <ProjectReference Include="..\Modules\Senswave.Web.Homes\Senswave.Web.Homes.csproj" />
     <ProjectReference Include="..\Modules\Senswave.Web.Users\Senswave.Web.Users.csproj" />
     <ProjectReference Include="..\Shared\Senswave.Web.Integration\Senswave.Web.Integration.csproj" />
@@ -30,10 +39,6 @@
     <None Update="nginx.conf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Components\Users\" />
   </ItemGroup>
 
 </Project>

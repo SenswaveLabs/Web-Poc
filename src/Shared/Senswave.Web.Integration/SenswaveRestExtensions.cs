@@ -2,7 +2,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Refit;
 using Senswave.Web.Integration.Auth.Services;
-using Senswave.Web.Integration.DataSources.Services;
 using Senswave.Web.Integration.Handlers;
 using Senswave.Web.Integration.Homes;
 using Senswave.Web.Integration.Users;
@@ -26,7 +25,7 @@ public static class SenswaveRestExtensions
             .ConfigureHttpClient(c => c.BaseAddress = new Uri(configuration["Api:BaseUrl"]!))
             .AddHttpMessageHandler<AuthHeaderHandler>();
 
-        services.AddRefitClient<IBrokerIntegrationService>()
+        services.AddRefitClient<IRoomsIntegrationServcice>()
             .ConfigureHttpClient(c => c.BaseAddress = new Uri(configuration["Api:BaseUrl"]!))
             .AddHttpMessageHandler<AuthHeaderHandler>();
 

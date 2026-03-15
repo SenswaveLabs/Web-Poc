@@ -1,13 +1,19 @@
-﻿@page "/devices/list"
+﻿@page "/"
+@page "/devices/list"
 @attribute [Authorize]
 
-@using Senswave.Web.Components.Shared
+@using Senswave.Web.Devices.Integration
+@using Senswave.Web.Devices.Services
 @using Senswave.Web.Homes.Services
+@using Senswave.Web.Integration.Homes
+@using Senswave.Web.Shared.Components
 @using Senswave.Web.Shared.Services
 @using Senswave.Web.Users.Users.Services
 
 @inject IUserService UserService
 @inject IHomeService HomeService
+@inject IDeviceListService DeviceListService
+@inject IRoomService RoomService
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 @inject ILogger<List> Logger
@@ -16,20 +22,21 @@
 
 <SensPage Loading="@_loading" FailedToLoad="@_failedToLoad" RefreshContent="@RefreshPage">
     <LoadingContent>
-        @foreach(var i in new int[] { 1, 2, 3, 4 })
+        @foreach (var i in new int[] { 1, 2, })
         {
+            <MudContainer xs="12" MaxWidth="MaxWidth.False" Gutters="false" Class="m-1">
+                <MudSkeleton Width="10vh" Style="min-width:96px; max-width:256px;" />
+            </MudContainer>
+
             <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column">
-                <MudContainer xs="12" MaxWidth="MaxWidth.False" Gutters="false" Class="m-1">
-                    <MudSkeleton Width="10vh" Style="min-width:96px; max-width:256px;" />
-                </MudContainer>
                 <MudGrid Spacing="0" Class="p-0 d-flex flex-row flex-wrap">
-                    <MudItem  xs="12" sm="6" md="4" lg="3">
-                        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;"  />
-                    </MudItem>
-                    <MudItem   xs="12" sm="6" md="4" lg="3">
+                    <MudItem xs="12" sm="6" md="4" lg="3">
                         <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;" />
                     </MudItem>
-                    <MudItem  xs="12" sm="6" md="4" lg="3">
+                    <MudItem xs="12" sm="6" md="4" lg="3">
+                        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="4" lg="3">
                         <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;" />
                     </MudItem>
                 </MudGrid>
@@ -37,17 +44,67 @@
         }
     </LoadingContent>
     <Content>
+        <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column pb-3">
+            <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="m-0 pb-1">
+                <MudContainer Class="d-inline-flex align-items-center w-auto p-0">
+                    <MudText Typo="Typo.subtitle1" Class="me-1">My Homes</MudText>
 
+                    <MudTooltip Text="This is list of homes user is allowed to interact with. Owned homes are mared with 'Owner' chip." Placement="Placement.Bottom">
+                        <MudIconButton Icon="@Icons.Material.Filled.Info" Size="Size.Small" Edge="Edge.End" Color="Color.Primary" Style="padding: 0;" />
+                    </MudTooltip>
+                </MudContainer>
+            </MudContainer>
+
+            <MudGrid Spacing="3" Class="p-0 d-flex flex-row flex-wrap" Style="padding-bottom: 64px!important;">
+
+                @foreach (var device in displayDevices)
+                {
+                    <MudItem xs="12" sm="12" md="6" lg="4" xl="4" xxl="4">
+
+                    </MudItem>
+                }
+
+                <MudItem xs="6" sm="6" md="3" lg="3" xl="2" xxl="2">
+                    <SensListAction Title="Add Device" OnClick="AddDeviceDialog" />
+                </MudItem>
+
+            </MudGrid>
+
+            <MudFabMenu Class="position-absolute m-3 m-lg-4"
+                        Style="right:0;bottom:0;"
+                        StartIcon="@Icons.Material.Rounded.MoreVert"
+                        Color="Color.Secondary"
+                        @bind-Open="@_open" Fixed="@_fixed">
+
+                <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Refresh"
+                                Color="Color.Secondary"
+                                OnClick="RefreshPage" />
+
+                <MudFabMenuItem StartIcon="@Icons.Material.Rounded.AddHome"
+                                Color="Color.Secondary"
+                                OnClick="AddDeviceDialog" />
+
+
+            </MudFabMenu>
+
+        </MudContainer>
     </Content>
 </SensPage>
 
 @code {
+    private bool _open;
+    private bool _fixed;
     private bool _loading = true;
     private bool _failedToLoad = true;
+
+    private List<DisplayDeviceDto> displayDevices = [];
+
+    private List<RoomDto> displayRooms = [];
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
+
         await UserService.Initialize();
         await HomeService.Initialize();
 
@@ -60,13 +117,38 @@
         await RefreshPage();
     }
 
+    private Task AddDeviceDialog()
+    {
+        return Task.CompletedTask;
+    }
+
     private async Task RefreshPage()
     {
         try
         {
             _loading = true;
 
-            // TODO: Load devices for the current home here
+            var result = await DeviceListService.GetListDevicesForHome();
+
+            if (result.IsFailure)
+            {
+                Snackbar.Add("Failed to load devices please refresh.", Severity.Error);
+                _failedToLoad = true;
+                return;
+            }
+
+            displayDevices = result.Value;
+
+            var roomResult = await RoomService.GetRooms();
+
+            if (result.IsFailure)
+            {
+                Snackbar.Add("Failed to laod rooms", Severity.Warning);
+            }
+            else
+            {
+                displayRooms = roomResult.Value;
+            }
 
             _failedToLoad = false;
         }

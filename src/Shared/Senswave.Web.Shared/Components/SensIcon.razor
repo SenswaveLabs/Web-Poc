@@ -1,10 +1,11 @@
-﻿@using Senswave.Web.Extensions
+﻿@using MudBlazor
+@using Senswave.Web.Shared.Extensions
+
 <MudIcon Icon="@ResolveIcon()"
          Size="@Size"
          Style="@Style"
          Color="@Color"
-         Class="@Class"
-         @onclick="OnClick" />
+         Class="@Class" />
 
 @code {
 
@@ -22,9 +23,6 @@
 
     [Parameter]
     public Color Color { get; set; } = Color.Primary;
-
-    [Parameter] 
-    public EventCallback OnClick { get; set; }
 
     private string ResolveIcon()
     {

@@ -1,6 +1,6 @@
 ﻿@using Senswave.Web.Components.Navigation
-@using Senswave.Web.Extensions
 @using Senswave.Web.Homes.Services
+@using Senswave.Web.Shared.Extensions
 @using Senswave.Web.Shared.Services
 @using Senswave.Web.Users.Auth.Services
 
@@ -63,15 +63,18 @@
 
             @if (_drawerOpen)
             {
-                <div class="d-flex justify-center py-2">
-                    <MudChip T="string"
-                             Icon="@HomeService.CurrentHome!.Icon.TranslateIcon()"
-                             Color="Color.Primary"
-                             Variant="Variant.Outlined"
-                             Size="Size.Medium">
-                        @HomeService.CurrentHome!.Name
-                    </MudChip>
-                </div>
+                @if (HomeService.CurrentHome is not null)
+                {
+                    <div class="d-flex justify-center py-2">
+                        <MudChip T="string"
+                                 Icon="@HomeService.CurrentHome!.Icon.TranslateIcon()"
+                                 Color="Color.Primary"
+                                 Variant="Variant.Outlined"
+                                 Size="Size.Medium">
+                            @HomeService.CurrentHome!.Name
+                        </MudChip>
+                    </div>
+                }
             }
 
             <NavigationMenu />

@@ -2,18 +2,25 @@
 
 	<PropertyGroup>
 		<TargetFramework>net10.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
-	
+
+
 	<ItemGroup>
 		<SupportedPlatform Include="browser" />
 	</ItemGroup>
-	
+
 	<ItemGroup>
 		<PackageReference Include="MudBlazor" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" />
 		<PackageReference Include="Refit" />
 		<PackageReference Include="Refit.HttpClientFactory" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\Shared\Senswave.Web.Integration\Senswave.Web.Integration.csproj" />
+		<ProjectReference Include="..\Senswave.Web.Users\Senswave.Web.Users.csproj" />
 	</ItemGroup>
 
 </Project>
