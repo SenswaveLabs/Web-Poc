@@ -1,10 +1,14 @@
-﻿@using MudBlazor
+﻿@using Microsoft.AspNetCore.Components.Web
+@using MudBlazor
 @using Senswave.Web.Shared.Components.Enums
 
 <MudPaper Class="d-flex flex-grow-1 align-items-center p-3 gap-3 cursor-pointer"
           Style="height:100%; width:100%;"
           Elevation="1"
-          @onclick="HandleClick">
+          tabindex="0"
+          @onkeydown="(e) => OnKeyDown(e)"
+          @onclick="HandleClick"
+           >
 
     <MudIcon Icon="@GetIcon()" Color="Color.Primary" Size="Size.Large" />
 
@@ -65,5 +69,14 @@
             SensListActionType.Join => Icons.Material.Outlined.Link,
             _ => Icons.Material.Filled.Add
         };
+    }
+
+    async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" || e.Key == " ")
+        {
+            if (OnClick.HasDelegate)
+                await OnClick.InvokeAsync();
+        }
     }
 }

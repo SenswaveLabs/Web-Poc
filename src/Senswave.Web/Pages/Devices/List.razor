@@ -2,6 +2,7 @@
 @page "/devices/list"
 @attribute [Authorize]
 
+@using Senswave.Web.Devices.Components
 @using Senswave.Web.Devices.Integration
 @using Senswave.Web.Devices.Services
 @using Senswave.Web.Homes.Services
@@ -22,34 +23,78 @@
 
 <SensPage Loading="@_loading" FailedToLoad="@_failedToLoad" RefreshContent="@RefreshPage">
     <LoadingContent>
-        @foreach (var i in new int[] { 1, 2, })
-        {
-            <MudContainer xs="12" MaxWidth="MaxWidth.False" Gutters="false" Class="m-1">
-                <MudSkeleton Width="10vh" Style="min-width:96px; max-width:256px;" />
-            </MudContainer>
+        
+        <MudContainer xs="12" MaxWidth="MaxWidth.False" Gutters="false" Class="m-1">
+            <MudSkeleton Width="10vh" Style="min-width:96px; max-width:256px;" />
+        </MudContainer>
 
-            <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column">
-                <MudGrid Spacing="0" Class="p-0 d-flex flex-row flex-wrap">
-                    <MudItem xs="12" sm="6" md="4" lg="3">
-                        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;" />
-                    </MudItem>
-                    <MudItem xs="12" sm="6" md="4" lg="3">
-                        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;" />
-                    </MudItem>
-                    <MudItem xs="12" sm="6" md="4" lg="3">
-                        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;" />
-                    </MudItem>
-                </MudGrid>
-            </MudContainer>
-        }
+        <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column">
+            <MudGrid Spacing="0" Class="p-0 d-flex flex-row flex-wrap">
+                <MudItem xs="12" sm="6" md="4" lg="3">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;" />
+                </MudItem>
+                <MudItem xs="12" sm="6" md="4" lg="3">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;" />
+                </MudItem>
+                <MudItem xs="12" sm="6" md="4" lg="3">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;" />
+                </MudItem>
+
+                <MudItem xs="12" sm="6" md="4" lg="3">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;" />
+                </MudItem>
+
+                <MudItem xs="12" sm="6" md="4" lg="3">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;" />
+                </MudItem>
+
+                <MudItem xs="12" sm="6" md="4" lg="3">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;" />
+                </MudItem>
+
+                <MudItem xs="12" sm="6" md="4" lg="3">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;" />
+                </MudItem>
+            </MudGrid>
+        </MudContainer>
+        
     </LoadingContent>
     <Content>
         <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column pb-3">
+
             <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="m-0 pb-1">
                 <MudContainer Class="d-inline-flex align-items-center w-auto p-0">
-                    <MudText Typo="Typo.subtitle1" Class="me-1">My Homes</MudText>
+                    <MudText Typo="Typo.subtitle1" Class="me-1">Rooms</MudText>
 
-                    <MudTooltip Text="This is list of homes user is allowed to interact with. Owned homes are mared with 'Owner' chip." Placement="Placement.Bottom">
+                    <MudTooltip Text="This is list of rooms in home. You can filter devices by selecting Rooms" Placement="Placement.Bottom">
+                        <MudIconButton Icon="@Icons.Material.Filled.Info" Size="Size.Small" Edge="Edge.End" Color="Color.Primary" Style="padding: 0;" />
+                    </MudTooltip>
+                </MudContainer>
+            </MudContainer>
+
+            <div class="mb-4">
+                <MudChipSet Class="d-flex flex-row"  T="string" SelectionMode="SelectionMode.SingleSelection" CheckMark="true" @bind-SelectedValue="_selectedRoomId" Color="Color.Primary" Variant="Variant.Text">
+
+                    <MudIconButton Icon="@Icons.Material.Filled.AddHomeWork"
+                                   OnClick="AddRoomDialog"
+                                   Color="Color.Secondary"
+                                   Size="Size.Medium" />
+
+                    <MudDivider Vertical="true" FlexItem="true" Class="mx-2 my-2" />
+
+                    <MudChip Value="@("")" Text="All Rooms" Default="true" Size="Size.Medium"/>
+                    @foreach (var room in displayRooms)
+                    {
+                        <MudChip Value="@room.Id" Text="@room.Name" Size="Size.Medium" />
+                    }
+                </MudChipSet>
+            </div>
+
+            <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="m-0 pb-1">
+                <MudContainer Class="d-inline-flex align-items-center w-auto p-0">
+                    <MudText Typo="Typo.subtitle1" Class="me-1">Devices</MudText>
+
+                    <MudTooltip Text="This is list of devices in home that are available to interact." Placement="Placement.Bottom">
                         <MudIconButton Icon="@Icons.Material.Filled.Info" Size="Size.Small" Edge="Edge.End" Color="Color.Primary" Style="padding: 0;" />
                     </MudTooltip>
                 </MudContainer>
@@ -57,10 +102,10 @@
 
             <MudGrid Spacing="3" Class="p-0 d-flex flex-row flex-wrap" Style="padding-bottom: 64px!important;">
 
-                @foreach (var device in displayDevices)
+                @foreach (var device in FilteredDevices)
                 {
-                    <MudItem xs="12" sm="12" md="6" lg="4" xl="4" xxl="4">
-
+                    <MudItem xs="12" sm="12" md="6" lg="4" xl="3" xxl="3">
+                        <SensDevice Device="@device" />
                     </MudItem>
                 }
 
@@ -80,7 +125,7 @@
                                 Color="Color.Secondary"
                                 OnClick="RefreshPage" />
 
-                <MudFabMenuItem StartIcon="@Icons.Material.Rounded.AddHome"
+                <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Add"
                                 Color="Color.Secondary"
                                 OnClick="AddDeviceDialog" />
 
@@ -97,9 +142,17 @@
     private bool _loading = true;
     private bool _failedToLoad = true;
 
-    private List<DisplayDeviceDto> displayDevices = [];
+    // State for filtering
+    private string? _selectedRoomId;
 
+    private List<DisplayDeviceDto> displayDevices = [];
     private List<RoomDto> displayRooms = [];
+
+    // Computed property for filtering
+    private IEnumerable<DisplayDeviceDto> FilteredDevices =>
+        string.IsNullOrEmpty(_selectedRoomId)
+            ? displayDevices
+            : displayDevices.Where(d => d.RoomId == _selectedRoomId);
 
     protected override async Task OnInitializedAsync()
     {
@@ -122,11 +175,28 @@
         return Task.CompletedTask;
     }
 
+    private Task AddRoomDialog()
+    {
+        return Task.CompletedTask;
+    }
+
     private async Task RefreshPage()
     {
         try
         {
             _loading = true;
+            _selectedRoomId = null;
+
+            var roomResult = await RoomService.LoadRooms();
+
+            if (roomResult.IsFailure)
+            {
+                Snackbar.Add("Failed to laod rooms", Severity.Warning);
+            }
+            else
+            {
+                displayRooms = RoomService.Rooms;
+            }
 
             var result = await DeviceListService.GetListDevicesForHome();
 
@@ -138,17 +208,6 @@
             }
 
             displayDevices = result.Value;
-
-            var roomResult = await RoomService.GetRooms();
-
-            if (result.IsFailure)
-            {
-                Snackbar.Add("Failed to laod rooms", Severity.Warning);
-            }
-            else
-            {
-                displayRooms = roomResult.Value;
-            }
 
             _failedToLoad = false;
         }

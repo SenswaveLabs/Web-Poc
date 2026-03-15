@@ -3,15 +3,20 @@ using Senswave.Web.Homes.Models;
 using Senswave.Web.Homes.Services;
 using Senswave.Web.Integration.Homes;
 using Senswave.Web.Shared.Resulting;
+using Senswave.Web.Themes;
+using System.Net;
 
 namespace Senswave.Web.Services;
 
 public class HomeService(
     IErrorFactory errorFactory,
+    IRoomsIntegrationServcice roomsIntegrationService,
     IHomesIntegrationService integrationService,
-    ILogger<HomeService> logger) : IHomeService
+    ILogger<HomeService> logger) : IHomeService, IRoomService
 {
     private HomeDetails? _currentHome;
+
+    private List<RoomDto> _rooms = [];
 
     private readonly SemaphoreSlim _initLock = new(1, 1);
 
@@ -24,6 +29,8 @@ public class HomeService(
         }
         get => _currentHome;
     }
+
+    public List<RoomDto> Rooms => _rooms;
 
     public event Action? OnChange;
 
@@ -236,4 +243,33 @@ public class HomeService(
     {
         throw new NotImplementedException();
     }
+
+    #region IRoomService
+
+    public async Task<Result> LoadRooms()
+    {
+        try
+        {
+            var homeId = CurrentHome!.Id;
+
+            var roomsResponse = await roomsIntegrationService.DisplayRoomsAsync(homeId);
+
+            _rooms = roomsResponse.Items;
+
+            return Result.Success();
+        }
+        catch (ApiException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+        {
+            logger.LogInformation("No rooms in home");
+            _rooms = [];
+            return Result.Success();
+        }
+        catch (ApiException ex)
+        {
+            logger.LogError(ex, "Failed to load rooms");
+            return await errorFactory.FromApiExceptionAsync<List<RoomDto>>(ex, "FailedToLoadRooms");
+        }
+    }
+
+    #endregion
 }

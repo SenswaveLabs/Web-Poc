@@ -46,8 +46,9 @@ builder.Services.AddSingleton<IAuthenticationService>(sp => sp.GetRequiredServic
 builder.Services.AddSingleton<ITokenStore>(sp => sp.GetRequiredService<SenswaveAuthenticationProvider>());
 
 // Modules - Homes
-builder.Services.AddSingleton<IHomeService, HomeService>();
-builder.Services.AddSingleton<IRoomService, RoomService>();
+builder.Services.AddSingleton<HomeService>();
+builder.Services.AddSingleton<IHomeService>(sp => sp.GetRequiredService<HomeService>());
+builder.Services.AddSingleton<IRoomService>(sp => sp.GetRequiredService<HomeService>());
 
 // Modules - Data Sources
 builder.Services.AddDataSources(builder.Configuration);
@@ -56,6 +57,7 @@ builder.Services.AddDataSources(builder.Configuration);
 builder.Services.AddDevices(builder.Configuration);
 builder.Services.AddSingleton<DeviceService>();
 builder.Services.AddSingleton<IDeviceListService>(sp => sp.GetRequiredService<DeviceService>());
+builder.Services.AddSingleton<IDeviceDetailsService>(sp => sp.GetRequiredService<DeviceService>());
 
 
 

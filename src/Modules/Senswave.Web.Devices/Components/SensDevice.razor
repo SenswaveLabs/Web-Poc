@@ -1,7 +1,11 @@
 ﻿@using Microsoft.AspNetCore.Components.Web
 @using MudBlazor
 @using Senswave.Web.Devices.Integration
+@using Senswave.Web.Devices.Services
 @using Senswave.Web.Shared.Components
+@using System.Text.Json
+
+@inject IDeviceDetailsService DeviceDetailsService
 
 <MudPaper Class="d-flex align-items-center p-3 gap-3 cursor-pointer"
           tabindex="0"
@@ -22,63 +26,84 @@
 
         <div class="d-flex flex-wrap gap-0 mt-1">
 
-            @* @if (IsCurrentHome())
+            @if (HasRoomName())
             {
-                <MudTooltip Text="Currently you see status and devices of this home.">
+                <MudTooltip Text="@($"Device is in room {RoomName}.")">
                     <MudChip T="string"
                              Size="Size.Small"
                              Color="Color.Primary"
                              Variant="Variant.Outlined"
                              Icon="@Icons.Material.Rounded.MyLocation">
-                        Current
+                        @RoomName
                     </MudChip>
                 </MudTooltip>
-            }
 
-            @if (Home.IsOwner)
-            {
-                <MudTooltip Text="You have created this home so you have the biggest rights to manage it.">
-                    <MudChip T="string"
-                             Size="Size.Small"
-                             Color="Color.Success"
-                             Variant="Variant.Outlined"
-                             Icon="@Icons.Material.Outlined.Star">
-                        Owner
-                    </MudChip>
-                </MudTooltip>
             }
             else
             {
-                <MudTooltip Text="You have been invited to this home.">
+                <MudTooltip Text="Device is not assibned to any room.">
                     <MudChip T="string"
                              Size="Size.Small"
                              Color="Color.Secondary"
                              Variant="Variant.Outlined"
-                             Icon="@Icons.Material.Outlined.Person">
-                        Member
+                             Icon="@Icons.Material.Rounded.MyLocation">
+                        Unknown
                     </MudChip>
                 </MudTooltip>
-            } *@
-
+            }
 
         </div>
 
     </div>
+
+
+    @if (Device?.Tile?.Type == "Switch")
+    {
+        <MudIconButton OnClick="HandleStateUpdate" Icon="@Icons.Material.Rounded.PowerSettingsNew" Variant="Variant.Outlined" Color="GetColor()" Size="Size.Medium" />
+    }
+
 </MudPaper>
 
 @code {
 
     [Parameter]
-    public DeviceDto Device { get; set; } = default!;
+    public DisplayDeviceDto Device { get; set; } = default!;
 
     [Parameter]
-    public EventCallback<DeviceDto> OnClick { get; set; }
+    public EventCallback<DisplayDeviceDto> OnClick { get; set; }
 
-    protected override void OnInitialized()
+    private string RoomName { get; set; } = string.Empty;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        // This will now run every time the 'Device' parameter changes
+        if (!string.IsNullOrEmpty(Device.RoomId))
+        {
+            RoomName = await DeviceDetailsService.GetRoomNameById(Device.RoomId);
+        }
+        else
+        {
+            RoomName = string.Empty;
+        }
+    }
+
+    private async Task HandleStateUpdate()
     {
 
     }
-   
+
+    private bool HasRoomName() => !string.IsNullOrEmpty(Device.RoomId);
+
+    private Color GetColor()
+    {
+        if (Device?.Tile?.Value?.AsValue().GetValueKind() == JsonValueKind.True)
+            return Color.Success;
+
+        return Color.Error;
+    }
+
     private async Task HandleClick()
     {
         if (OnClick.HasDelegate)
