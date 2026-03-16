@@ -1,0 +1,104 @@
+﻿@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.Extensions.Logging
+@using MudBlazor
+@using Senswave.Web.DataSources.Integration
+@using Senswave.Web.Shared.Components
+
+@inject IBrokerIntegrationService BrokerIntegrationService
+@inject ILogger<SensDataSource> Logger
+
+<MudPaper Class="d-flex align-items-center p-3 gap-3 cursor-pointer"
+          tabindex="0"
+          Style="width:100%; height:100%;"
+          Elevation="1"
+          @onkeydown="(e) => OnKeyDown(e)"
+          @onclick="HandleClick">
+
+    <!-- Icon -->
+    <SensIcon Icon="data-source"
+              Size="Size.Large"
+              Color="Color.Primary" />
+
+    <!-- Content -->
+    <div class="d-flex flex-column flex-grow-1">
+
+        <MudText Typo="Typo.subtitle1" Class="fw-bold">@Broker.Name</MudText>
+
+        <div class="d-flex flex-wrap gap-0 mt-1">
+
+           <MudTooltip Text="@($"Server url is {Broker.Server}.")">
+                <MudTooltip Text="@($"Server url is {Broker.Server}.")">
+                    <MudChip T="string"
+                             Size="Size.Small"
+                             Color="Color.Primary"
+                             Variant="Variant.Outlined"
+                             Style="max-width: 192px;">
+                        <ChildContent>
+                            <div style="display: flex; align-items: center; overflow: hidden; min-width: 0;">
+                                <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-left: 4px;">
+                                    @Broker.Server
+                                </span>
+                            </div>
+                        </ChildContent>
+                    </MudChip>
+                </MudTooltip>
+            </MudTooltip>
+
+            <SensDataSourcesStateChip ConnectionStatus="@ConnectionState" />
+
+        </div>
+
+    </div>
+
+</MudPaper>
+
+@code {
+    [Parameter]
+    public BrokerDto Broker { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback<BrokerDto> OnClick { get; set; }
+
+    private string ConnectionState { get; set; } = "Loading";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        _ = LoadConnectionState();
+    }
+
+
+    private async Task LoadConnectionState()
+    {
+        try
+        {
+            var result = await BrokerIntegrationService.GetClientStateAsync(Broker.Id);
+
+            ConnectionState = result.ConnectionStatus;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to get state for data source");
+            ConnectionState = "Unknown";
+        }
+        finally
+        {
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task HandleClick()
+    {
+        if (OnClick.HasDelegate)
+            await OnClick.InvokeAsync(Broker);
+    }
+
+    async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" || e.Key == " ")
+        {
+            if (OnClick.HasDelegate)
+                await OnClick.InvokeAsync(Broker);
+        }
+    }
+}

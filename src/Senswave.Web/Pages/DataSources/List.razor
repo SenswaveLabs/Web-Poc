@@ -1,42 +1,91 @@
 ﻿@page "/datasources/list"
 @attribute [Authorize]
+@using Senswave.Web.DataSources.Components
+@using Senswave.Web.DataSources.Integration
+@using Senswave.Web.DataSources.Services
 @using Senswave.Web.Homes.Services
 @using Senswave.Web.Shared.Components
 
 @inject ILogger<List> Logger
+@inject IBrokerService BrokerService
 
-<PageTitle>Data Sources</PageTitle>
+<PageTitle>My Data Sources</PageTitle>
 
 <SensPage Loading="@_loading" FailedToLoad="@_failedToLoad" RefreshContent="@RefreshPage">
     <LoadingContent>
-        @foreach(var i in new int[] { 1, 2, 3 })
-        {
-            <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column">
-                <MudContainer xs="12" MaxWidth="MaxWidth.False" Gutters="false" Class="m-1">
-                    <MudSkeleton Width="256px" />
-                </MudContainer>
-                <MudGrid Spacing="0" Class="p-0 d-flex flex-row flex-wrap">
-                    <MudItem  xs="12" sm="6" md="4" lg="3">
-                        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;"  />
-                    </MudItem>
-                    <MudItem   xs="12" sm="6" md="4" lg="3">
-                        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;" />
-                    </MudItem>
-                    <MudItem  xs="12" sm="6" md="4" lg="3">
-                        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;" />
-                    </MudItem>
-                </MudGrid>
+        <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column">
+            <MudContainer xs="12" MaxWidth="MaxWidth.False" Gutters="false" Class="m-1">
+                <MudSkeleton Width="256px" />
             </MudContainer>
-        }
+            <MudGrid Spacing="0" Class="p-0 d-flex flex-row flex-wrap">
+                <MudItem  xs="12" sm="6" md="6" lg="4">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;"  />
+                </MudItem>
+                <MudItem   xs="12" sm="6" md="6" lg="4">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;" />
+                </MudItem>
+                <MudItem  xs="12" sm="6" md="6" lg="4">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;" />
+                </MudItem>
+            </MudGrid>
+        </MudContainer>
     </LoadingContent>
     <Content>
+         <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column pb-3">
 
+            <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="m-0 pb-1">
+                <MudContainer Class="d-inline-flex align-items-center w-auto p-0">
+                    <MudText Typo="Typo.subtitle1" Class="me-1">Data Sources</MudText>
+
+                    <MudTooltip Text="This is list of configured data sources that user has access to." Placement="Placement.Bottom">
+                        <MudIconButton Icon="@Icons.Material.Filled.Info" Size="Size.Small" Edge="Edge.End" Color="Color.Primary" Style="padding: 0;" />
+                    </MudTooltip>
+                </MudContainer>
+            </MudContainer>
+
+            <MudGrid Spacing="3" Class="p-0 d-flex flex-row flex-wrap" Style="padding-bottom: 64px!important;">
+
+                @foreach (var broker in brokers)
+                {
+                    <MudItem xs="12" sm="12" md="6" lg="4" xl="3" xxl="3">
+                        <SensDataSource Broker="@broker" />
+                    </MudItem>
+                }
+
+                <MudItem xs="6" sm="6" md="6" lg="4" xl="3" xxl="3">
+                    <SensListAction Title="Create Data Source" OnClick="AddDataSourceHandler" />
+                </MudItem>
+
+            </MudGrid>
+
+            <MudFabMenu Class="position-absolute m-3 m-lg-4"
+                        Style="right:0;bottom:0;"
+                        StartIcon="@Icons.Material.Rounded.MoreVert"
+                        Color="Color.Secondary"
+                        @bind-Open="@_open" Fixed="@_fixed">
+
+                <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Refresh"
+                                Color="Color.Secondary"
+                                OnClick="RefreshPage" />
+
+                <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Add"
+                                Color="Color.Secondary"
+                                OnClick="AddDataSourceHandler" />
+
+
+            </MudFabMenu>
+
+        </MudContainer>
     </Content>
 </SensPage>
 
 @code {
+    private bool _open;
+    private bool _fixed;
     private bool _loading = true;
     private bool _failedToLoad = true;
+
+    private List<BrokerDto> brokers = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -45,11 +94,27 @@
         await RefreshPage();
     }
 
+    private async Task AddDataSourceHandler()
+    {
+
+    }
+
     private async Task RefreshPage()
     {
         try
         {
             _loading = true;
+
+            var result = await BrokerService.GetBrokers();
+
+            if (result.IsFailure)
+            {
+                _failedToLoad = true;
+                return;
+            }
+
+            brokers = result.Value;
+            _failedToLoad = false;
 
         }
         catch (Exception ex)
