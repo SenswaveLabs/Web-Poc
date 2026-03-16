@@ -2,7 +2,6 @@
 
 namespace Senswave.Web.DataSources.Integration;
 
-#region Clients Interfaces
 
 public interface IBrokerIntegrationService
 {
@@ -10,13 +9,13 @@ public interface IBrokerIntegrationService
     Task<GetBrokersResponse> GetBrokersAsync(int page = 1, int size = 10);
 
     [Post("/api/v1/datasources/brokers")]
-    Task<BrokerCreatedResponse> CreateBrokerAsync([Body] CreateBrokerRequest request);
+    Task<BrokerCreatedResponse> CreateBrokerAsync([Body] CreateBrokerModel request);
 
     [Get("/api/v1/datasources/brokers/{brokerId}")]
-    Task<GetBrokerResponse> GetBrokerAsync(string brokerId);
+    Task<BrokerModel> GetBrokerAsync(string brokerId);
 
     [Patch("/api/v1/datasources/brokers/{brokerId}")]
-    Task UpdateBrokerAsync(string brokerId, [Body] UpdateBrokerRequest request);
+    Task UpdateBrokerAsync(string brokerId, [Body] UpdateBrokerModel request);
 
     [Delete("/api/v1/datasources/brokers/{brokerId}")]
     Task DeleteBrokerAsync(string brokerId);
@@ -42,12 +41,9 @@ public interface IBrokerIntegrationService
     Task<GetSessionResponse> GetSessionAsync(string brokerId, string sessionId);
 }
 
-#endregion
 
-#region Client Records (DTOs)
 
-// Broker Management
-public record CreateBrokerRequest(
+public record CreateBrokerModel(
     string Name,
     string Url,
     string ClientName,
@@ -57,19 +53,19 @@ public record CreateBrokerRequest(
     string Username,
     string Password);
 
-public record UpdateBrokerRequest(
+public record UpdateBrokerModel(
     string Name,
     string Url,
     string ClientName,
-    int? Port,
+    int Port,
     string ProtocolVersion,
-    bool? UseTls,
+    bool UseTls,
     string Username,
     string Password);
 
 public record BrokerCreatedResponse(string Id);
 
-public record GetBrokerResponse(
+public record BrokerModel(
     string Id,
     string Name,
     string Url,
@@ -89,14 +85,12 @@ public record BrokerDto(
     DateTime CreatedAt,
     DateTime UpdatedAt);
 
-// Broker Clients (Connection State)
 public record StartClientDto(string Username, string Password);
 
 public record GetClientStateResponse(
     string ConnectionStatus,
     string LatestSessionId);
 
-// Broker Sessions & Logs
 public record GetSessionsResponse(List<SessionDto> Items);
 
 public record SessionDto(
@@ -116,18 +110,3 @@ public record LogDto(
     string EventType,
     string Data,
     DateTime CreatedAtUtc);
-
-// Infrastructure & Errors
-public record ErrorProblemDetails(
-    int StatusCode,
-    string Title,
-    string Type,
-    List<ErrorDto> Errors,
-    string TraceId);
-
-public record ErrorDto(
-    string Code,
-    int Type,
-    string Description);
-
-#endregion
