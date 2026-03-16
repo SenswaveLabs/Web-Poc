@@ -195,7 +195,7 @@
 
     private async Task JoinHomeDialog()
     {
-        var result = await DialogService.ShowAsync<JoinHomeDialog>("Join Home",
+        var dialog = await DialogService.ShowAsync<JoinHomeDialog>("Join Home",
             new DialogOptions
             {
                 MaxWidth = MaxWidth.Medium,
@@ -203,7 +203,10 @@
                 CloseOnEscapeKey = true
             });
 
-        if (!result.Result.IsCanceled)
+
+        var result = await dialog.Result;
+
+        if (!result!.Canceled)
         {
             await RefreshPage();
         }
