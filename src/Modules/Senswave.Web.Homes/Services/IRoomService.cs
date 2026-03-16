@@ -10,4 +10,8 @@ public interface IRoomService
     Task<Result> LoadRooms();
 
     Task<Result> CreateRoom(string name);
+
+    Task<Result> UpdateRoom(string id, string name);
+
+    Task<Result> DeleteRoom(string id);
 }

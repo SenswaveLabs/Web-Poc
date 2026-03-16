@@ -41,7 +41,7 @@ public class DeviceService(
         var room = roomService.Rooms.Where(x => x.Id == id).FirstOrDefault();
 
         if (room is null)
-            return Task.FromResult("");
+            return Task.FromResult(string.Empty);
 
         return Task.FromResult(room.Name);
     }

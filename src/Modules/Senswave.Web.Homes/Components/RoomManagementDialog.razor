@@ -1,4 +1,5 @@
 ﻿@using MudBlazor
+@using Senswave.Web.Homes.Integration
 @using Senswave.Web.Shared.Components
 @using Senswave.Web.Homes.Services
 
@@ -29,6 +30,23 @@
             Cancel
         </MudButton>
 
+
+        @if (Edit)
+        {
+            @if (_loading)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+            }
+            else
+            {
+                <MudButton Variant="Variant.Text"
+                           Color="Color.Error"
+                           OnClick="Remove">
+                    Delete Room
+                </MudButton>
+            }
+        }
+
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    Disabled="_loading"
@@ -56,11 +74,50 @@
     [Parameter]
     public bool Edit { get; set; }
 
+    [Parameter]
+    public RoomDto? Room { get; set; }
+
     MudForm? _form;
 
     bool _loading = false;
 
     RoomModel _model = new();
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        if (Edit)
+        {
+            _model = new RoomModel
+            {
+                Name = Room?.Name ?? string.Empty
+            };
+        }
+    }
+
+    async Task Remove()
+    {
+        _loading = true;
+
+        try
+        {
+
+            var result = await RoomService.DeleteRoom(Room!.Id);
+
+            if (result.IsSuccess)
+            {
+                MudDialog!.Close(DialogResult.Ok(_model));
+                return;
+            }
+
+            Snackbar.Add(result.Errors!.First().Description, Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
 
     async Task Submit()
     {
@@ -73,6 +130,20 @@
 
         try
         {
+            if (Edit)
+            {
+                var roomEditResult = await RoomService.UpdateRoom(Room!.Id, _model.Name);
+
+                if (roomEditResult.IsSuccess)
+                {
+                    MudDialog!.Close(DialogResult.Ok(_model));
+                    return;
+                }
+
+                Snackbar.Add(roomEditResult.Errors!.First().Description, Severity.Error);
+                return;
+            }
+
             var result = await RoomService.CreateRoom(_model.Name);
 
             if (result.IsSuccess)

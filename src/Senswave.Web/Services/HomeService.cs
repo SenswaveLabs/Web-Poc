@@ -5,6 +5,7 @@ using Senswave.Web.Homes.Services;
 using Senswave.Web.Shared.Resulting;
 using Senswave.Web.Themes;
 using System.Net;
+using System.Xml.Linq;
 
 namespace Senswave.Web.Services;
 
@@ -285,8 +286,44 @@ public class HomeService(
         }
         catch (ApiException ex)
         {
-            logger.LogError(ex, "Failed to load rooms");
+            logger.LogError(ex, "Failed to add room");
             return await errorFactory.FromApiExceptionAsync(ex, "FailedToCreateRoom");
+        }
+    }
+
+    public async Task<Result> UpdateRoom(string id, string name)
+    {
+        try
+        {
+            var homeId = CurrentHome!.Id;
+
+            var dto = new UpdateRoomRequest(name);
+
+            await roomsIntegrationService.UpdateRoomAsync(homeId, id, dto);
+
+            return Result.Success();
+        }
+        catch (ApiException ex)
+        {
+            logger.LogError(ex, "Failed to update rooms");
+            return await errorFactory.FromApiExceptionAsync(ex, "FailedToUpdateRoom");
+        }
+    }
+
+    public async Task<Result> DeleteRoom(string id)
+    {
+        try
+        {
+            var homeId = CurrentHome!.Id;
+
+            await roomsIntegrationService.DeleteRoomAsync(homeId, id);
+
+            return Result.Success();
+        }
+        catch (ApiException ex)
+        {
+            logger.LogError(ex, "Failed to delete room");
+            return await errorFactory.FromApiExceptionAsync(ex, "FailedToDeleteRoom");
         }
     }
 

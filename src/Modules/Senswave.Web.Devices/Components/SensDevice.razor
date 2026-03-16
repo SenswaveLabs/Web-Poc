@@ -94,7 +94,7 @@
 
     }
 
-    private bool HasRoomName() => !string.IsNullOrEmpty(Device.RoomId);
+    private bool HasRoomName() => RoomName != string.Empty;
 
     private Color GetColor()
     {
