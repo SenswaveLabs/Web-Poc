@@ -1,11 +1,12 @@
 ﻿using Senswave.Web.DataSources.Integration;
+using Senswave.Web.DataSources.Models;
 using Senswave.Web.Shared.Resulting;
 
 namespace Senswave.Web.DataSources.Services;
 
 public interface IBrokerService
 {
-    Task<Result> AddBroker(CreateBrokerModel model);
+    Task<Result> AddBroker(BrokerDetailedModel model);
 
     Task<Result> UpdateBroker(string id, string name);
 

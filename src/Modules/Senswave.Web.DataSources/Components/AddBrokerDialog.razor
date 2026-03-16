@@ -1,0 +1,108 @@
+﻿@using Microsoft.Extensions.Logging
+@using MudBlazor
+@using Senswave.Web.DataSources.Models
+@using Senswave.Web.DataSources.Services
+
+@inject IBrokerService BrokerService
+@inject ISnackbar Snackbar
+@inject ILogger<AddBrokerDialog> Logger
+@inject IDialogService DialogService
+
+<MudDialog>
+
+    <DialogContent>
+
+        <BrokerForm @ref="_brokerForm"
+                    Model="_model"
+                    Edit="false" />
+
+    </DialogContent>
+
+    <DialogActions>
+
+        <MudButton Variant="Variant.Text"
+                   OnClick="Cancel">
+            Cancel
+        </MudButton>
+
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Disabled="_loading"
+                   OnClick="CreateBroker">
+
+            @if (_loading)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+            }
+            else
+            {
+                @("Add")
+            }
+
+        </MudButton>
+
+    </DialogActions>
+
+</MudDialog>
+
+@code {
+    bool _loading = false;
+
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    private BrokerForm? _brokerForm;
+
+    private BrokerDetailedModel _model = new()
+    {
+        Name = "",
+        Url = "",
+        ClientName = "",
+        Port = 1883,
+        ProtocolVersion = "MqttV5",
+        UseTls = false,
+        Username = "",
+        Password = ""
+    };
+
+    private async Task CreateBroker()
+    {
+        if (_brokerForm is null)
+            return;
+
+        var valid = await _brokerForm.Validate();
+
+        if (!valid)
+            return;
+
+        _loading = true;
+
+        try
+        {
+            var addResult = await BrokerService.AddBroker(_model);
+
+            if (addResult.IsFailure)
+            {
+                Snackbar.Add(addResult.Errors.FirstOrDefault()?.Description ?? "Operation failed.", Severity.Error);
+                return;
+            }
+
+            Snackbar.Add("Data source created.", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(_model));
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to create data source.");
+            Snackbar.Add("Operation failed.", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+}

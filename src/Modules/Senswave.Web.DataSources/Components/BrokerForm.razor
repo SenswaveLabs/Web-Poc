@@ -7,35 +7,35 @@
     <MudGrid>
 
         <MudItem xs="12">
-            <MudTextField T="string"
-                          Label="Name"
-                          For="@(() => Model.Name)"
-                          @bind-Value="Model.Name"
-                          Required="true"
-                          Immediate="true"
-                          MaxLength="32"
-                          RequiredError="Name is required" />
+        <MudTextField T="string"
+                      Label="Name"
+                      For="@(() => Model.Name)"
+                      Value="Model.Name"
+                      Immediate="true"
+                      ValueChanged="OnNameChanged"
+                      Required="true"
+                      MaxLength="32"
+                      RequiredError="Name is required" />
         </MudItem>
 
         <MudItem xs="12" md="6">
             <MudTextField T="string"
-                          Label="Url"
+                          Label="Url Domain"
                           For="@(() => Model.Url)"
-                          Value="Model.Url"
-                          Disabled="@Edit"
-                          ReadOnly="true"
+                          @bind-value="Model.Url"
+                          ReadOnly="@Edit"
                           Required="true"
                           MaxLength="1024"
-                          RequiredError="Url is required" />
+                          Pattern="^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$"
+                          RequiredError="Domain is required" />
         </MudItem>
 
         <MudItem xs="12" md="6">
             <MudNumericField T="int"
                              Label="Port"
                              For="@(() => Model.Port)"
-                             Value="Model.Port"
-                             Disabled="@Edit"
-                             ReadOnly="true"
+                             @bind-value="Model.Port"
+                             ReadOnly="@Edit"
                              Min="1"
                              Max="65535"
                              Required="true" />
@@ -45,10 +45,9 @@
             <MudTextField T="string"
                           Label="Client Name"
                           For="@(() => Model.ClientName)"
-                          Value="Model.ClientName"
+                          @bind-value="Model.ClientName"
                           MaxLength="128"
-                          Disabled="@Edit"
-                          ReadOnly="true"
+                          ReadOnly="@Edit"
                           Required="true" />
         </MudItem>
 
@@ -56,8 +55,8 @@
             <MudSelect T="string"
                        Label="Protocol Version"
                        For="@(() => Model.ProtocolVersion)"
-                       Value="Model.ProtocolVersion"
-                       Disabled="@Edit"
+                       @bind-value="Model.ProtocolVersion"
+                       ReadOnly="@Edit"
                        Required="true">
 
                 @foreach (var option in ProtocolOptions)
@@ -73,8 +72,9 @@
         <MudItem xs="12">
             <MudSwitch T="bool"
                        Label="Use TLS"
-                       Value="Model.UseTls"
-                       Disabled="@Edit" />
+                       @bind-Value="Model.UseTls"
+                       ReadOnly="@Edit"
+                       Color="Color.Success" />
         </MudItem>
 
         @if (!Edit)
@@ -85,17 +85,15 @@
                 <MudTextField T="string"
                               Label="Username"
                               For="@(() => Model.Username)"
-                              Value="Model.Username"
-                              ReadOnly="true" />
+                              @bind-value="Model.Username" />
             </MudItem>
 
             <MudItem xs="12" md="6">
                 <MudTextField T="string"
                               Label="Password"
                               For="@(() => Model.Password)"
-                              Value="Model.Password"
-                              InputType="InputType.Password"
-                              ReadOnly="true" />
+                              @bind-value="Model.Password"
+                              InputType="InputType.Password" />
             </MudItem>
         }
 
@@ -109,6 +107,15 @@
 
     [Parameter]
     public BrokerDetailedModel Model { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback<string> NameChanged { get; set; }
+
+    private async Task OnNameChanged(string value)
+    {
+        Model.Name = value;
+        await NameChanged.InvokeAsync(value);
+    }
 
     [Parameter]
     public bool Edit { get; set; } = false;

@@ -85,7 +85,7 @@
                         
                         <MudPaper Class="pa-6">
                             <MudText Typo="Typo.h6" Class="mb-4">Configuration</MudText>
-                            <BrokerForm @ref="_form" Model="EditableModel" Edit="true" />
+                            <BrokerForm @ref="_form" Model="EditableModel" Edit="true" NameChanged="@(_ => StateHasChanged())" />
                         </MudPaper>
                     </MudItem>
                 </MudGrid>
@@ -217,9 +217,9 @@
             "Broker Credentials",
             new DialogOptions
             {
-                CloseOnEscapeKey = true,
-                MaxWidth = MaxWidth.Small,
-                FullWidth = true
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+                CloseOnEscapeKey = true
             });
 
         var result = await dialog.Result;
@@ -244,6 +244,7 @@
             catch (Exception ex)
             {
                 Logger.LogError(ex, "Failed to start connection.");
+                Snackbar.Add("Operation failed.", Severity.Error);
             }
             finally
             {

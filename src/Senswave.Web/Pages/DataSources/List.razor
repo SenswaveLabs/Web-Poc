@@ -2,6 +2,7 @@
 @attribute [Authorize]
 @using Senswave.Web.DataSources.Components
 @using Senswave.Web.DataSources.Integration
+@using Senswave.Web.DataSources.Models
 @using Senswave.Web.DataSources.Services
 @using Senswave.Web.Homes.Services
 @using Senswave.Web.Shared.Components
@@ -9,6 +10,8 @@
 @inject ILogger<List> Logger
 @inject IBrokerService BrokerService
 @inject NavigationManager Navigation
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
 
 <PageTitle>My Data Sources</PageTitle>
 
@@ -73,9 +76,7 @@
                                 Color="Color.Secondary"
                                 OnClick="AddDataSourceHandler" />
 
-
             </MudFabMenu>
-
         </MudContainer>
     </Content>
 </SensPage>
@@ -97,7 +98,22 @@
 
     private async Task AddDataSourceHandler()
     {
-        Navigation.NavigateTo("/datasources/add");
+        var dialog = await DialogService.ShowAsync<AddBrokerDialog>(
+            "Create Broker",
+            new DialogOptions
+            {
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+                CloseOnEscapeKey = true
+            });
+
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            await RefreshPage();
+        }
+
     }
 
     private async Task DataSourceSelected(string id)

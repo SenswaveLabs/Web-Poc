@@ -177,9 +177,13 @@
 
     private async Task AddHomeDialog()
     {
-        var options = new DialogOptions { CloseOnEscapeKey = true };
-
-        var dialog = await DialogService.ShowAsync<AddHomeDialog>("Create Home", options);
+        var dialog = await DialogService.ShowAsync<AddHomeDialog>("Create Home",
+            new DialogOptions
+            {
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+                CloseOnEscapeKey = true
+            });
 
         var result = await dialog.Result;
 
@@ -191,9 +195,13 @@
 
     private async Task JoinHomeDialog()
     {
-        var options = new DialogOptions { CloseOnEscapeKey = true };
-
-        var result = await DialogService.ShowAsync<JoinHomeDialog>("Join Home", options);
+        var result = await DialogService.ShowAsync<JoinHomeDialog>("Join Home",
+            new DialogOptions
+            {
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+                CloseOnEscapeKey = true
+            });
 
         if (!result.Result.IsCanceled)
         {

@@ -11,7 +11,6 @@ public class BrokerDetailedModel
     public string Name { get; set; } = string.Empty;
 
     [Required]
-    [Url]
     public string Url { get; set; } = string.Empty;
 
     [Required]
