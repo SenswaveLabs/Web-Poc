@@ -1,0 +1,114 @@
+﻿@using MudBlazor
+
+<MudPaper Elevation="2" Class="pa-4">
+
+    <MudStack Spacing="3">
+
+        <!-- Broker Definition -->
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+
+            <MudIcon Icon="@Icons.Material.Rounded.Dns"
+                     Size="Size.Large"
+                     Color="Color.Primary" />
+
+            <MudStack Spacing="0">
+                <MudText Typo="Typo.h6">@Name</MudText>
+
+                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                    @Server:@Port
+                </MudText>
+            </MudStack>
+
+        </MudStack>
+
+        <!-- Broker State -->
+        <MudPaper Elevation="0" Class="pa-3 d-flex align-center justify-space-between">
+
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+
+                <MudIcon Icon="@ChipIcon"
+                         Color="@ChipColor"
+                         Size="Size.Medium" />
+
+                <MudStack Spacing="0">
+                    <MudText Typo="Typo.subtitle2">@Message</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                        @Description
+                    </MudText>
+                </MudStack>
+
+            </MudStack>
+
+            <MudChip T="string"
+                     Color="@ChipColor"
+                     Variant="Variant.Filled"
+                     Size="Size.Medium">
+
+                @ConnectionStatus
+
+            </MudChip>
+
+        </MudPaper>
+
+    </MudStack>
+
+</MudPaper>
+
+@code {
+
+    [Parameter]
+    public string ConnectionStatus { get; set; } = "Unknown";
+
+    [Parameter]
+    public string Name { get; set; } = "Unknown";
+
+    [Parameter]
+    public string Server { get; set; } = "Unknown";
+
+    [Parameter]
+    public int Port { get; set; }
+
+    private string Message => ConnectionStatus switch
+    {
+        "Loading" => "Loading",
+        "Invalid" => "Invalid",
+        "Working" => "Working",
+        "Restarting" => "Restarting",
+        "Stopped" => "Stopped",
+        "NotStarted" => "Not started",
+        _ => "Unknown"
+    };
+
+    private string Description => ConnectionStatus switch
+    {
+        "Loading" => "Checking broker status",
+        "Invalid" => "Invalid state failed to update",
+        "Working" => "Connection working correctly",
+        "Restarting" => "Broker is restarting",
+        "Stopped" => "Broker has been stopped",
+        "NotStarted" => "Broker has not been started",
+        _ => "Failed to determine broker state"
+    };
+
+    private Color ChipColor => ConnectionStatus switch
+    {
+        "Loading" => Color.Secondary,
+        "Invalid" => Color.Dark,
+        "Working" => Color.Success,
+        "Restarting" => Color.Warning,
+        "Stopped" => Color.Error,
+        "NotStarted" => Color.Default,
+        _ => Color.Default
+    };
+
+    private string ChipIcon => ConnectionStatus switch
+    {
+        "Loading" => Icons.Material.Filled.HourglassEmpty,
+        "Invalid" => Icons.Material.Filled.ErrorOutline,
+        "Working" => Icons.Material.Filled.CheckCircle,
+        "Restarting" => Icons.Material.Filled.RestartAlt,
+        "Stopped" => Icons.Material.Filled.StopCircle,
+        "NotStarted" => Icons.Material.Filled.PauseCircle,
+        _ => Icons.Material.Filled.HelpOutline
+    };
+}

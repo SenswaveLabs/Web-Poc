@@ -1,5 +1,6 @@
 ﻿using Refit;
 using Senswave.Web.DataSources.Integration;
+using Senswave.Web.DataSources.Models;
 using Senswave.Web.DataSources.Services;
 using Senswave.Web.Shared.Resulting;
 
@@ -44,10 +45,20 @@ public class BrokerService(
         }
     }
 
-    public async Task<Result> AddBroker(CreateBrokerModel model)
+    public async Task<Result> AddBroker(BrokerDetailedModel baseModel)
     {
         try
         {
+            var model = new CreateBrokerModel(
+                baseModel.Name, 
+                baseModel.Url, 
+                baseModel.ClientName, 
+                baseModel.Port, 
+                baseModel.ProtocolVersion, 
+                baseModel.UseTls, 
+                baseModel.Username, 
+                baseModel.Password);
+
             await integrationService.CreateBrokerAsync(model);
             return Result.Success();
         }
@@ -58,11 +69,12 @@ public class BrokerService(
         }
     }
 
-    public async Task<Result> UpdateBroker(string id, UpdateBrokerModel model)
+    public async Task<Result> UpdateBroker(string id, string name)
     {
         try
         {
-            await integrationService.UpdateBrokerAsync(id, model);
+            var dto = new UpdateBrokerModel(name);
+            await integrationService.UpdateBrokerAsync(id, dto);
             return Result.Success();
         }
         catch (ApiException ex)

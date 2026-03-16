@@ -1,4 +1,4 @@
-﻿@page "/devices/list"
+﻿@page "/devices"
 @attribute [Authorize]
 
 @using Senswave.Web.Devices.Components
@@ -188,9 +188,13 @@
 
     private async Task AddRoomDialogHandler()
     {
-        var options = new DialogOptions { CloseOnEscapeKey = true };
-
-        var dialog = await DialogService.ShowAsync<RoomManagementDialog>("Create Room", options);
+        var dialog = await DialogService.ShowAsync<RoomManagementDialog>("Create Room",
+            new DialogOptions
+            {
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+                CloseOnEscapeKey = true
+            });
 
         var result = await dialog.Result;
 
@@ -208,7 +212,13 @@
             { "Edit", true }
         };
 
-        var dialog = await DialogService.ShowAsync<RoomManagementDialog>("Edit Room", parameters);
+        var dialog = await DialogService.ShowAsync<RoomManagementDialog>("Edit Room", parameters,
+            new DialogOptions
+            {
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+                CloseOnEscapeKey = true
+            });
         var result = await dialog.Result;
 
         if (!result!.Canceled)

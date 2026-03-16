@@ -1,0 +1,334 @@
+﻿@page "/datasources/details/{Id}"
+@attribute [Authorize]
+
+@using Senswave.Web.DataSources.Components
+@using Senswave.Web.DataSources.Integration
+@using Senswave.Web.DataSources.Models
+@using Senswave.Web.DataSources.Services
+@using Senswave.Web.Services
+@using Senswave.Web.Shared.Components
+
+@inject IBrokerIntegrationService BrokerIntegrationService
+@inject IBrokerService BrokerService
+@inject ISnackbar Snackbar
+@inject ILogger<Details> Logger
+@inject IDialogService DialogService
+@inject NavigationManager Navigation
+
+<PageTitle>@(BaseModel is null ? "Broker" : BaseModel.Name)</PageTitle>
+
+<SensPage Loading="@_loading" FailedToLoad="@_failedToLoad" RefreshContent="@RefreshPage">
+    <LoadingContent>
+
+        <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column">
+            <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="m-1">
+                <MudSkeleton Width="256px" />
+            </MudContainer>
+            <MudGrid Spacing="0" Class="p-0 d-flex flex-row flex-wrap">
+                <MudItem xs="12" md="4">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:192px;"  />
+                </MudItem>
+
+                <MudItem xs="12" md="8">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:384px;" />
+                </MudItem>
+
+            </MudGrid>
+        </MudContainer>
+        
+    </LoadingContent>
+    <Content>
+        <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column pb-3">
+
+            <MudContainer MaxWidth="MaxWidth.Large">
+                <MudGrid>
+                    <MudItem xs="12">
+                        <SensDataSourceState ConnectionStatus="@ConnectionState" Name="@EditableModel.Name" Port="@EditableModel.Port" Server="@EditableModel.Url" />
+                    </MudItem>
+
+                    <MudItem xs="12" md="4">
+                        <MudText Typo="Typo.subtitle2" Class="mb-2">Client Controls</MudText>
+                        <MudStack Spacing="2">
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Success"
+                                       FullWidth="true"
+                                       StartIcon="@Icons.Material.Rounded.PlayArrow"
+                                       OnClick="OnStart"
+                                       Disabled="@(ConnectionState == "Working")">
+                                Start Client
+                            </MudButton>
+
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Warning"
+                                       FullWidth="true"
+                                       StartIcon="@Icons.Material.Rounded.Refresh"
+                                       OnClick="OnRestart"
+                                       Disabled="@(ConnectionState == "NotStarted" || ConnectionState == "Stopped")">
+                                Restart
+                            </MudButton>
+
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Error"
+                                       FullWidth="true"
+                                       StartIcon="@Icons.Material.Rounded.Stop"
+                                       OnClick="OnStop"
+                                       Disabled="@(ConnectionState == "Stopped" || ConnectionState == "NotStarted")">
+                                Stop Client
+                            </MudButton>
+                        </MudStack>
+
+                        <MudAlert Severity="Severity.Info" Class="mt-4" Variant="Variant.Outlined">
+                            One data source belongs only to one user account. Do not share credentials.
+                        </MudAlert>
+                    </MudItem>
+
+                    <MudItem xs="12" md="8" Style="padding-bottom: 64px!important;">
+                        
+                        <MudPaper Class="pa-6">
+                            <MudText Typo="Typo.h6" Class="mb-4">Configuration</MudText>
+                            <BrokerForm @ref="_form" Model="EditableModel" Edit="true" NameChanged="@(_ => StateHasChanged())" />
+                        </MudPaper>
+                    </MudItem>
+                </MudGrid>
+
+            </MudContainer>
+
+            @if(HasChanges())
+            {
+                <MudFab Color="Color.Secondary"
+                        StartIcon="@Icons.Material.Filled.Save"
+                        Class="position-absolute m-3 m-lg-4"
+                        Style="right:0;bottom:0;"
+                        OnClick="SaveChanges" />
+            }
+            else
+            {
+                <MudFabMenu Class="position-absolute m-3 m-lg-4"
+                            Style="right:0;bottom:0;"
+                            StartIcon="@Icons.Material.Rounded.MoreVert" 
+                            Color="Color.Secondary"
+                            @bind-Open="@_open" Fixed="@_fixed">
+
+                    <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Refresh"
+                                    Color="Color.Secondary"
+                                    OnClick="RefreshPage" />
+
+                    <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Delete"
+                                    Color="Color.Secondary"
+                                    OnClick="DeleteDataSource" />
+
+                </MudFabMenu>
+            }
+
+        </MudContainer>
+    </Content>
+</SensPage>
+
+@code {
+
+    private bool _open;
+    private bool _fixed;
+
+    private bool _loading = true;
+    private bool _failedToLoad = true;
+
+    private BrokerForm? _form;
+
+    [Parameter] public string Id { get; set; }
+
+    private BrokerDetailedModel BaseModel { get; set; } = new();
+
+    private BrokerDetailedModel EditableModel { get; set; } = new();
+
+    private string ConnectionState = "Loading";
+
+    protected async override Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        await RefreshPage();
+    }
+
+    private async Task RefreshPage()
+    {
+        try
+        {
+            _loading = true;
+
+            var result = await BrokerIntegrationService.GetClientStateAsync(Id);
+
+            ConnectionState = result.ConnectionStatus;
+
+            var brokerResult = await BrokerService.GetBroker(Id);
+
+            EditableModel = new BrokerDetailedModel
+            {
+                Name = brokerResult.Value.Name,
+
+                ClientName = brokerResult.Value.ClientName,
+                Url = brokerResult.Value.Url,
+                Port = brokerResult.Value.Port,
+                ProtocolVersion = brokerResult.Value.ProtocolVersion,
+                UseTls = brokerResult.Value.UseTls,
+            };
+
+            BaseModel = new BrokerDetailedModel
+            {
+                Name = brokerResult.Value.Name,
+
+                ClientName = brokerResult.Value.ClientName,
+                Url = brokerResult.Value.Url,
+                Port = brokerResult.Value.Port,
+                ProtocolVersion = brokerResult.Value.ProtocolVersion,
+                UseTls = brokerResult.Value.UseTls,
+            };
+
+            _failedToLoad = false;
+        }
+        catch (Exception ex)
+        {
+            _failedToLoad = true;
+            Logger.LogError(ex, "Failed to load page.");
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private bool HasChanges() => EditableModel.Name != BaseModel.Name; 
+
+    private async Task SaveChanges()
+    {
+        _loading = true;
+        try
+        {
+            var result = await BrokerService.UpdateBroker(Id, EditableModel.Name);
+
+            if (result.IsSuccess)
+                Snackbar.Add("Name updated.", Severity.Success);
+            else
+                Snackbar.Add(result.Errors.FirstOrDefault()?.Description ?? "Failed to udpate.", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task OnStart()
+    {
+        var dialog = await DialogService.ShowAsync<RequestCredentialsDialog>(
+            "Broker Credentials",
+            new DialogOptions
+            {
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+                CloseOnEscapeKey = true
+            });
+
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            var credentials = (RequestCredentialsDialog.BrokerCredentials) result.Data;
+
+            var username = credentials.Username;
+            var password = credentials.Password;
+
+            _loading = true;
+            try
+            {
+                StateHasChanged();
+                var startResult = await BrokerService.StartClient(Id, username, password);
+
+                if (startResult.IsFailure)
+                    Snackbar.Add(startResult.Errors.FirstOrDefault()?.Description ?? "Operation failed.", Severity.Error);
+
+                await RefreshPage();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Failed to start connection.");
+                Snackbar.Add("Operation failed.", Severity.Error);
+            }
+            finally
+            {
+                _loading = false;
+            }
+        }
+    }
+
+    private async Task DeleteDataSource()
+    {
+        _loading = true;
+
+        try
+        {
+            var result = await BrokerService.DeleteBroker(Id);
+
+            if (result.IsFailure)
+            {
+                Snackbar.Add(result.Errors.FirstOrDefault()?.Description ?? "Operation failed.", Severity.Error);
+                return;
+            }
+
+            Navigation.NavigateTo("/datasources");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Operation failed");
+            Snackbar.Add("Operation failed.", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task OnStop()
+    {
+        _loading = true;
+        try
+        {
+            var result = await BrokerService.StopClient(Id);
+
+            if (result.IsFailure)
+                Snackbar.Add(result.Errors.FirstOrDefault()?.Description ?? "Operation failed.", Severity.Error);
+
+            await RefreshPage();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Operation failed");
+            Snackbar.Add("Operation failed.", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task OnRestart()
+    {
+        _loading = true;
+        try
+        {
+            var result = await BrokerService.RestartClient(Id);
+
+            if (result.IsFailure)
+                Snackbar.Add(result.Errors.FirstOrDefault()?.Description ?? "Operation failed.", Severity.Error);
+
+            await RefreshPage();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Operation failed");
+            Snackbar.Add("Operation failed.", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

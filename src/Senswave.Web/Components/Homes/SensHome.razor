@@ -88,9 +88,9 @@
 
     private string ConnectionState { get; set; } = "Loading";
 
-    protected override void OnInitialized()
+    protected override async Task OnParametersSetAsync()
     {
-        base.OnInitialized();
+        await base.OnParametersSetAsync();
         _ = LoadConnectionState();
     }
 
@@ -98,6 +98,12 @@
     {
         try
         {
+            if (Home.DataSourceId is null)
+            {
+                ConnectionState = "Unknown";
+                return;
+            }
+
             var result = await BrokerIntegrationService.GetClientStateAsync(Home.DataSourceId);
 
             ConnectionState = result.ConnectionStatus;

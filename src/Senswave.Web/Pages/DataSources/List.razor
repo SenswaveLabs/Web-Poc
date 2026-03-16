@@ -1,13 +1,17 @@
-﻿@page "/datasources/list"
+﻿@page "/datasources"
 @attribute [Authorize]
 @using Senswave.Web.DataSources.Components
 @using Senswave.Web.DataSources.Integration
+@using Senswave.Web.DataSources.Models
 @using Senswave.Web.DataSources.Services
 @using Senswave.Web.Homes.Services
 @using Senswave.Web.Shared.Components
 
 @inject ILogger<List> Logger
 @inject IBrokerService BrokerService
+@inject NavigationManager Navigation
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
 
 <PageTitle>My Data Sources</PageTitle>
 
@@ -48,7 +52,7 @@
                 @foreach (var broker in brokers)
                 {
                     <MudItem xs="12" sm="12" md="6" lg="4" xl="3" xxl="3">
-                        <SensDataSource Broker="@broker" />
+                        <SensDataSource Broker="@broker" OnClick="() => DataSourceSelected(broker.Id)" />
                     </MudItem>
                 }
 
@@ -72,9 +76,7 @@
                                 Color="Color.Secondary"
                                 OnClick="AddDataSourceHandler" />
 
-
             </MudFabMenu>
-
         </MudContainer>
     </Content>
 </SensPage>
@@ -96,7 +98,27 @@
 
     private async Task AddDataSourceHandler()
     {
+        var dialog = await DialogService.ShowAsync<AddBrokerDialog>(
+            "Create Broker",
+            new DialogOptions
+            {
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+                CloseOnEscapeKey = true
+            });
 
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            await RefreshPage();
+        }
+
+    }
+
+    private async Task DataSourceSelected(string id)
+    {
+        Navigation.NavigateTo($"/datasources/details/{id}");
     }
 
     private async Task RefreshPage()
