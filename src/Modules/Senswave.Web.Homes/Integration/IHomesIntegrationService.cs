@@ -26,7 +26,6 @@ public interface IHomesIntegrationService
     [Post("/api/v1/homes/")]
     Task<CurrentHomeResponse> CreateHome([Body] CreateHomeRequest request);
 
-
     [Patch("/api/v1/homes/{homeId}")]
     Task UpdateHome([AliasAs("homeId")] string homeId, [Body] UpdateHomeRequest request);
 

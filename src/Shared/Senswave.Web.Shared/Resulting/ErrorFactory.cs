@@ -13,7 +13,14 @@ public class ErrorFactory(ILogger<ErrorFactory> logger) : IErrorFactory
         var error = await TryExtractError(exception);
 
         if (error != null)
+        {
+            if (error.Description.Contains("No description"))
+            {
+                return Create(error.Code);
+            }
+
             return Create(error.Code, error.Description);
+        }
 
         return Create(fallbackCode);
     }
@@ -23,7 +30,14 @@ public class ErrorFactory(ILogger<ErrorFactory> logger) : IErrorFactory
         var error = await TryExtractError(exception);
 
         if (error != null)
+        {
+            if (error.Description.Contains("No description"))
+            {
+                return Create<T>(error.Code);
+            }
+
             return Create<T>(error.Code, error.Description);
+        }
 
         return Create<T>(fallbackCode);
     }

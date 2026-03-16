@@ -3,9 +3,7 @@ using Senswave.Web.Homes.Integration;
 using Senswave.Web.Homes.Models;
 using Senswave.Web.Homes.Services;
 using Senswave.Web.Shared.Resulting;
-using Senswave.Web.Themes;
 using System.Net;
-using System.Xml.Linq;
 
 namespace Senswave.Web.Services;
 
@@ -13,6 +11,7 @@ public class HomeService(
     IErrorFactory errorFactory,
     IRoomsIntegrationServcice roomsIntegrationService,
     IHomesIntegrationService integrationService,
+    IHomesSharingIntegrationService sharingIntegrationService,
     ILogger<HomeService> logger) : IHomeService, IRoomService
 {
     private HomeDetails? _currentHome;
@@ -232,17 +231,102 @@ public class HomeService(
 
     public async Task<Result> JoinHome(string code)
     {
-        throw new NotImplementedException();
+        try
+        {
+            logger.LogInformation("Joining home with code: {code}", code);
+
+            await sharingIntegrationService.AcceptSharingAsync(new AcceptSharingRequest(code));
+
+            return Result.Success();
+        }
+        catch (ApiException ex)
+        {
+            logger.LogError(ex, "Failed to join home with code: {code}", code);
+            return await errorFactory.FromApiExceptionAsync(ex, "FailedToJoinHome");
+        }
     }
 
-    public Task<Result> UpdateHomeDataSources(string dataSourceId)
+    public async Task<Result> UpdateHomeDataSources(string dataSourceId)
     {
-        throw new NotImplementedException();
+        await _initLock.WaitAsync();
+        try
+        {
+            var homeId = CurrentHome!.Id;
+            logger.LogInformation("[Home: {homeId}] Updating data source to {dataSourceId}.", homeId, dataSourceId);
+
+            var request = new AssignHomeDataSourceRequest(dataSourceId);
+            await integrationService.SetHomeDataSourceAsync(homeId, request);
+
+            var response = await integrationService.GetHome(homeId);
+            UpdateCurrentHomeState(response);
+
+            return Result.Success();
+        }
+        catch (ApiException ex)
+        {
+            logger.LogError(ex, "Failed to update home data source for home: {homeId}", CurrentHome?.Id);
+            return await errorFactory.FromApiExceptionAsync(ex, "FailedToUpdateHomeDataSource");
+        }
+        finally
+        {
+            _initLock.Release();
+        }
     }
 
-    public Task<Result> UpdateHome(string name, string icon, double? lattitude, double? longitude)
+    public async Task<Result> UpdateHome(string name, string icon, double? latitude, double? longitude)
     {
-        throw new NotImplementedException();
+        await _initLock.WaitAsync();
+        try
+        {
+            var homeId = CurrentHome!.Id;
+            logger.LogInformation("[Home: {homeId}] Updating home details.", homeId);
+
+            var currentDsId = CurrentHome.DataSource?.Id;
+
+            var request = new UpdateHomeRequest(currentDsId, name, icon, latitude, longitude);
+            await integrationService.UpdateHome(homeId, request);
+
+            var response = await integrationService.GetHome(homeId);
+            UpdateCurrentHomeState(response);
+
+            return Result.Success();
+        }
+        catch (ApiException ex)
+        {
+            logger.LogError(ex, "Failed to update home: {homeId}", CurrentHome?.Id);
+            return await errorFactory.FromApiExceptionAsync(ex, "FailedToUpdateHome");
+        }
+        finally
+        {
+            _initLock.Release();
+        }
+    }
+
+    private void UpdateCurrentHomeState(GetHomeResponse response)
+    {
+        CurrentHome = new HomeDetails
+        {
+            Id = response.Id,
+            Name = response.Name,
+            Icon = response.Icon,
+            IsOwner = response.IsOwner,
+            DataSource = response.DataSource is null ? null : new DataSource
+            {
+                Id = response.DataSource.Id ?? string.Empty,
+                Name = response.DataSource.Name ?? string.Empty,
+                State = response.DataSource.State ?? string.Empty
+            },
+            Location = response.Location is null ? null : new Location
+            {
+                Longitude = response.Location.Longitude,
+                Latitude = response.Location.Latitude
+            },
+            Rooms = response.Rooms?.Select(r => new Room
+            {
+                Id = r.Id,
+                Name = r.Name
+            }).ToList() ?? []
+        };
     }
 
     #region IRoomService
