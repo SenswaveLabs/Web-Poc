@@ -16,6 +16,7 @@ using Senswave.Web.Users.Auth.Services;
 using Senswave.Web.Users.Users.Services;
 using Senswave.Web.Devices.Services;
 using Senswave.Web.Homes;
+using Senswave.Web.DataSources.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
@@ -52,6 +53,8 @@ builder.Services.AddSingleton<IRoomService>(sp => sp.GetRequiredService<HomeServ
 
 // Modules - Data Sources
 builder.Services.AddDataSources(builder.Configuration);
+builder.Services.AddSingleton<BrokerService>();
+builder.Services.AddSingleton<IBrokerService>(sp => sp.GetRequiredService<BrokerService>());
 
 // Modules - Devices
 builder.Services.AddDevices(builder.Configuration);

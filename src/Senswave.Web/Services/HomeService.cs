@@ -81,9 +81,9 @@ public class HomeService(
                     IsOwner = response.IsOwner,
                     DataSource = response.DataSource is null ? null : new DataSource
                     {
-                        Id = response.DataSource.Id,
-                        Name = response.DataSource.Name,
-                        State = response.DataSource.State
+                        Id = response.DataSource?.Id ?? string.Empty,
+                        Name = response.DataSource?.Name ?? string.Empty,
+                        State = response.DataSource?.State ?? string.Empty
                     },
                     Location = response.Location is null ? null : new Location
                     {
@@ -175,9 +175,9 @@ public class HomeService(
                 IsOwner = response.IsOwner,
                 DataSource = response.DataSource is null ? null : new DataSource
                 {
-                    Id = response.DataSource.Id,
-                    Name = response.DataSource.Name,
-                    State = response.DataSource.State
+                    Id = response.DataSource?.Id ?? string.Empty,
+                    Name = response.DataSource?.Name ?? string.Empty,
+                    State = response.DataSource?.State ?? string.Empty
                 },
                 Location = response.Location is null ? null : new Location
                 {
