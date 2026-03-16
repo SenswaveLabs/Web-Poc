@@ -239,6 +239,7 @@
             _loading = true;
             try
             {
+                StateHasChanged();
                 var startResult = await BrokerService.StartClient(Id, username, password);
 
                 if (startResult.IsFailure)
