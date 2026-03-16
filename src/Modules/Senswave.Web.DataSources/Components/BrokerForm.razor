@@ -1,0 +1,134 @@
+﻿@using MudBlazor
+@using System.ComponentModel.DataAnnotations
+@using Senswave.Web.DataSources.Models
+
+<MudForm @ref="_form" Model="Model">
+
+    <MudGrid>
+
+        <MudItem xs="12">
+            <MudTextField T="string"
+                          Label="Name"
+                          For="@(() => Model.Name)"
+                          @bind-Value="Model.Name"
+                          Required="true"
+                          Immediate="true"
+                          MaxLength="32"
+                          RequiredError="Name is required" />
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudTextField T="string"
+                          Label="Url"
+                          For="@(() => Model.Url)"
+                          Value="Model.Url"
+                          Disabled="@Edit"
+                          ReadOnly="true"
+                          Required="true"
+                          MaxLength="1024"
+                          RequiredError="Url is required" />
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudNumericField T="int"
+                             Label="Port"
+                             For="@(() => Model.Port)"
+                             Value="Model.Port"
+                             Disabled="@Edit"
+                             ReadOnly="true"
+                             Min="1"
+                             Max="65535"
+                             Required="true" />
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudTextField T="string"
+                          Label="Client Name"
+                          For="@(() => Model.ClientName)"
+                          Value="Model.ClientName"
+                          MaxLength="128"
+                          Disabled="@Edit"
+                          ReadOnly="true"
+                          Required="true" />
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudSelect T="string"
+                       Label="Protocol Version"
+                       For="@(() => Model.ProtocolVersion)"
+                       Value="Model.ProtocolVersion"
+                       Disabled="@Edit"
+                       Required="true">
+
+                @foreach (var option in ProtocolOptions)
+                {
+                    <MudSelectItem Value="@option.Value">
+                        @option.Name
+                    </MudSelectItem>
+                }
+
+            </MudSelect>
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudSwitch T="bool"
+                       Label="Use TLS"
+                       Value="Model.UseTls"
+                       Disabled="@Edit" />
+        </MudItem>
+
+        @if (!Edit)
+        {
+            <MudDivider />
+
+            <MudItem xs="12" md="6">
+                <MudTextField T="string"
+                              Label="Username"
+                              For="@(() => Model.Username)"
+                              Value="Model.Username"
+                              ReadOnly="true" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudTextField T="string"
+                              Label="Password"
+                              For="@(() => Model.Password)"
+                              Value="Model.Password"
+                              InputType="InputType.Password"
+                              ReadOnly="true" />
+            </MudItem>
+        }
+
+    </MudGrid>
+
+</MudForm>
+
+@code {
+
+    private MudForm? _form;
+
+    [Parameter]
+    public BrokerDetailedModel Model { get; set; } = default!;
+
+    [Parameter]
+    public bool Edit { get; set; } = false;
+
+    public async Task<bool> Validate()
+    {
+        if (_form is null)
+            return false;
+
+        await _form.Validate();
+
+        return _form.IsValid;
+    }
+
+    public record ProtocolOption(string Name, string Value);
+
+    private readonly List<ProtocolOption> ProtocolOptions =
+    [
+        new("5.0.0", "MqttV5"),
+        new("3.1.1", "MqttV311"),
+        new("3.1.0", "MqttV310")
+    ];
+}

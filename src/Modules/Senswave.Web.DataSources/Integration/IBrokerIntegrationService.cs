@@ -53,15 +53,7 @@ public record CreateBrokerModel(
     string Username,
     string Password);
 
-public record UpdateBrokerModel(
-    string Name,
-    string Url,
-    string ClientName,
-    int Port,
-    string ProtocolVersion,
-    bool UseTls,
-    string Username,
-    string Password);
+public record UpdateBrokerModel(string Name);
 
 public record BrokerCreatedResponse(string Id);
 

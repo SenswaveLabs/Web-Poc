@@ -7,7 +7,7 @@ public interface IBrokerService
 {
     Task<Result> AddBroker(CreateBrokerModel model);
 
-    Task<Result> UpdateBroker(string id, UpdateBrokerModel model);
+    Task<Result> UpdateBroker(string id, string name);
 
     Task<Result> DeleteBroker(string id);
 

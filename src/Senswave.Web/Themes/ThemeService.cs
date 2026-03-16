@@ -77,9 +77,9 @@ internal sealed class ThemeService(
             Secondary = "#00695C",
 
             HoverOpacity=0.1,
-            Background = "#E0E0E0",
-            Surface = "#FFFFFF",
-            DrawerBackground = "#FFFFFF",
+            Background = "#F5F5F5",
+            Surface = "#edebeb",
+            DrawerBackground = "#edebeb",
 
             AppbarBackground = "#EBAB17",
             AppbarText = "#1A1A1A",

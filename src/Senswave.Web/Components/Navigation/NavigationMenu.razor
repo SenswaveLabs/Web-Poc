@@ -14,15 +14,15 @@
 
     @if (HomeService.CurrentHome is not null)
     {
-        <MudNavLink Match="NavLinkMatch.Prefix" Href="/devices/list" Icon="@Icons.Material.Filled.Dashboard">Dashboard</MudNavLink>
-        <MudNavLink Match="NavLinkMatch.Prefix" Href="/automations/list" Icon="@Icons.Material.Filled.Bookmark">Automations</MudNavLink>
+        <MudNavLink Match="NavLinkMatch.Prefix" Href="/devices" Icon="@Icons.Material.Filled.Dashboard">Dashboard</MudNavLink>
+        @* <MudNavLink Match="NavLinkMatch.Prefix" Href="/automations" Icon="@Icons.Material.Filled.Bookmark">Automations</MudNavLink> *@
         <MudNavLink Match="NavLinkMatch.Prefix" Href="/homes/details" Icon="@Icons.Material.Filled.Info">Details</MudNavLink>
 
         <MudDivider Class="my-1" />
     }
 
     <MudNavLink Match="NavLinkMatch.Prefix" Href="/homes/list" Icon="@Icons.Material.Filled.SwapHoriz">Switch Home</MudNavLink>
-    <MudNavLink Match="NavLinkMatch.Prefix" Href="/datasources/list" Icon="@Icons.Material.Filled.Hub">Data Sources</MudNavLink>
+    <MudNavLink Match="NavLinkMatch.Prefix" Href="/datasources" Icon="@Icons.Material.Filled.Hub">Data Sources</MudNavLink>
     <MudNavLink Match="NavLinkMatch.Prefix" Href="/users/details" Icon="@Icons.Material.Filled.Settings">Settings</MudNavLink>
 
     <MudDivider Class="my-1" />

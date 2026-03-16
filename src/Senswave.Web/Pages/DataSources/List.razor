@@ -1,4 +1,4 @@
-﻿@page "/datasources/list"
+﻿@page "/datasources"
 @attribute [Authorize]
 @using Senswave.Web.DataSources.Components
 @using Senswave.Web.DataSources.Integration
@@ -8,6 +8,7 @@
 
 @inject ILogger<List> Logger
 @inject IBrokerService BrokerService
+@inject NavigationManager Navigation
 
 <PageTitle>My Data Sources</PageTitle>
 
@@ -48,7 +49,7 @@
                 @foreach (var broker in brokers)
                 {
                     <MudItem xs="12" sm="12" md="6" lg="4" xl="3" xxl="3">
-                        <SensDataSource Broker="@broker" />
+                        <SensDataSource Broker="@broker" OnClick="() => DataSourceSelected(broker.Id)" />
                     </MudItem>
                 }
 
@@ -96,7 +97,12 @@
 
     private async Task AddDataSourceHandler()
     {
+        Navigation.NavigateTo("/datasources/add");
+    }
 
+    private async Task DataSourceSelected(string id)
+    {
+        Navigation.NavigateTo($"/datasources/details/{id}");
     }
 
     private async Task RefreshPage()

@@ -58,11 +58,12 @@ public class BrokerService(
         }
     }
 
-    public async Task<Result> UpdateBroker(string id, UpdateBrokerModel model)
+    public async Task<Result> UpdateBroker(string id, string name)
     {
         try
         {
-            await integrationService.UpdateBrokerAsync(id, model);
+            var dto = new UpdateBrokerModel(name);
+            await integrationService.UpdateBrokerAsync(id, dto);
             return Result.Success();
         }
         catch (ApiException ex)
