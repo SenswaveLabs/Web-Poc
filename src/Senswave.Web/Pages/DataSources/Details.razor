@@ -13,6 +13,7 @@
 @inject ISnackbar Snackbar
 @inject ILogger<Details> Logger
 @inject IDialogService DialogService
+@inject NavigationManager Navigation
 
 <PageTitle>@(BaseModel is null ? "Broker" : BaseModel.Name)</PageTitle>
 
@@ -111,6 +112,10 @@
                     <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Refresh"
                                     Color="Color.Secondary"
                                     OnClick="RefreshPage" />
+
+                    <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Delete"
+                                    Color="Color.Secondary"
+                                    OnClick="DeleteDataSource" />
 
                 </MudFabMenu>
             }
@@ -250,6 +255,33 @@
             {
                 _loading = false;
             }
+        }
+    }
+
+    private async Task DeleteDataSource()
+    {
+        _loading = true;
+
+        try
+        {
+            var result = await BrokerService.DeleteBroker(Id);
+
+            if (result.IsFailure)
+            {
+                Snackbar.Add(result.Errors.FirstOrDefault()?.Description ?? "Operation failed.", Severity.Error);
+                return;
+            }
+
+            Navigation.NavigateTo("/datasources");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Operation failed");
+            Snackbar.Add("Operation failed.", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
         }
     }
 
