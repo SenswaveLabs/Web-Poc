@@ -6,7 +6,6 @@
     <Project Path="src/Modules/Senswave.Web.DataSources/Senswave.Web.DataSources.csproj" Id="2e9331e7-99d0-4617-9518-b3ddab9aee4c" />
   </Folder>
   <Folder Name="/Shared/">
-    <Project Path="E:/Projects/Web-Poc/src/Shared/Senswave.Web.Integration/Senswave.Web.Integration.csproj" Id="2509e4ec-fc08-4502-a0e3-fc69f0fb95c5" />
     <Project Path="E:/Projects/Web-Poc/src/Shared/Senswave.Web.Shared/Senswave.Web.Shared.csproj" Id="5db18ab8-9252-47cb-9ea6-a4ea04698f68" />
   </Folder>
   <Folder Name="/Solution Items/">

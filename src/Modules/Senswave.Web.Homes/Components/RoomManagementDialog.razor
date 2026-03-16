@@ -1,47 +1,25 @@
-﻿@using Senswave.Web.Shared.Components
+﻿@using MudBlazor
+@using Senswave.Web.Homes.Integration
+@using Senswave.Web.Shared.Components
 @using Senswave.Web.Homes.Services
 
-@inject IHomeService HomeService
+@inject IRoomService RoomService
 @inject ISnackbar Snackbar
 
 <MudDialog>
     <DialogContent>
-
         <MudForm @ref="_form" Model="_model">
-
             <MudStack Spacing="3">
-
                 <MudTextField T="string"
                               Label="Name"
                               @bind-Value="_model.Name"
                               For="@(() => _model.Name)"
                               Required="true"
                               RequiredError="Name is required"
-                              MaxLength="64"
+                              MaxLength="32"
                               Immediate="true" />
-
-                <MudSelect T="string"
-                           Label="Icon"
-                           @bind-Value="_model.Icon">
-
-                    <MudSelectItem Value="@("home")">
-                        <SensIcon Icon="home" Class="mr-2" /> Home
-                    </MudSelectItem>
-
-                    <MudSelectItem Value="@("flat")">
-                        <SensIcon Icon="flat" Class="mr-2" /> Flat
-                    </MudSelectItem>
-
-                    <MudSelectItem Value="@("work")">
-                        <SensIcon Icon="work" Class="mr-2" /> Work
-                    </MudSelectItem>
-
-                </MudSelect>
-
             </MudStack>
-
         </MudForm>
-
     </DialogContent>
 
     <DialogActions>
@@ -51,6 +29,23 @@
                    OnClick="Cancel">
             Cancel
         </MudButton>
+
+
+        @if (Edit)
+        {
+            @if (_loading)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+            }
+            else
+            {
+                <MudButton Variant="Variant.Text"
+                           Color="Color.Error"
+                           OnClick="Remove">
+                    Delete Room
+                </MudButton>
+            }
+        }
 
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
@@ -79,11 +74,50 @@
     [Parameter]
     public bool Edit { get; set; }
 
+    [Parameter]
+    public RoomDto? Room { get; set; }
+
     MudForm? _form;
 
     bool _loading = false;
 
-    HomeModel _model = new();
+    RoomModel _model = new();
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        if (Edit)
+        {
+            _model = new RoomModel
+            {
+                Name = Room?.Name ?? string.Empty
+            };
+        }
+    }
+
+    async Task Remove()
+    {
+        _loading = true;
+
+        try
+        {
+
+            var result = await RoomService.DeleteRoom(Room!.Id);
+
+            if (result.IsSuccess)
+            {
+                MudDialog!.Close(DialogResult.Ok(_model));
+                return;
+            }
+
+            Snackbar.Add(result.Errors!.First().Description, Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
 
     async Task Submit()
     {
@@ -96,7 +130,21 @@
 
         try
         {
-            var result = await HomeService.CreateHome(_model.Name, _model.Icon, null, null);
+            if (Edit)
+            {
+                var roomEditResult = await RoomService.UpdateRoom(Room!.Id, _model.Name);
+
+                if (roomEditResult.IsSuccess)
+                {
+                    MudDialog!.Close(DialogResult.Ok(_model));
+                    return;
+                }
+
+                Snackbar.Add(roomEditResult.Errors!.First().Description, Severity.Error);
+                return;
+            }
+
+            var result = await RoomService.CreateRoom(_model.Name);
 
             if (result.IsSuccess)
             {
@@ -117,11 +165,8 @@
         MudDialog!.Cancel();
     }
 
-    public class HomeModel
+    public class RoomModel
     {
         public string Name { get; set; } = string.Empty;
-        public string Icon { get; set; } = "home";
-        public double? Latitude { get; set; }
-        public double? Longitude { get; set; }
     }
 }

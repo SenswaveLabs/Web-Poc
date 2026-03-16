@@ -1,6 +1,6 @@
 ﻿using Refit;
 
-namespace Senswave.Web.Integration.Homes;
+namespace Senswave.Web.Homes.Integration;
 
 public record CreateSharingRequest(string HomeId, string FriendEmail, string SharingType);
 public record HomeSharingCreatedResponse(string InvitationId, string Password, DateTime ExpiresAtUtc, DateTime CreatedUtc);

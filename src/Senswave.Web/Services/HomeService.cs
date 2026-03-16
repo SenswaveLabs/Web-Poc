@@ -1,10 +1,11 @@
 ﻿using Refit;
+using Senswave.Web.Homes.Integration;
 using Senswave.Web.Homes.Models;
 using Senswave.Web.Homes.Services;
-using Senswave.Web.Integration.Homes;
 using Senswave.Web.Shared.Resulting;
 using Senswave.Web.Themes;
 using System.Net;
+using System.Xml.Linq;
 
 namespace Senswave.Web.Services;
 
@@ -268,6 +269,61 @@ public class HomeService(
         {
             logger.LogError(ex, "Failed to load rooms");
             return await errorFactory.FromApiExceptionAsync<List<RoomDto>>(ex, "FailedToLoadRooms");
+        }
+    }
+
+    public async Task<Result> CreateRoom(string name)
+    {
+        try
+        {
+            var homeId = CurrentHome!.Id;
+
+            var dto = new CreateRoomRequest(name);
+
+            await roomsIntegrationService.CreateRoomAsync(homeId, dto);
+
+            return Result.Success();
+        }
+        catch (ApiException ex)
+        {
+            logger.LogError(ex, "Failed to add room");
+            return await errorFactory.FromApiExceptionAsync(ex, "FailedToCreateRoom");
+        }
+    }
+
+    public async Task<Result> UpdateRoom(string id, string name)
+    {
+        try
+        {
+            var homeId = CurrentHome!.Id;
+
+            var dto = new UpdateRoomRequest(name);
+
+            await roomsIntegrationService.UpdateRoomAsync(homeId, id, dto);
+
+            return Result.Success();
+        }
+        catch (ApiException ex)
+        {
+            logger.LogError(ex, "Failed to update rooms");
+            return await errorFactory.FromApiExceptionAsync(ex, "FailedToUpdateRoom");
+        }
+    }
+
+    public async Task<Result> DeleteRoom(string id)
+    {
+        try
+        {
+            var homeId = CurrentHome!.Id;
+
+            await roomsIntegrationService.DeleteRoomAsync(homeId, id);
+
+            return Result.Success();
+        }
+        catch (ApiException ex)
+        {
+            logger.LogError(ex, "Failed to delete room");
+            return await errorFactory.FromApiExceptionAsync(ex, "FailedToDeleteRoom");
         }
     }
 

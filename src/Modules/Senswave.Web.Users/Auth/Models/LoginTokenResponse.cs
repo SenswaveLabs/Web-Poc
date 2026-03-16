@@ -1,4 +1,4 @@
-﻿namespace Senswave.Web.Integration.Auth.Response;
+﻿namespace Senswave.Web.Users.Auth.Models;
 
 public class LoginTokenResponse
 {

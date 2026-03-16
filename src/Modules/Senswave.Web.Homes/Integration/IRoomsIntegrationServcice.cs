@@ -1,6 +1,6 @@
 ﻿using Refit;
 
-namespace Senswave.Web.Integration.Homes;
+namespace Senswave.Web.Homes.Integration;
 
 public record CreateRoomRequest(string Name);
 public record UpdateRoomRequest(string Name);

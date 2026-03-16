@@ -1,4 +1,4 @@
-﻿namespace Senswave.Web.Integration.Users.Response;
+﻿namespace Senswave.Web.Users.Users.Models;
 
 public class UserDetailsResponse
 {

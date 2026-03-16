@@ -18,11 +18,20 @@
 
     <AuthorizeView>
         <Authorized>
-            <MudLayout Elevation="2" Class="main-layout d-flex" Style="overflow:hidden; height: 100vh;">
+            <MudLayout Class="main-layout d-flex" Style="overflow:hidden; height: 100vh;">
                 <NavigationLayout />
-                <MudMainContent Class="d-flex flex-column">
-                    @Body
-                </MudMainContent>
+
+                <MudHidden Breakpoint="Breakpoint.MdAndDown" Invert="true">
+                    <MudMainContent Class="d-flex flex-column">
+                        @Body
+                    </MudMainContent>
+                </MudHidden>
+                <MudHidden Breakpoint="Breakpoint.MdAndDown">
+                    <MudMainContent Class="d-flex flex-column pt-2">
+                        @Body
+                    </MudMainContent>
+                </MudHidden>
+
             </MudLayout>
         </Authorized>
         <NotAuthorized>

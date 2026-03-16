@@ -7,7 +7,9 @@ COPY Directory.Packages.props ./
 
 COPY src/Senswave.Web/Senswave.Web.csproj src/Senswave.Web/
 COPY src/Modules/Senswave.Web.Users/Senswave.Web.Users.csproj src/Modules/Senswave.Web.Users/
-COPY src/Shared/Senswave.Web.Integration/Senswave.Web.Integration.csproj src/Shared/Senswave.Web.Integration/
+COPY src/Modules/Senswave.Web.Users/Senswave.Web.Users.csproj src/Modules/Senswave.Web.Devices/
+COPY src/Modules/Senswave.Web.Users/Senswave.Web.Users.csproj src/Modules/Senswave.Web.Homes/
+COPY src/Modules/Senswave.Web.Users/Senswave.Web.Users.csproj src/Modules/Senswave.Web.DataSources/
 COPY src/Shared/Senswave.Web.Shared/Senswave.Web.Shared.csproj src/Shared/Senswave.Web.Shared/
 
 RUN dotnet restore src/Senswave.Web/Senswave.Web.csproj

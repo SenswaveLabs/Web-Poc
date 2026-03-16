@@ -1,4 +1,4 @@
-﻿using Senswave.Web.Integration.Homes;
+﻿using Senswave.Web.Homes.Integration;
 using Senswave.Web.Shared.Resulting;
 
 namespace Senswave.Web.Homes.Services;
@@ -8,4 +8,10 @@ public interface IRoomService
     List<RoomDto> Rooms { get; }
 
     Task<Result> LoadRooms();
+
+    Task<Result> CreateRoom(string name);
+
+    Task<Result> UpdateRoom(string id, string name);
+
+    Task<Result> DeleteRoom(string id);
 }

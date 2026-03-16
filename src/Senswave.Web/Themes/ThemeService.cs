@@ -76,15 +76,16 @@ internal sealed class ThemeService(
             PrimaryContrastText = "#1A1A1A",
             Secondary = "#00695C",
 
-            Background = "#E0E0E0",   
-            Surface = "#FFFFFF",         
-            DrawerBackground = "#FFFFFF", 
+            HoverOpacity=0.1,
+            Background = "#E0E0E0",
+            Surface = "#FFFFFF",
+            DrawerBackground = "#FFFFFF",
 
             AppbarBackground = "#EBAB17",
             AppbarText = "#1A1A1A",
 
-            TextPrimary = "#000000",      
-            TextSecondary = "#424242",    
+            TextPrimary = "#000000",
+            TextSecondary = "#424242",
 
             ActionDefault = "#1A1A1A",
             Divider = "rgba(0,0,0,0.12)"

@@ -6,7 +6,6 @@ using Senswave.Web;
 using Senswave.Web.Devices;
 using Senswave.Web.DataSources;
 using Senswave.Web.Homes.Services;
-using Senswave.Web.Integration;
 using Senswave.Web.Services;
 using Senswave.Web.Services.Shared;
 using Senswave.Web.Shared.Extensions;
@@ -16,6 +15,7 @@ using Senswave.Web.Users;
 using Senswave.Web.Users.Auth.Services;
 using Senswave.Web.Users.Users.Services;
 using Senswave.Web.Devices.Services;
+using Senswave.Web.Homes;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
@@ -28,11 +28,10 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 builder.Services.AddMudServices();
 
 // Shared
-builder.Services.AddSenswaveIntegration(builder.Configuration);
+builder.Services.AddSenswaveShared();
 builder.Services.AddSingleton<ILoadingService, LoadingService>();
 builder.Services.AddTransient<ILocalStorageService, LocalStorageService>();
 builder.Services.AddTransient<ISessionStorageService, SessionStorageService>();
-builder.Services.AddSenswaveShared();
 builder.Services.AddSingleton<IThemeService, ThemeService>();
 
 // Modules - Users
@@ -46,6 +45,7 @@ builder.Services.AddSingleton<IAuthenticationService>(sp => sp.GetRequiredServic
 builder.Services.AddSingleton<ITokenStore>(sp => sp.GetRequiredService<SenswaveAuthenticationProvider>());
 
 // Modules - Homes
+builder.Services.AddHomes(builder.Configuration);
 builder.Services.AddSingleton<HomeService>();
 builder.Services.AddSingleton<IHomeService>(sp => sp.GetRequiredService<HomeService>());
 builder.Services.AddSingleton<IRoomService>(sp => sp.GetRequiredService<HomeService>());

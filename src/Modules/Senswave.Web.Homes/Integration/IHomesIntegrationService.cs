@@ -1,6 +1,7 @@
 ﻿using Refit;
+using Senswave.Web.Shared.Requests;
 
-namespace Senswave.Web.Integration.Homes;
+namespace Senswave.Web.Homes.Integration;
 
 public record CreateHomeRequest(string? DataSourceId, string Name, string Icon, double? Latitude, double? Longitude);
 public record UpdateHomeRequest(string? DataSourceId, string Name, string Icon, double? Latitude, double? Longitude);

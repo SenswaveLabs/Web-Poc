@@ -1,0 +1,134 @@
+﻿@using MudBlazor
+@using Senswave.Web.Devices.Services
+@using Senswave.Web.Shared.Components
+
+@inject ISnackbar Snackbar
+@inject IDeviceDetailsService DeviceDetailsService
+
+<MudDialog>
+    <DialogContent>
+
+        <MudForm @ref="_form" Model="_model">
+
+            <MudStack Spacing="3">
+
+                <MudTextField T="string"
+                              Label="Name"
+                              @bind-Value="_model.Name"
+                              For="@(() => _model.Name)"
+                              Required="true"
+                              RequiredError="Name is required"
+                              MaxLength="64"
+                              Immediate="true" />
+
+                <MudSelect T="string"
+                           Label="Icon"
+                           @bind-Value="_model.Icon">
+
+                    <MudSelectItem Value="@("home")">
+                        <SensIcon Icon="home" Class="mr-2" /> Home
+                    </MudSelectItem>
+
+                    <MudSelectItem Value="@("flat")">
+                        <SensIcon Icon="flat" Class="mr-2" /> Flat
+                    </MudSelectItem>
+
+                    <MudSelectItem Value="@("work")">
+                        <SensIcon Icon="work" Class="mr-2" /> Work
+                    </MudSelectItem>
+
+                </MudSelect>
+
+            </MudStack>
+
+        </MudForm>
+
+    </DialogContent>
+
+    <DialogActions>
+
+        <MudButton Variant="Variant.Text"
+                   Color="Color.Default"
+                   OnClick="Cancel">
+            Cancel
+        </MudButton>
+
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Disabled="_loading"
+                   OnClick="Submit">
+
+            @if (_loading)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+            }
+            else
+            {
+                @(Edit ? "Save" : "Add")
+            }
+
+        </MudButton>
+
+    </DialogActions>
+</MudDialog>
+
+@code {
+
+    [CascadingParameter]
+    public IMudDialogInstance? MudDialog { get; set; }
+
+    [Parameter]
+    public bool Edit { get; set; }
+
+    [Parameter]
+    public string HomeId { get; set; } = string.Empty;
+
+    [Parameter]
+    public List<(string, string)> RoomIdToName { get; set; } = [];
+
+    MudForm? _form;
+
+    bool _loading = false;
+
+    DeviceModel _model = new();
+
+    async Task Submit()
+    {
+        await _form!.Validate();
+
+        if (!_form.IsValid)
+            return;
+
+        _loading = true;
+
+        // try
+        // {
+        //     var result = await HomeService.CreateHome(_model.Name, _model.Icon, null, null);
+
+        //     if (result.IsSuccess)
+        //     {
+        //         MudDialog!.Close(DialogResult.Ok(_model));
+        //         return;
+        //     }
+
+        //     Snackbar.Add(result.Errors!.First().Description, Severity.Error);
+        // }
+        // finally
+        // {
+        //     _loading = false;
+        // }
+    }
+
+    void Cancel()
+    {
+        MudDialog!.Cancel();
+    }
+
+    public class DeviceModel
+    {
+        public string HomeId { get; set; } = string.Empty;
+        public string RoomId { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string Icon { get; set; } = string.Empty;
+    }
+}

@@ -1,8 +1,7 @@
 ﻿using Refit;
-using Senswave.Web.Integration.Auth.Request;
-using Senswave.Web.Integration.Auth.Response;
+using Senswave.Web.Users.Auth.Models;
 
-namespace Senswave.Web.Integration.Auth.Services;
+namespace Senswave.Web.Users.Auth.Integration;
 
 public interface IAuthIntegrationService
 {

@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Refit;
 using Senswave.Web.DataSources.Integration;
-using Senswave.Web.Integration.Handlers;
+using Senswave.Web.Shared.Requests;
 
 
 namespace Senswave.Web.DataSources;

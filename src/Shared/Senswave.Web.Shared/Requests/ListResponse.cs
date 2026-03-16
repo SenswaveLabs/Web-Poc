@@ -1,4 +1,4 @@
-﻿namespace Senswave.Web.Integration;
+﻿namespace Senswave.Web.Shared.Requests;
 
 public class ListResponse<T> where T : class
 {

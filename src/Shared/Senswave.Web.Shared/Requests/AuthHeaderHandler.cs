@@ -2,7 +2,7 @@
 using Senswave.Web.Shared.Services;
 using System.Net.Http.Headers;
 
-namespace Senswave.Web.Integration.Handlers;
+namespace Senswave.Web.Shared.Requests;
 
 public class AuthHeaderHandler(
     ITokenStore tokenStore,

@@ -78,7 +78,6 @@
     {
         await base.OnParametersSetAsync();
 
-        // This will now run every time the 'Device' parameter changes
         if (!string.IsNullOrEmpty(Device.RoomId))
         {
             RoomName = await DeviceDetailsService.GetRoomNameById(Device.RoomId);
@@ -94,7 +93,7 @@
 
     }
 
-    private bool HasRoomName() => !string.IsNullOrEmpty(Device.RoomId);
+    private bool HasRoomName() => RoomName != string.Empty;
 
     private Color GetColor()
     {

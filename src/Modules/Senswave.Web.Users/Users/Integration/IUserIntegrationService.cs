@@ -1,8 +1,7 @@
 ﻿using Refit;
-using Senswave.Web.Integration.Users.Request;
-using Senswave.Web.Integration.Users.Response;
+using Senswave.Web.Users.Users.Models;
 
-namespace Senswave.Web.Integration.Users;
+namespace Senswave.Web.Users.Users.Integration;
 
 public interface IUserIntegrationService
 {
