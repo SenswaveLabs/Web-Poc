@@ -1,0 +1,108 @@
+﻿@using MudBlazor
+@using Senswave.Web.Devices.Models
+@using Senswave.Web.Devices.Integration
+@using Senswave.Web.Homes.Integration
+@using Senswave.Web.Shared.Components
+
+
+<MudForm @ref="_form" Model="Model">
+
+    <MudGrid Spacing="3">
+
+        <!-- Name -->
+        <MudItem xs="12">
+            <MudTextField T="string"
+                          Label="Name"
+                          For="@(() => Model.Name)"
+                          @bind-Value="Model.Name"
+                          Required="true"
+                          MaxLength="64"
+                          Immediate="true"
+                          RequiredError="Name is required" />
+        </MudItem>
+
+        <!-- Icon Selector -->
+        <MudItem xs="12" md="6">
+            <MudSelect T="string" Label="Icon" For="@(() => Model.Icon)" @bind-Value="Model.Icon">
+                <MudSelectItem Value="@("thermostat")"><SensIcon Icon="thermostat" Class="mr-2" /> Thermostat</MudSelectItem>
+                <MudSelectItem Value="@("lightbulb")"><SensIcon Icon="lightbulb" Class="mr-2" /> Lightbulb</MudSelectItem>
+                <MudSelectItem Value="@("camera")"><SensIcon Icon="camera" Class="mr-2" /> Camera</MudSelectItem>
+                <MudSelectItem Value="@("lock")"><SensIcon Icon="lock" Class="mr-2" /> Lock</MudSelectItem>
+                <MudSelectItem Value="@("alarm")"><SensIcon Icon="alarm" Class="mr-2" /> Alarm</MudSelectItem>
+                <MudSelectItem Value="@("fan")"><SensIcon Icon="fan" Class="mr-2" /> Fan</MudSelectItem>
+                <MudSelectItem Value="@("speaker")"><SensIcon Icon="speaker" Class="mr-2" /> Speaker</MudSelectItem>
+                <MudSelectItem Value="@("music")"><SensIcon Icon="music" Class="mr-2" /> Music</MudSelectItem>
+                <MudSelectItem Value="@("printer")"><SensIcon Icon="printer" Class="mr-2" /> Printer</MudSelectItem>
+                <MudSelectItem Value="@("tv")"><SensIcon Icon="tv" Class="mr-2" /> TV</MudSelectItem>
+                <MudSelectItem Value="@("desktop")"><SensIcon Icon="desktop" Class="mr-2" /> Desktop</MudSelectItem>
+                <MudSelectItem Value="@("tablet")"><SensIcon Icon="tablet" Class="mr-2" /> Tablet</MudSelectItem>
+                <MudSelectItem Value="@("watch")"><SensIcon Icon="watch" Class="mr-2" /> Watch</MudSelectItem>
+                <MudSelectItem Value="@("server")"><SensIcon Icon="server" Class="mr-2" /> Server</MudSelectItem>
+                <MudSelectItem Value="@("cloud")"><SensIcon Icon="cloud" Class="mr-2" /> Cloud</MudSelectItem>
+                <MudSelectItem Value="@("sensor")"><SensIcon Icon="sensor" Class="mr-2" /> Sensor</MudSelectItem>
+            </MudSelect>
+        </MudItem>
+
+        <!-- Room Selector -->
+        <MudItem xs="12" md="6">
+            <MudSelect T="string" Label="Room" For="@(() => Model.RoomId)" @bind-Value="Model.RoomId">
+                @foreach (var room in Rooms)
+                {
+                    <MudSelectItem Value="@room.Id">@room.Name</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+
+        <!-- Tile Type & Operation (Edit Mode Only) -->
+        @if (Edit)
+        {
+            <MudItem xs="12" md="6">
+                <MudSelect T="string" Label="Tile Type" For="@(() => Model.TileType)" @bind-Value="Model.TileType" Immediate="true">
+                    @foreach (var type in TileTypeOptions)
+                    {
+                        <MudSelectItem Value="@type">@type</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            @if (Model.TileType == "Switch")
+            {
+                <MudItem xs="12" md="6">
+                    <MudSelect T="string" Label="Operation" For="@(() => Model.TileOperationId)" @bind-Value="Model.TileOperationId">
+                        @foreach (var op in Operations)
+                        {
+                            <MudSelectItem Value="@op.Id">@($"{op.Type} - {op.Name}")</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+            }
+        }
+
+    </MudGrid>
+</MudForm>
+
+@code {
+    private MudForm? _form;
+
+    [Parameter] 
+    public DeviceModel Model { get; set; } = new();
+
+    [Parameter] 
+    public bool Edit { get; set; } = false;
+
+    [Parameter]
+    public List<RoomDto> Rooms { get; set; } = new();
+
+    [Parameter]
+    public List<OperationDto> Operations { get; set; } = new();
+
+    private readonly string[] TileTypeOptions = new[] { "Default", "Switch" };
+
+    public async Task<bool> Validate()
+    {
+        if (_form is null) return false;
+
+        await _form.Validate();
+        return _form.IsValid;
+    }
+}
