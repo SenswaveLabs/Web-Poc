@@ -1,0 +1,135 @@
+﻿@using MudBlazor
+
+<MudDialog>
+
+    <DialogContent>
+
+        <MudForm @ref="_form">
+
+            <MudStack Spacing="3">
+
+                <MudText Typo="Typo.body2">
+                    Enter the email address and select permission level.
+                </MudText>
+
+                <!-- EMAIL -->
+                <MudTextField T="string"
+                              Label="Email"
+                              @bind-Value="_email"
+                              Required="true"
+                              Immediate="true"
+                              Validation="ValidateEmail" />
+
+                <!-- ROLE SELECT -->
+                <MudSelect T="string"
+                           Label="Permission"
+                           @bind-Value="_role"
+                           Required="true"
+                           RequiredError="Permission is required">
+
+                    <MudSelectItem Value="@("Display")">
+                        Display and Use Home
+                    </MudSelectItem>
+
+                    <MudSelectItem Value="@("Manage")">
+                        Manage, Display and Use Home
+                    </MudSelectItem>
+
+                </MudSelect>
+
+            </MudStack>
+
+        </MudForm>
+
+    </DialogContent>
+
+    <DialogActions>
+
+        <MudButton Variant="Variant.Text"
+                   OnClick="Cancel">
+            Cancel
+        </MudButton>
+
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Disabled="_loading"
+                   OnClick="Submit">
+
+            @if (_loading)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+            }
+            else
+            {
+                <span>Invite</span>
+            }
+
+        </MudButton>
+
+    </DialogActions>
+
+</MudDialog>
+
+@code {
+
+    [CascadingParameter]
+    IMudDialogInstance? MudDialog { get; set; }
+
+    private MudForm? _form;
+
+    private string _email = string.Empty;
+
+    private string _role = "Display";
+
+    private bool _loading = false;
+
+    async Task Submit()
+    {
+        await _form!.Validate();
+
+        if (!_form.IsValid)
+            return;
+
+        _loading = true;
+
+        try
+        {
+            var result = new InviteUserResult(_email, _role);
+
+            MudDialog!.Close(DialogResult.Ok(result));
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    void Cancel()
+    {
+        MudDialog!.Cancel();
+    }
+
+    string ValidateEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            return "Email is required";
+
+        try
+        {
+            var addr = new System.Net.Mail.MailAddress(email);
+            if (addr.Address != email)
+                return "Invalid email format";
+        }
+        catch
+        {
+            return "Invalid email format";
+        }
+
+        if (email.Length > 256)
+            return "Email is too long";
+
+        return string.Empty;
+    }
+
+    public record InviteUserResult(string Email, string Role);
+}

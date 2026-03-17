@@ -1,10 +1,423 @@
 ﻿@page "/homes/details"
-@attribute [Authorize]
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
 
+@using Refit
+@using Senswave.Web.DataSources.Components
+@using Senswave.Web.DataSources.Services
+@using Senswave.Web.Homes.Models
 @using Senswave.Web.Homes.Services
+@using Senswave.Web.Homes.Integration
+@using Senswave.Web.DataSources.Integration
+@using Senswave.Web.Shared.Components
+@using Senswave.Web.Homes.Components
 
-<h3>Details</h3>
+@inject IBrokerService BrokerService
+@inject IHomeService HomeService
+@inject IHomesIntegrationService HomesIntegrationService
+@inject IHomesSharingIntegrationService SharingIntegrationService
+@inject IBrokerIntegrationService BrokerIntegrationService
+@inject ILogger<Details> Logger
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<PageTitle>@(Current?.Name ?? "Home Details")</PageTitle>
+
+<SensPage Loading="@_loading" FailedToLoad="@_failedToLoad" RefreshContent="@RefreshPage">
+    <LoadingContent>
+
+        <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column">
+            <MudGrid Spacing="0" Class="p-0 d-flex flex-row flex-wrap">
+                <MudItem xs="12" md="6">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:256px;" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:256px;" />
+                </MudItem>
+            </MudGrid>
+        </MudContainer>
+
+    </LoadingContent>
+    <Content>
+        <MudContainer MaxWidth="MaxWidth.False" Class="pb-6">
+            <MudGrid Spacing="3">
+
+                <MudItem xs="12" md="6">
+                    <MudPaper Class="pa-4">
+
+                        <MudText Typo="Typo.h6" Class="mb-3">General</MudText>
+
+                        <MudTextField Label="Name"
+                                        @bind-Value="_name"
+                                        Disabled="!Current.IsOwner" />
+
+                        <MudSelect T="string"
+                                    Label="Icon"
+                                    Disabled="!Current.IsOwner"
+                                    @bind-Value="_icon">
+
+                            <MudSelectItem Value="@("home")">
+                                <SensIcon Icon="home" Class="mr-2" /> Home
+                            </MudSelectItem>
+
+                            <MudSelectItem Value="@("flat")">
+                                <SensIcon Icon="flat" Class="mr-2" /> Flat
+                            </MudSelectItem>
+
+                            <MudSelectItem Value="@("work")">
+                                <SensIcon Icon="work" Class="mr-2" /> Work
+                            </MudSelectItem>
+
+                        </MudSelect>
+
+                    </MudPaper>
+                </MudItem>
+
+                @if (Current.IsOwner)
+                {
+                    <MudItem xs="12" md="6">
+                        @if (_hasDataSource)
+                        {
+                            <SensDataSourceState ConnectionStatus="@_connectionState"
+                                                 Name="@_dsName"
+                                                 Server="@_dsServer"
+                                                 Port="@_dsPort" 
+                                                 HomeMode="true"/>
+
+                            <MudButton Class="mt-3"
+                                       Variant="Variant.Outlined"
+                                       Color="Color.Error"
+                                       OnClick="UnlinkDataSource">
+                                Unlink
+                            </MudButton>
+                        }
+                        else
+                        {
+                            <MudPaper Class="pa-4">
+                                <MudText Typo="Typo.h6" Class="mb-3">Data Source</MudText>
+                            </MudPaper>
+
+                            <MudButton Class="mt-3" Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       OnClick="AssignDataSource">
+                                Assign Data Source to Home
+                            </MudButton>
+                        }
+                    </MudItem>
+                }
+
+                @if (Current.IsOwner)
+                {
+                    <!-- SHARING -->
+                    <MudItem xs="12" md="6">
+                        <MudPaper Class="pa-4">
+                            <MudText Typo="Typo.h6" Class="mb-3">Home Sharing</MudText>
+
+                            @if (_sharings.Count == 0)
+                            {
+                                <MudText Class="mt-3">No users has joined home</MudText>
+                            }
+
+                        </MudPaper>
+
+                        @if (_sharings.Count != 0)
+                        {
+                            <MudTable Items="_sharings" Dense="true" Class="mt-3">
+
+                                <HeaderContent>
+                                    <MudTh>Email</MudTh>
+                                    <MudTh>Type</MudTh>
+                                    <MudTh></MudTh>
+                                </HeaderContent>
+
+                                <RowTemplate>
+                                    <MudTd>@context.FriendEmail</MudTd>
+                                    <MudTd>@context.SharingType</MudTd>
+
+                                    <MudTd>
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                       Color="Color.Error"
+                                                       OnClick="() => RemoveSharing(context.SharingId)" />
+                                    </MudTd>
+                                </RowTemplate>
+
+                            </MudTable>
+                        }
+
+                        <MudButton Class="mt-3"
+                                   Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.PersonAdd"
+                                   OnClick="InviteToHome">
+                            Invite
+                        </MudButton>
+
+                    </MudItem>
+                }
+
+            </MudGrid>
+            
+
+            @if (HasChanges())
+            {
+                <MudFab Color="Color.Secondary"
+                        StartIcon="@Icons.Material.Filled.Save"
+                        Class="position-fixed m-4"
+                        Style="right:0;bottom:0;"
+                        OnClick="SaveChanges" />
+            }
+            else
+            {
+                <MudFabMenu Class="position-fixed m-4"
+                            Style="right:0;bottom:0;"
+                            StartIcon="@Icons.Material.Rounded.MoreVert"
+                            Color="Color.Secondary"
+                            @bind-Open="_open" Fixed="@_fixed">
+
+                    <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Refresh"
+                                    OnClick="RefreshPage" />
+
+                    @if (Current?.IsOwner == true)
+                    {
+                        <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Delete"
+                                        OnClick="DeleteHome" />
+                    }
+                    else
+                    {
+                        <MudFabMenuItem StartIcon="@Icons.Material.Rounded.ExitToApp"
+                                        OnClick="LeaveHome" />
+                    }
+
+                </MudFabMenu>
+            }
+
+        </MudContainer>
+    </Content>
+</SensPage>
 
 @code {
+    private bool _loading = true;
+    private bool _failedToLoad = true;
 
+    private bool _open;
+    private bool _fixed;
+
+    private HomeDetails? Current;
+
+    private string? _name;
+    private string? _icon;
+
+    private bool _hasDataSource;
+    private string _connectionState = "Loading";
+    private string _dsName = "Unknown";
+    private string _dsServer = "Unknown";
+    private int _dsPort;
+
+    private List<SharingDto> _sharings = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshPage();
+    }
+
+    private async Task RefreshPage()
+    {
+        try
+        {
+            _loading = true;
+
+            await HomeService.RefreshCurrentHome();
+
+            Current = HomeService.CurrentHome;
+
+            if (Current is null)
+                return;
+
+            _name = Current.Name;
+            _icon = Current.Icon;
+
+            await LoadDataSource();
+
+            var response = await SharingIntegrationService.GetSharingsAsync(Current.Id);
+
+            _sharings = response.Items;
+
+            _failedToLoad = false;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to load page");
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task LoadDataSource()
+    {
+        if ((!Current?.IsOwner ?? false) || Current?.DataSource is null || Current?.DataSource?.Id is null)
+        {
+            _hasDataSource = false;
+            return;
+        }
+
+        try
+        {
+            _hasDataSource = true;
+
+            _dsName = Current!.DataSource?.Name ?? "Unknown";
+
+            var result = await BrokerIntegrationService.GetClientStateAsync(Current.DataSource!.Id);
+
+            _connectionState = result.ConnectionStatus;
+
+            var brokerResult = await BrokerService.GetBroker(Current.DataSource!.Id);
+
+            _dsServer = brokerResult.Value.Url ?? "Unknown";
+            _dsPort = brokerResult.Value.Port;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to load datasource");
+            _connectionState = "Unknown";
+        }
+    }
+
+    private bool HasChanges()
+    {
+        if (Current is null) return false;
+
+        return _name != Current.Name
+            || _icon != Current.Icon;
+    }
+
+    private async Task SaveChanges()
+    {
+        _loading = true;
+
+        var result = await HomeService.UpdateHome(_name!, _icon!, null, null);
+
+        try
+        {
+            if (result.IsSuccess)
+            {
+                Snackbar.Add("Home updated", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add(result.Errors.First().Description ?? "Error", Severity.Error);
+            }
+
+            await RefreshPage();
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task DeleteHome()
+    {
+        var confirm = await DialogService.ShowMessageBoxAsync(
+            "Confirm",
+            "Delete this home?",
+            yesText: "Delete",
+            cancelText: "Cancel");
+
+        if (confirm != true)
+            return;
+
+
+        await HomesIntegrationService.DeleteHome(Guid.Parse(Current!.Id));
+
+        Snackbar.Add("Home deleted", Severity.Success);
+
+        Navigation.NavigateTo("/");
+    }
+
+    private async Task LeaveHome()
+    {
+        var confirm = await DialogService.ShowMessageBoxAsync(
+            "Confirm",
+            "Sure to leave this home?",
+            yesText: "Delete",
+            cancelText: "Cancel");
+
+        if (confirm != true)
+            return;
+
+        await SharingIntegrationService.LeaveHomeAsync(Current!.Id);
+
+        Snackbar.Add("Left home", Severity.Success);
+
+        Navigation.NavigateTo("/");
+    }
+
+    private async Task AssignDataSource()
+    {
+        //TODO:
+    }
+
+    private async Task UnlinkDataSource()
+    {
+        await HomesIntegrationService.DeleteHomeDataSourceAsync(Guid.Parse(Current!.Id));
+
+        await HomeService.Initialize();
+
+        Snackbar.Add("Data source unlinked", Severity.Success);
+
+        await RefreshPage();
+    }
+
+    private async Task InviteToHome()
+    {
+        var dialog = await DialogService.ShowAsync<InviteToHomeDialog>("Invite User");
+
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            var data = (InviteToHomeDialog.InviteUserResult)result.Data;
+
+
+            var sharingRequest = new CreateSharingRequest(Current?.Id, data.Email, data.Role);
+
+            _loading = true;
+            StateHasChanged();
+            try
+            {
+                var sharingResponse = await SharingIntegrationService.CreateSharingAsync(sharingRequest);
+
+                await DialogService.ShowMessageBoxAsync("Share code", $"Copy and share access code with your friend: {sharingResponse.Password}");
+            }
+            catch (ApiException ex)
+            {
+                Snackbar.Add("Failed to share home with user, please check email.", Severity.Error);
+            }
+            finally
+            {
+                _loading = false;
+                StateHasChanged();
+            }
+        }
+    }
+
+    private async Task RemoveSharing(string sharingId)
+    {
+        _loading = true;
+        try
+        {
+            await SharingIntegrationService.DeleteSharingAsync(sharingId);
+
+            Snackbar.Add("User removed", Severity.Success);
+
+            await RefreshPage();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to remove sharing");
+            Snackbar.Add("Failed to remove user", Severity.Error);
+        }
+    }
 }

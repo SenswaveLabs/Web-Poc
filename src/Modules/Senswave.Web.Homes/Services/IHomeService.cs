@@ -22,4 +22,6 @@ public interface IHomeService
     Task<Result> UpdateHomeDataSources(string dataSourceId);
 
     Task<Result> UpdateHome(string name, string icon, double? lattitude, double? longitude);
+
+    Task<Result> RefreshCurrentHome();
 }
