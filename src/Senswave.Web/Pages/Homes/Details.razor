@@ -42,121 +42,134 @@
         <MudContainer MaxWidth="MaxWidth.False" Class="pb-6">
             <MudGrid Spacing="3">
 
-                <MudItem xs="12" md="6">
-                    <MudPaper Class="pa-4">
+                <MudHidden Breakpoint="Breakpoint.Md">
 
-                        <MudText Typo="Typo.h6" Class="mb-3">General</MudText>
+                    <MudGrid>
 
-                        <MudTextField Label="Name"
-                                        @bind-Value="_name"
-                                        Disabled="!Current.IsOwner" />
+                        <MudItem xs="12" md="6">
 
-                        <MudSelect T="string"
-                                    Label="Icon"
-                                    Disabled="!Current.IsOwner"
-                                    @bind-Value="_icon">
+                            <MudStack>
+                                <MudPaper Class="pa-4">
 
-                            <MudSelectItem Value="@("home")">
-                                <SensIcon Icon="home" Class="mr-2" /> Home
-                            </MudSelectItem>
+                                    <MudText Typo="Typo.h6" Class="mb-3">General</MudText>
 
-                            <MudSelectItem Value="@("flat")">
-                                <SensIcon Icon="flat" Class="mr-2" /> Flat
-                            </MudSelectItem>
+                                    <MudTextField Label="Name"
+                                                  Value="_name"
+                                                  Disabled="!Current.IsOwner"
+                                                  T="string"
+                                                  ValueChanged="@(v => { _name = v; StateHasChanged(); return Task.CompletedTask; })"/>
 
-                            <MudSelectItem Value="@("work")">
-                                <SensIcon Icon="work" Class="mr-2" /> Work
-                            </MudSelectItem>
+                                    <MudSelect T="string"
+                                               Label="Icon"
+                                               Disabled="!Current.IsOwner"
+                                               ValueChanged="@(v => { _icon = v; StateHasChanged(); return Task.CompletedTask; })"
+                                               Value="_icon">
 
-                        </MudSelect>
+                                        <MudSelectItem Value="@("home")">
+                                            <SensIcon Icon="home" Class="mr-2" /> Home
+                                        </MudSelectItem>
 
-                    </MudPaper>
-                </MudItem>
+                                        <MudSelectItem Value="@("flat")">
+                                            <SensIcon Icon="flat" Class="mr-2" /> Flat
+                                        </MudSelectItem>
 
-                @if (Current.IsOwner)
-                {
-                    <MudItem xs="12" md="6">
-                        @if (_hasDataSource)
-                        {
-                            <SensDataSourceState ConnectionStatus="@_connectionState"
-                                                 Name="@_dsName"
-                                                 Server="@_dsServer"
-                                                 Port="@_dsPort" 
-                                                 HomeMode="true"/>
+                                        <MudSelectItem Value="@("work")">
+                                            <SensIcon Icon="work" Class="mr-2" /> Work
+                                        </MudSelectItem>
 
-                            <MudButton Class="mt-3"
-                                       Variant="Variant.Outlined"
-                                       Color="Color.Error"
-                                       OnClick="UnlinkDataSource">
-                                Unlink
-                            </MudButton>
-                        }
-                        else
-                        {
-                            <MudPaper Class="pa-4">
-                                <MudText Typo="Typo.h6" Class="mb-3">Data Source</MudText>
-                            </MudPaper>
+                                    </MudSelect>
 
-                            <MudButton Class="mt-3" Variant="Variant.Filled"
-                                       Color="Color.Primary"
-                                       OnClick="AssignDataSource">
-                                Assign Data Source to Home
-                            </MudButton>
-                        }
-                    </MudItem>
-                }
+                                </MudPaper>
 
-                @if (Current.IsOwner)
-                {
-                    <!-- SHARING -->
-                    <MudItem xs="12" md="6">
-                        <MudPaper Class="pa-4">
-                            <MudText Typo="Typo.h6" Class="mb-3">Home Sharing</MudText>
 
-                            @if (_sharings.Count == 0)
+                                @if (Current.IsOwner)
+                                {
+                                    @if (_hasDataSource)
+                                    {
+                                        <SensDataSourceState ConnectionStatus="@_connectionState"
+                                                             Name="@_dsName"
+                                                             Server="@_dsServer"
+                                                             Port="@_dsPort"
+                                                             HomeMode="true" />
+
+                                        <MudButton Class="mt-3"
+                                                   Variant="Variant.Outlined"
+                                                   Color="Color.Error"
+                                                   OnClick="UnlinkDataSource">
+                                            Unlink
+                                        </MudButton>
+                                    }
+                                    else
+                                    {
+                                        <MudPaper Class="pa-4">
+                                            <MudText Typo="Typo.h6" Class="mb-3">Data Source</MudText>
+                                        </MudPaper>
+
+                                        <MudButton Class="mt-3" Variant="Variant.Filled"
+                                                   Color="Color.Primary"
+                                                   OnClick="AssignDataSource">
+                                            Assign Data Source to Home
+                                        </MudButton>
+                                    }
+                                }
+
+                            </MudStack>
+
+                        </MudItem>
+
+                        <MudItem xs="12" md="6">
+
+                            @if (Current.IsOwner)
                             {
-                                <MudText Class="mt-3">No users has joined home</MudText>
+                                <MudPaper Class="pa-4">
+                                    <MudText Typo="Typo.h6" Class="mb-3">Home Sharing</MudText>
+
+                                    @if (_sharings.Count == 0)
+                                    {
+                                        <MudText Class="mt-3">No users has joined home</MudText>
+                                    }
+
+                                </MudPaper>
+
+                                @if (_sharings.Count != 0)
+                                {
+                                    <MudTable Items="_sharings" Dense="true" Class="mt-3">
+
+                                        <HeaderContent>
+                                            <MudTh>Email</MudTh>
+                                            <MudTh>Type</MudTh>
+                                            <MudTh></MudTh>
+                                        </HeaderContent>
+
+                                        <RowTemplate>
+                                            <MudTd>@context.FriendEmail</MudTd>
+                                            <MudTd>@context.SharingType</MudTd>
+
+                                            <MudTd>
+                                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                               Color="Color.Error"
+                                                               OnClick="() => RemoveSharing(context.SharingId)" />
+                                            </MudTd>
+                                        </RowTemplate>
+
+                                    </MudTable>
+                                }
+
+                                <MudButton Class="mt-3"
+                                           Variant="Variant.Filled"
+                                           Color="Color.Primary"
+                                           StartIcon="@Icons.Material.Filled.PersonAdd"
+                                           OnClick="InviteToHome">
+                                    Invite
+                                </MudButton>
                             }
+                        </MudItem>
+                    </MudGrid>
 
-                        </MudPaper>
+                </MudHidden>
 
-                        @if (_sharings.Count != 0)
-                        {
-                            <MudTable Items="_sharings" Dense="true" Class="mt-3">
-
-                                <HeaderContent>
-                                    <MudTh>Email</MudTh>
-                                    <MudTh>Type</MudTh>
-                                    <MudTh></MudTh>
-                                </HeaderContent>
-
-                                <RowTemplate>
-                                    <MudTd>@context.FriendEmail</MudTd>
-                                    <MudTd>@context.SharingType</MudTd>
-
-                                    <MudTd>
-                                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                                       Color="Color.Error"
-                                                       OnClick="() => RemoveSharing(context.SharingId)" />
-                                    </MudTd>
-                                </RowTemplate>
-
-                            </MudTable>
-                        }
-
-                        <MudButton Class="mt-3"
-                                   Variant="Variant.Filled"
-                                   Color="Color.Primary"
-                                   StartIcon="@Icons.Material.Filled.PersonAdd"
-                                   OnClick="InviteToHome">
-                            Invite
-                        </MudButton>
-
-                    </MudItem>
-                }
 
             </MudGrid>
-            
 
             @if (HasChanges())
             {
@@ -352,7 +365,7 @@
         var confirm = await DialogService.ShowMessageBoxAsync(
             "Confirm",
             "Sure to leave this home?",
-            yesText: "Delete",
+            yesText: "Leave",
             cancelText: "Cancel",
             options: new DialogOptions
             {
@@ -388,7 +401,7 @@
         {
             var dataSourceId = result.Data as string;
 
-            _loading = true; 
+            _loading = true;
 
             try
             {
@@ -456,7 +469,7 @@
                 var sharingResponse = await SharingIntegrationService.CreateSharingAsync(sharingRequest);
 
                 await DialogService.ShowMessageBoxAsync("Share code", $"Copy and share access code with your friend: {sharingResponse.Password}",
-                    options:new DialogOptions
+                    options: new DialogOptions
                     {
                         MaxWidth = MaxWidth.Medium,
                         FullWidth = true,

@@ -1,4 +1,5 @@
 ﻿@using MudBlazor
+@using System.ComponentModel.DataAnnotations
 
 <MudDialog>
 
@@ -17,8 +18,8 @@
                               Label="Email"
                               @bind-Value="_email"
                               Required="true"
-                              Immediate="true"
-                              Validation="ValidateEmail" />
+                              Immediate="true" 
+                              Validation="@(new EmailAddressAttribute { ErrorMessage = @"The email address is invalid" })" />
 
                 <!-- ROLE SELECT -->
                 <MudSelect T="string"
@@ -107,28 +108,6 @@
     void Cancel()
     {
         MudDialog!.Cancel();
-    }
-
-    string ValidateEmail(string email)
-    {
-        if (string.IsNullOrWhiteSpace(email))
-            return "Email is required";
-
-        try
-        {
-            var addr = new System.Net.Mail.MailAddress(email);
-            if (addr.Address != email)
-                return "Invalid email format";
-        }
-        catch
-        {
-            return "Invalid email format";
-        }
-
-        if (email.Length > 256)
-            return "Email is too long";
-
-        return string.Empty;
     }
 
     public record InviteUserResult(string Email, string Role);

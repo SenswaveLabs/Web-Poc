@@ -26,8 +26,10 @@
 <SensPage Loading="@_loading" FailedToLoad="@_failedToLoad" RefreshContent="@RefreshPage">
     <LoadingContent>
         
-        <MudContainer xs="12" MaxWidth="MaxWidth.False" Gutters="false" Class="m-1">
-            <MudSkeleton Width="10vh" Style="min-width:96px; max-width:256px;" />
+        <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="m-1">
+            <MudItem xs="12" sm="6" md="4" lg="3">
+                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:64px; width:256px;" />
+            </MudItem>
         </MudContainer>
 
         <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column">
