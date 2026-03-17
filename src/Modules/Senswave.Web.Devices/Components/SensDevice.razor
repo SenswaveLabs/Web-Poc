@@ -6,6 +6,7 @@
 @using System.Text.Json
 
 @inject IDeviceDetailsService DeviceDetailsService
+@inject NavigationManager Navigation
 
 <MudPaper Class="d-flex align-items-center p-3 gap-3 cursor-pointer"
           tabindex="0"
@@ -62,6 +63,7 @@
         <MudIconButton OnClick="HandleStateUpdate" Icon="@Icons.Material.Rounded.PowerSettingsNew" Variant="Variant.Outlined" Color="GetColor()" Size="Size.Medium" />
     }
 
+    <MudIconButton OnClick="NavigateToDetails" Icon="@Icons.Material.Rounded.Info" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" />
 </MudPaper>
 
 @code {
@@ -94,6 +96,11 @@
     }
 
     private bool HasRoomName() => RoomName != string.Empty;
+
+    private void NavigateToDetails()
+    {
+        Navigation.NavigateTo($"/devices/details/{Device.Id}");
+    }
 
     private Color GetColor()
     {
