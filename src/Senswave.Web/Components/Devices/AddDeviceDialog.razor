@@ -1,0 +1,128 @@
+﻿@using Microsoft.Extensions.Logging
+@using MudBlazor
+@using Senswave.Web.Devices.Models
+@using Senswave.Web.Devices.Integration
+@using Senswave.Web.Devices.Services
+@using Senswave.Web.Homes.Integration
+@using Senswave.Web.Homes.Services
+
+@inject IDeviceDetailsService DeviceService
+@inject IRoomService RoomService
+@inject ISnackbar Snackbar
+@inject ILogger<AddDeviceDialog> Logger
+
+<MudDialog>
+
+    <DialogContent>
+
+        <DeviceForm @ref="_deviceForm"
+                    Model="_deviceModel"
+                    Rooms="@_rooms"
+                    Edit="false" />
+
+    </DialogContent>
+
+    <DialogActions>
+
+        <MudButton Variant="Variant.Text"
+                   OnClick="Cancel">
+            Cancel
+        </MudButton>
+
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Disabled="_loading"
+                   OnClick="CreateDeviceAsync">
+
+            @if (_loading)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+            }
+            else
+            {
+                <span>Create</span>
+            }
+
+        </MudButton>
+
+    </DialogActions>
+
+</MudDialog>
+
+@code {
+    private bool _loading = false;
+
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter]
+    public string HomeId { get; set; } = string.Empty;
+
+    private DeviceForm? _deviceForm;
+
+    private DeviceModel _deviceModel = new()
+    {
+        Name = "",
+        Icon = "thermostat",
+        RoomId = null,
+        HomeId = "" 
+    };
+
+    public List<RoomDto> _rooms = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadRooms();
+    }
+
+    private async Task LoadRooms()
+    {
+        _rooms.Add(new(null, "No Room"));
+        try
+        {
+            await RoomService.LoadRooms();
+            var rooms = RoomService.Rooms;
+
+            rooms.ForEach((r) => { _rooms.Add(r); });
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to load rooms: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task CreateDeviceAsync()
+    {
+        if (_deviceForm is null)
+            return;
+
+        var valid = await _deviceForm.Validate();
+        if (!valid)
+            return;
+
+        _loading = true;
+
+        try
+        {
+            var result = await DeviceService.CreateDevice(_deviceModel);
+
+            Snackbar.Add("Device created.", Severity.Success);
+
+            MudDialog.Close();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to create device.");
+            Snackbar.Add("Operation failed.", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+}

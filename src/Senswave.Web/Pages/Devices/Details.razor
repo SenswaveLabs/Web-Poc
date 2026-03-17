@@ -1,0 +1,13 @@
+﻿@page "/devices/details/{Id}"
+@attribute [Authorize]
+
+<h3>Details</h3>
+
+
+
+@code {
+    [Parameter]
+    public string Id { get; set; } = string.Empty;
+
+    //TODO: Update device details and manage dashboards (add edit remove)
+}

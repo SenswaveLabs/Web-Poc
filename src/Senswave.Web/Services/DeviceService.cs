@@ -1,5 +1,6 @@
 ﻿using Refit;
 using Senswave.Web.Devices.Integration;
+using Senswave.Web.Devices.Models;
 using Senswave.Web.Devices.Services;
 using Senswave.Web.Homes.Services;
 using Senswave.Web.Shared.Resulting;
@@ -13,6 +14,26 @@ public class DeviceService(
     IRoomService roomService,
     IErrorFactory errorFactory) : IDeviceListService, IDeviceDetailsService
 {
+    public async Task<Result> CreateDevice(DeviceModel dto)
+    {
+        try
+        {
+            var homeId = homeService.CurrentHome?.Id ?? string.Empty;
+
+            var request = new CreateDeviceRequest(homeId, dto.RoomId, dto.Name, dto.Icon);
+
+            var devices = await integrationService.CreateDeviceAsync(request);
+
+            logger.LogInformation("Returnigng devices for home");
+            return Result.Success();
+        }
+        catch (ApiException ex)
+        {
+            logger.LogError(ex, "Failed to create devices.");
+            return await errorFactory.FromApiExceptionAsync(ex, "FailedToCreateDevice");
+        }
+    }
+
     public async Task<Result<List<DisplayDeviceDto>>> GetListDevicesForHome()
     {
         try
@@ -44,5 +65,10 @@ public class DeviceService(
             return Task.FromResult(string.Empty);
 
         return Task.FromResult(room.Name);
+    }
+
+    public Task<Result> UpdateDevice(DeviceModel dto)
+    {
+        throw new NotImplementedException();
     }
 }

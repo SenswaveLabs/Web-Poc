@@ -1,8 +1,10 @@
 ﻿@page "/devices"
 @attribute [Authorize]
 
+@using Senswave.Web.Components.Devices
 @using Senswave.Web.Devices.Components
 @using Senswave.Web.Devices.Integration
+@using Senswave.Web.Devices.Models
 @using Senswave.Web.Devices.Services
 @using Senswave.Web.Homes.Components
 @using Senswave.Web.Homes.Integration
@@ -118,12 +120,12 @@
                 @foreach (var device in FilteredDevices)
                 {
                     <MudItem xs="12" sm="12" md="6" lg="4" xl="3" xxl="3">
-                        <SensDevice Device="@device" />
+                        <SensDevice Device="@device" OnClick="() => OpenDevice(device.Id)" />
                     </MudItem>
                 }
 
                 <MudItem xs="6" sm="6" md="6" lg="4" xl="3" xxl="3">
-                    <SensListAction Title="Create Device" OnClick="AddDeviceDialog" />
+                    <SensListAction Title="Create Device" OnClick="AddDeviceDialogHandler" />
                 </MudItem>
 
             </MudGrid>
@@ -140,7 +142,7 @@
 
                 <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Add"
                                 Color="Color.Secondary"
-                                OnClick="AddDeviceDialog" />
+                                OnClick="AddDeviceDialogHandler" />
 
 
             </MudFabMenu>
@@ -183,9 +185,33 @@
         await RefreshPage();
     }
 
-    private Task AddDeviceDialog()
+    private void OpenDevice(string deviceId)
     {
-        return Task.CompletedTask;
+        Navigation.NavigateTo($"devices/dashboard/{deviceId}");
+    }
+
+    private async Task AddDeviceDialogHandler()
+    {
+        var parameters = new DialogParameters
+        {
+            ["HomeId"] = HomeService.CurrentHome.Id
+        };
+
+        var options = new DialogOptions
+        {
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.Medium,
+            FullWidth=true
+        };
+
+        var dialog = await DialogService.ShowAsync<AddDeviceDialog>("Create Device", parameters, options);
+
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            await RefreshPage();
+        }
     }
 
     private async Task AddRoomDialogHandler()

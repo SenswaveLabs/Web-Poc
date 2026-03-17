@@ -1,0 +1,77 @@
+﻿@page "/devices/dashboard/{Id}"
+@using Senswave.Web.Shared.Components
+@attribute [Authorize]
+
+<PageTitle>@("Device")</PageTitle>
+
+<SensPage Loading="@_loading" FailedToLoad="@_failedToLoad" RefreshContent="@RefreshPage">
+    <LoadingContent>
+        
+        <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="m-1">
+            <MudItem xs="12" sm="6" md="4" lg="3">
+                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:64px; width:256px;" />
+            </MudItem>
+        </MudContainer>
+
+        <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column">
+            <MudGrid Spacing="0" Class="p-0 d-flex flex-row flex-wrap justify-content-center align-content-center">
+                <MudItem xs="12" sm="6" md="4" lg="3">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="width: 256px; height: 65vh;" />
+                </MudItem>
+
+            </MudGrid>
+        </MudContainer>
+        
+    </LoadingContent>
+    <Content>
+        <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column pb-3">
+
+            <MudGrid Spacing="3" Class="p-0 d-flex flex-row flex-wrap" Style="padding-bottom: 64px!important;">
+
+
+
+            </MudGrid>
+
+            <MudFabMenu Class="position-absolute m-3 m-lg-4"
+                        Style="right:0;bottom:0;"
+                        StartIcon="@Icons.Material.Rounded.MoreVert"
+                        Color="Color.Secondary"
+                        @bind-Open="@_open" Fixed="@_fixed">
+
+                <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Refresh"
+                                Color="Color.Secondary"
+                                OnClick="RefreshPage" />
+
+                @* <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Add"
+                                Color="Color.Secondary"
+                                OnClick="AddDashboard" /> *@
+
+
+            </MudFabMenu>
+
+        </MudContainer>
+    </Content>
+</SensPage>
+
+@code {
+    private bool _open;
+    private bool _fixed;
+    private bool _loading = true;
+    private bool _failedToLoad = true;
+
+    [Parameter]
+    public string Id { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+
+    }  
+
+    private async Task RefreshPage()
+    {
+        
+    }
+
+}
