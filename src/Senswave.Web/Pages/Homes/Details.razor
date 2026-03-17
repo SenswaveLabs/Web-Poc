@@ -236,11 +236,15 @@
             _name = Current.Name;
             _icon = Current.Icon;
 
-            await LoadDataSource();
 
-            var response = await SharingIntegrationService.GetSharingsAsync(Current.Id);
+            if (Current.IsOwner)
+            {
+                await LoadDataSource();
 
-            _sharings = response.Items;
+                var response = await SharingIntegrationService.GetSharingsAsync(Current.Id);
+                _sharings = response.Items;
+            }
+
 
             _failedToLoad = false;
         }
@@ -323,17 +327,24 @@
             "Confirm",
             "Delete this home?",
             yesText: "Delete",
-            cancelText: "Cancel");
+            cancelText: "Cancel",
+            options: new DialogOptions
+            {
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+                CloseOnEscapeKey = true
+            });
 
         if (confirm != true)
             return;
 
+        var result = await HomeService.DeleteCurrentHome();
 
-        await HomesIntegrationService.DeleteHome(Guid.Parse(Current!.Id));
-
-        Snackbar.Add("Home deleted", Severity.Success);
-
-        Navigation.NavigateTo("/");
+        if (result.IsSuccess)
+        {
+            Snackbar.Add("Home deleted", Severity.Success);
+            Navigation.NavigateTo("/");
+        }
     }
 
     private async Task LeaveHome()
@@ -342,12 +353,18 @@
             "Confirm",
             "Sure to leave this home?",
             yesText: "Delete",
-            cancelText: "Cancel");
+            cancelText: "Cancel",
+            options: new DialogOptions
+            {
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+                CloseOnEscapeKey = true
+            });
 
         if (confirm != true)
             return;
 
-        await SharingIntegrationService.LeaveHomeAsync(Current!.Id);
+        await HomeService.LeaveAndRefresh();
 
         Snackbar.Add("Left home", Severity.Success);
 
@@ -356,23 +373,72 @@
 
     private async Task AssignDataSource()
     {
-        //TODO:
+        var dialog = await DialogService.ShowAsync<SelectDataSourceDialog>(
+            "Select Data Source",
+            new DialogOptions
+            {
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+                CloseOnEscapeKey = true
+            });
+
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            var dataSourceId = result.Data as string;
+
+            _loading = true; 
+
+            try
+            {
+                var updateResult = await HomeService.UpdateHomeDataSources(dataSourceId!);
+
+                if (updateResult.IsFailure)
+                {
+                    Snackbar.Add(updateResult.Errors.First().Description, Severity.Error);
+                    return;
+                }
+
+                await RefreshPage();
+            }
+            finally
+            {
+                _loading = false;
+            }
+        }
     }
 
     private async Task UnlinkDataSource()
     {
-        await HomesIntegrationService.DeleteHomeDataSourceAsync(Guid.Parse(Current!.Id));
+        _loading = true;
+        try
+        {
+            StateHasChanged();
+            await HomesIntegrationService.DeleteHomeDataSourceAsync(Current!.Id);
+            Snackbar.Add("Data source unlinked", Severity.Success);
 
-        await HomeService.Initialize();
-
-        Snackbar.Add("Data source unlinked", Severity.Success);
-
-        await RefreshPage();
+            await RefreshPage();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Failed to unlink data source", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
     }
 
     private async Task InviteToHome()
     {
-        var dialog = await DialogService.ShowAsync<InviteToHomeDialog>("Invite User");
+        var dialog = await DialogService.ShowAsync<InviteToHomeDialog>("Invite User",
+            new DialogOptions
+            {
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+                CloseOnEscapeKey = true
+            });
 
         var result = await dialog.Result;
 
@@ -389,7 +455,13 @@
             {
                 var sharingResponse = await SharingIntegrationService.CreateSharingAsync(sharingRequest);
 
-                await DialogService.ShowMessageBoxAsync("Share code", $"Copy and share access code with your friend: {sharingResponse.Password}");
+                await DialogService.ShowMessageBoxAsync("Share code", $"Copy and share access code with your friend: {sharingResponse.Password}",
+                    options:new DialogOptions
+                    {
+                        MaxWidth = MaxWidth.Medium,
+                        FullWidth = true,
+                        CloseOnEscapeKey = true
+                    });
             }
             catch (ApiException ex)
             {

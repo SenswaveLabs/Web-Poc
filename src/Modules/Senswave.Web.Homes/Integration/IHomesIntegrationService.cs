@@ -30,11 +30,11 @@ public interface IHomesIntegrationService
     Task UpdateHome([AliasAs("homeId")] string homeId, [Body] UpdateHomeRequest request);
 
     [Delete("/api/v1/homes/{homeId}")]
-    Task DeleteHome(Guid homeId);
+    Task DeleteHome(string homeId);
 
     [Put("/api/v1/homes/{homeId}/datasource")]
     Task SetHomeDataSourceAsync([AliasAs("homeId")] string homeId, [Body] AssignHomeDataSourceRequest request);
 
     [Delete("/api/v1/homes/{homeId}/datasource")]
-    Task DeleteHomeDataSourceAsync(Guid homeId);
+    Task DeleteHomeDataSourceAsync(string homeId);
 }
