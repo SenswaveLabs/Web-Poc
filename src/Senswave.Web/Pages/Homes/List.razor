@@ -102,13 +102,6 @@
     private bool _loading = true;
     private bool _failedToLoad = true;
 
-    private record Section(string Title, string Description);
-
-    private List<Section> Sections { get; set; } = [
-        new("My Homes", "Under this section you can find all of your homes."),
-        new("Shared Homes", "This section shows all homes that are shared with you but don't belong to you.")
-    ];
-
     private List<Home> Homes { get; set; } = [];
 
     protected override async Task OnInitializedAsync()

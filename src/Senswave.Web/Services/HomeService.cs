@@ -207,6 +207,108 @@ public class HomeService(
         }
     }
 
+    public async Task<Result> RefreshCurrentHome()
+    {
+        await _initLock.WaitAsync();
+
+        try
+        {
+            logger.LogInformation("[Home: {homeId}] Refreshing home.", CurrentHome?.Id);
+
+            var response = await integrationService.GetHome(CurrentHome?.Id);
+
+            if (response is null)
+            {
+                logger.LogWarning("[Home: {homeId}] Home refresh failed. No response from integration service", CurrentHome?.Id);
+                return errorFactory.Create<HomeDetails>("GetHomeFailedUnexpectedly");
+            }
+
+            CurrentHome = new HomeDetails
+            {
+                Id = response.Id,
+                Name = response.Name,
+                Icon = response.Icon,
+                IsOwner = response.IsOwner,
+                DataSource = response.DataSource is null ? null : new DataSource
+                {
+                    Id = response.DataSource?.Id ?? string.Empty,
+                    Name = response.DataSource?.Name ?? string.Empty,
+                    State = response.DataSource?.State ?? string.Empty
+                },
+                Location = response.Location is null ? null : new Location
+                {
+                    Longitude = response.Location.Longitude,
+                    Latitude = response.Location.Latitude
+                },
+                Rooms = response.Rooms?.Select(r => new Room
+                {
+                    Id = r.Id,
+                    Name = r.Name
+                }).ToList() ?? []
+            };
+
+            logger.LogInformation("[Home: {homeId}] Home refreshed.", CurrentHome?.Id);
+
+            return Result.Success();
+
+        }
+        catch (ApiException ex)
+        {
+            logger.LogError(ex, "Unexpected error during home service initialization");
+            return await errorFactory.FromApiExceptionAsync(ex, "HomeServiceInitializationFailedUnexpectedly");
+        }
+        finally
+        {
+            _initLock.Release();
+        }
+    }
+
+    public async Task<Result> DeleteCurrentHome()
+    {
+        await _initLock.WaitAsync();
+
+        try
+        {
+            await integrationService.DeleteHome(CurrentHome!.Id);
+
+            _currentHome = null;
+
+            return Result.Success();
+        }
+        catch (ApiException ex)
+        {
+            logger.LogError(ex, "Failed to remove home");
+            return await errorFactory.FromApiExceptionAsync(ex, "FailedToDeleteHome");
+        }
+        finally
+        {
+            _initLock.Release();
+        }
+    }
+
+    public async Task<Result> LeaveAndRefresh()
+    {
+        await _initLock.WaitAsync();
+
+        try
+        {
+            await sharingIntegrationService.LeaveHomeAsync(CurrentHome!.Id);
+
+            _currentHome = null;
+
+            return Result.Success();
+        }
+        catch (ApiException ex)
+        {
+            logger.LogError(ex, "Failed to leave home");
+            return await errorFactory.FromApiExceptionAsync(ex, "FailedToLeaveHome");
+        }
+        finally
+        {
+            _initLock.Release();
+        }
+    }
+
     public async Task<Result> CreateHome(string name, string icon, double? lattitude, double? longitude)
     {
         try

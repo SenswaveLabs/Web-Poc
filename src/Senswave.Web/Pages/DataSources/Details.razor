@@ -261,6 +261,15 @@
 
     private async Task DeleteDataSource()
     {
+        var confirm = await DialogService.ShowMessageBoxAsync(
+            "Confirm",
+            "Delete data source?",
+            yesText: "Delete",
+            cancelText: "Cancel");
+
+        if (confirm != true)
+            return;
+
         _loading = true;
 
         try

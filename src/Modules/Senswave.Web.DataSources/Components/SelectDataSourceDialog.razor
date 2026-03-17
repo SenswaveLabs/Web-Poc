@@ -1,0 +1,126 @@
+﻿@using Microsoft.Extensions.Logging
+@using MudBlazor
+@using Senswave.Web.DataSources.Integration
+@using Senswave.Web.DataSources.Models
+@using Senswave.Web.DataSources.Services
+@using Senswave.Web.DataSources.Components
+@using Senswave.Web.Shared.Components
+
+@inject IBrokerService BrokerService
+@inject NavigationManager Navigation
+@inject ILogger<SelectDataSourceDialog> Logger
+
+<MudDialog MaxWidth="MaxWidth.Large" FullWidth="true">
+
+    <DialogContent>
+
+        @if (_loading)
+        {
+            <MudGrid>
+                <MudItem xs="12" sm="6" md="4">
+                    <MudSkeleton Height="96px" />
+                </MudItem>
+                <MudItem xs="12" sm="6" md="4">
+                    <MudSkeleton Height="96px" />
+                </MudItem>
+            </MudGrid>
+        }
+        else if (_failed)
+        {
+            <MudAlert Severity="Severity.Error">
+                Failed to load data sources
+            </MudAlert>
+        }
+        else
+        {
+            <MudGrid Spacing="3">
+
+                @foreach (var broker in _brokers)
+                {
+                    <MudItem xs="12" sm="6" md="4" lg="3">
+                        <SensDataSource Broker="@broker"
+                                        OnClick="() => Select(broker.Id)" />
+                    </MudItem>
+                }
+
+                <!-- ADD NEW -->
+                <MudItem xs="12" sm="6" md="4" lg="3">
+                    <SensListAction Title="Create Data Source"
+                                    OnClick="AddDataSource" />
+                </MudItem>
+
+            </MudGrid>
+        }
+
+    </DialogContent>
+
+    <DialogActions>
+
+        <MudButton Variant="Variant.Text" OnClick="Cancel">
+            Cancel
+        </MudButton>
+
+    </DialogActions>
+
+</MudDialog>
+
+@code {
+
+    [CascadingParameter]
+    IMudDialogInstance? MudDialog { get; set; }
+
+    private bool _loading = true;
+    private bool _failed;
+
+    private List<BrokerDto> _brokers = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        try
+        {
+            _loading = true;
+
+            var result = await BrokerService.GetBrokers();
+
+            if (result.IsFailure)
+            {
+                _failed = true;
+                return;
+            }
+
+            _brokers = result.Value;
+            _failed = false;
+        }
+        catch (Exception ex)
+        {
+            _failed = true;
+            Logger.LogError(ex, "Failed to load brokers");
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void Select(string id)
+    {
+        MudDialog!.Close(DialogResult.Ok(id));
+    }
+
+    private void AddDataSource()
+    {
+        MudDialog!.Cancel();
+
+        Navigation.NavigateTo("/datasources");
+    }
+
+    private void Cancel()
+    {
+        MudDialog!.Cancel();
+    }
+}
