@@ -96,7 +96,7 @@
                                                    Variant="Variant.Outlined"
                                                    Color="Color.Error"
                                                    OnClick="UnlinkDataSource">
-                                            Unlink
+                                            Unlink Data Source
                                         </MudButton>
                                     }
                                     else
@@ -131,13 +131,21 @@
 
                                 </MudPaper>
 
+                                <MudButton Class="mt-3"
+                                           Variant="Variant.Filled"
+                                           Color="Color.Primary"
+                                           StartIcon="@Icons.Material.Filled.Share"
+                                           OnClick="InviteToHome">
+                                    Share Your Home
+                                </MudButton>
+
                                 @if (_sharings.Count != 0)
                                 {
                                     <MudTable Items="_sharings" Dense="true" Class="mt-3">
 
                                         <HeaderContent>
                                             <MudTh>Email</MudTh>
-                                            <MudTh>Type</MudTh>
+                                            <MudTh>Sharing Type</MudTh>
                                             <MudTh></MudTh>
                                         </HeaderContent>
 
@@ -154,14 +162,6 @@
 
                                     </MudTable>
                                 }
-
-                                <MudButton Class="mt-3"
-                                           Variant="Variant.Filled"
-                                           Color="Color.Primary"
-                                           StartIcon="@Icons.Material.Filled.PersonAdd"
-                                           OnClick="InviteToHome">
-                                    Invite
-                                </MudButton>
                             }
                         </MudItem>
                     </MudGrid>

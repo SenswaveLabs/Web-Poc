@@ -1,13 +1,459 @@
 ﻿@page "/devices/details/{Id}"
 @attribute [Authorize]
 
-<h3>Details</h3>
+@using Senswave.Web.Components.Devices
+@using Senswave.Web.Devices.Integration
+@using Senswave.Web.Devices.Models
+@using Senswave.Web.Devices.Components
+@using Senswave.Web.Devices.Services
+@using Senswave.Web.Homes.Integration
+@using Senswave.Web.Homes.Services
+@using Senswave.Web.Shared.Components
+
+@inject IDashboardIntegrationService DashboardIntegrationService
+@inject IDeviceDetailsService DeviceService
+@inject IRoomService RoomService
+@inject ISnackbar Snackbar
+@inject ILogger<AddDeviceDialog> Logger
+@inject IDialogService DialogService
+@inject NavigationManager Navigation
+
+<PageTitle>@(DeviceModel?.Name ?? "Device")</PageTitle>
+
+<SensPage Loading="@_loading" FailedToLoad="@_failedToLoad" RefreshContent="@RefreshPage">
+    <LoadingContent>
+
+        <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column">
+            <MudGrid Spacing="0" Class="p-0 d-flex flex-row flex-wrap">
+                <MudItem xs="12" md="6">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:256px;" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:256px;" />
+                </MudItem>
+            </MudGrid>
+        </MudContainer>
+
+    </LoadingContent>
+    <Content>
+        <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column pb-3">
+
+            <MudGrid Spacing="3" Class="p-0 d-flex flex-row flex-wrap" Style="padding-bottom: 64px!important;">
+
+                <MudItem xs="12" md="6">
+                    <MudStack>
+                        <MudPaper Class="pa-4">
+                            <MudText Typo="Typo.h6" Class="mb-3">General</MudText>
+
+                            <DeviceForm @ref="DeviceForm"
+                                Model="DeviceModel"
+                                Rooms="@Rooms"
+                                Edit="true" />
+                        </MudPaper>
+
+                        <MudPaper Class="pa-4">
+                            <MudText Typo="Typo.h6" Class="mb-3">Dashboards</MudText>
+
+                            @if (Dashboards.Count == 0)
+                            {
+                                <MudText Class="mt-3">No dashboards for device.</MudText>
+                            }
+
+                        </MudPaper>
+
+                        @if(Dashboards.Count != 0)
+                        {
+                            <MudTable Items="Dashboards" Dense="true" Hover="true" Bordered="false">
+                                <HeaderContent>
+                                    <MudTh>Name</MudTh>
+                                    <MudTh>Rows</MudTh>
+                                    <MudTh>Columns</MudTh>
+                                    <MudTh Class="text-end">Actions</MudTh>
+                                </HeaderContent>
+
+                                <RowTemplate>
+                                    <MudTd>
+                                        <MudTextField T="string"
+                                                      Value="@context.Name"
+                                                      ValueChanged="@(v => OnDashboardNameChanged(context, v))"
+                                                      Immediate="true"/>
+                                    </MudTd>
+
+                                    <MudTd>
+                                        <MudText>@context.Rows</MudText>
+                                    </MudTd>
+
+                                    <MudTd>
+                                        <MudText>@context.Columns</MudText>
+                                    </MudTd>
+
+                                    <MudTd Class="text-end">
+                                        <MudIconButton Icon="@Icons.Material.Rounded.Delete"
+                                                       Color="Color.Error"
+                                                       OnClick="@(() => DeleteDashboard(context))" />
+
+                                        @if (context.IsDirty)
+                                        {
+                                            <MudIconButton Icon="@Icons.Material.Rounded.Save"
+                                                           Color="Color.Success"
+                                                           OnClick="@(() => UpdateDashboard(context))" />
+                                        }
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        }
 
 
+                        @if (Dashboards.Count < 3)
+                        {
+                            <MudButton Class="mt-3" Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       OnClick="AddDashboard">
+                                Add Dashboard
+                            </MudButton>
+                        }
+
+                    </MudStack>
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+
+                </MudItem>
+
+            </MudGrid>
+
+            @if (HasChanges())
+            {
+                <MudFab Color="Color.Secondary"
+                        StartIcon="@Icons.Material.Filled.Save"
+                        Class="position-absolute m-3 m-lg-4"
+                        Style="right:0;bottom:0;"
+                        OnClick="SaveChanges" />
+            }
+            else
+            {
+                <MudFabMenu Class="position-absolute m-3 m-lg-4"
+                            Style="right:0;bottom:0;"
+                            StartIcon="@Icons.Material.Rounded.MoreVert"
+                            Color="Color.Secondary"
+                            @bind-Open="@_open" Fixed="@_fixed">
+
+                    <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Refresh"
+                                    Color="Color.Secondary"
+                                    OnClick="RefreshPage" />
+
+                    <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Delete"
+                                    Color="Color.Secondary"
+                                    OnClick="DeleteDevice" />
+                </MudFabMenu>
+            }
+
+
+        </MudContainer>
+    </Content>
+</SensPage>
 
 @code {
+    private bool _open;
+    private bool _fixed;
+    private bool _loading = true;
+    private bool _failedToLoad = true;
+
     [Parameter]
     public string Id { get; set; } = string.Empty;
 
-    //TODO: Update device details and manage dashboards (add edit remove)
+    private DeviceForm? DeviceForm;
+
+    private DeviceModel ReferenceModel = new();
+
+    private DeviceModel DeviceModel = new();
+
+    public List<RoomDto> Rooms = [];
+
+    public List<DisplayGroupDto> OperationGroups = [];
+
+    private class EditableDashboard
+    {
+        public string Id { get; set; } = string.Empty;
+
+        public string Name { get; set; } = string.Empty;
+        public string Icon { get; set; } = string.Empty;
+
+        public string OriginalName { get; set; } = string.Empty;
+        public string OriginalIcon { get; set; } = string.Empty;
+
+        public int Rows { get; set; }
+        public int Columns { get; set; }
+
+        public bool IsDirty =>
+            Name != OriginalName || Icon != OriginalIcon;
+    }
+
+    private List<EditableDashboard> Dashboards = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshPage();
+    }
+
+    private bool HasChanges()
+    {
+        if (ReferenceModel.Name != DeviceModel.Name)
+            return true;
+
+        if (ReferenceModel.Icon != DeviceModel.Icon)
+            return true;
+
+        if (ReferenceModel.TileOperationId != DeviceModel.TileOperationId)
+            return true;
+
+        if (ReferenceModel.TileType != DeviceModel.TileType)
+            return true;
+
+        if (ReferenceModel.RoomId != DeviceModel.RoomId)
+            return true;
+
+        return false;
+    }
+
+    private async Task RefreshPage()
+    {
+        _loading = true;
+        try
+        {
+            Rooms = [];
+            Rooms.Add(new(null, "No Room"));
+            await RoomService.LoadRooms();
+            var rooms = RoomService.Rooms;
+            rooms.ForEach((r) => { Rooms.Add(r); });
+
+            var deviceResult = await DeviceService.GetDevice(Id);
+
+            if (deviceResult.IsFailure)
+            {
+                Snackbar.Add($"Failed to load device.", Severity.Error);
+                return;
+            }
+            deviceResult.Value.TileType = deviceResult.Value.TileType is null ? "Default" : deviceResult.Value.TileType;
+            ReferenceModel = deviceResult.Value;
+            DeviceModel = new DeviceModel
+            {
+                Id = Id,
+                HomeId = deviceResult.Value.HomeId,
+                Icon = deviceResult.Value.Icon,
+                RoomId = deviceResult.Value.RoomId,
+                Name = deviceResult.Value.Name,
+
+                TileOperationId = deviceResult.Value.TileOperationId,
+                TileType = deviceResult.Value.TileType,
+            };
+
+            var response = await DeviceService.GetWidgetsAndOperations(Id);
+
+            if (deviceResult.IsFailure)
+            {
+                Snackbar.Add($"Failed to load widgets and operations.", Severity.Error);
+                return;
+            }
+
+            OperationGroups = response.Value;
+
+            var responseDashboards = await DeviceService.GetDashboards(Id);
+
+            if (deviceResult.IsFailure)
+            {
+                Snackbar.Add($"Failed to load dashboards.", Severity.Error);
+                return;
+            }
+
+            Dashboards = responseDashboards.Value.Select(d => new EditableDashboard
+            {
+                Id = d.Id,
+                Name = d.Name,
+                Icon = d.Icon,
+                OriginalName = d.Name,
+                OriginalIcon = d.Icon,
+
+                Rows = d.Rows,
+                Columns = d.Columns
+            })
+            .ToList();
+
+            _failedToLoad = false;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to load device: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task SaveChanges()
+    {
+        if (DeviceForm is null)
+            return;
+
+        var valid = await DeviceForm.Validate();
+        if (!valid)
+            return;
+
+        try
+        {
+            _loading = true;
+            StateHasChanged();
+
+            var result = await DeviceService.UpdateDevice(DeviceModel);
+
+            if (result.IsFailure)
+            {
+                Snackbar.Add(result.Errors.First().Description, Severity.Error);
+                return;    
+            }
+
+            await RefreshPage();
+            Snackbar.Add("Device updated", Severity.Success);
+        }
+        catch
+        {
+            Snackbar.Add("Failed to update device", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task DeleteDevice()
+    {
+        var confirm = await DialogService.ShowMessageBoxAsync(
+            "Confirm",
+            "Are you sure to delete this device?",
+            yesText: "Delete",
+            cancelText: "Cancel",
+            options: new DialogOptions
+            {
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+                CloseOnEscapeKey = true
+            });
+
+        if (confirm != true)
+            return;
+
+        _loading = true;
+        StateHasChanged();
+        var result = await DeviceService.DeleteDevice(DeviceModel.Id);
+
+        if (result.IsFailure)
+        {
+            Snackbar.Add(result.Errors.First().Description, Severity.Error);
+            return;
+        }
+
+        Snackbar.Add("Device deleted", Severity.Success);
+        Navigation.NavigateTo("/devices");
+    }
+
+    private async Task AddOperation()
+    {
+
+    }
+
+    private async Task AddWidget()
+    {
+
+    }
+
+    private async Task DeleteWidget()
+    {
+
+    }
+
+    private async Task AddDashboard()
+    {
+        var parameters = new DialogParameters
+            {
+                ["DeviceId"] = Id
+            };
+
+        var dialog = await DialogService.ShowAsync<AddDashboardDialog>("Create Dasboard",
+            parameters,
+            new DialogOptions
+            {
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+                CloseOnEscapeKey = true
+            });
+
+        var result = await dialog.Result;
+
+        if (!result!.Canceled)
+        {
+            _loading = true;
+            StateHasChanged();
+            await RefreshPage();
+        }
+    }
+
+    private async Task DeleteDashboard(EditableDashboard dto)
+    {
+        var confirm = await DialogService.ShowMessageBoxAsync(
+           "Confirm",
+           "Are you sure to delete this dashboard?",
+           yesText: "Delete",
+           cancelText: "Cancel",
+           options: new DialogOptions
+           {
+               MaxWidth = MaxWidth.Medium,
+               FullWidth = true,
+               CloseOnEscapeKey = true
+           });
+
+        if (confirm != true)
+            return;
+
+        try
+        {
+            _loading = true;
+            StateHasChanged();
+
+            await DashboardIntegrationService.DeleteDashboardAsync(dto.Id);
+            await RefreshPage();
+            Snackbar.Add("Dashboard removed", Severity.Success);
+        }
+        catch
+        {
+            Snackbar.Add("Failed to remove dashboard", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task UpdateDashboard(EditableDashboard dto)
+    {
+        try
+        {
+            _loading = true;
+
+            var request = new UpdateDashboardRequest(dto.Name, dto.Icon);
+
+            await DashboardIntegrationService.UpdateDashboardAsync(dto.Id, request);
+            await RefreshPage();
+            Snackbar.Add("Dashboard updated", Severity.Success);
+        }
+        catch
+        {
+            Snackbar.Add("Failed to remove dashboard", Severity.Error);
+        }
+    }
+
+    private void OnDashboardNameChanged(EditableDashboard dashboard, string value)
+    {
+        dashboard.Name = value;
+    }
 }

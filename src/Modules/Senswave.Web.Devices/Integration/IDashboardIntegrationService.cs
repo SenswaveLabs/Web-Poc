@@ -3,8 +3,11 @@ using System.Text.Json.Nodes;
 
 namespace Senswave.Web.Devices.Integration;
 
-public record CreateDashboardRequest(string DeviceId, string Name, string Icon, Dictionary<string, JsonNode> Configuration);
+public record CreateDashboardRequest(string DeviceId, string Name, string Icon, JsonObject Configuration);
 public record UpdateDashboardRequest(string Name, string Icon);
+
+public record DetailedDashboardDto(string Id, string Name, string Icon, string Type, int Rows, int Columns);
+
 public record DashboardDto(string Id, string Name, string Icon, string Type);
 public record DisplayDashboardsResponse(List<DashboardDto> Items);
 public record GetDashboardResponse(string Id, string Name, string Icon, string Type, Dictionary<string, JsonNode> Configuration);

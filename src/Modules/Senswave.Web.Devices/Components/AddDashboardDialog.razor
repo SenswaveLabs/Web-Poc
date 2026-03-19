@@ -1,0 +1,141 @@
+﻿@using MudBlazor
+@using Refit
+@using Senswave.Web.Devices.Integration
+@using System.Text.Json.Nodes
+@using System.ComponentModel.DataAnnotations
+@using Senswave.Web.Shared.Resulting
+
+@inject IDashboardIntegrationService DashboardIntegrationService
+@inject ISnackbar Snackbar
+@inject IErrorFactory ErrorFactory
+
+<MudDialog>
+    <DialogContent>
+
+        <MudForm @ref="_form" Model="_model">
+            <MudStack Spacing="3">
+
+                <!-- Name -->
+                <MudTextField T="string"
+                              Label="Name"
+                              @bind-Value="@_model.Name"
+                              For="@(() => _model.Name)"
+                              MaxLength="32"
+                              Immediate="true" />
+
+                <!-- Rows / Columns -->
+                <MudGrid>
+                    <MudItem xs="6">
+                        <MudNumericField T="int"
+                                         Label="Rows"
+                                         @bind-Value="@_model.Rows"
+                                         For="@(() => _model.Rows)" />
+                    </MudItem>
+
+                    <MudItem xs="6">
+                        <MudNumericField T="int"
+                                         Label="Columns"
+                                         @bind-Value="@_model.Columns"
+                                         For="@(() => _model.Columns)" />
+                    </MudItem>
+                </MudGrid>
+
+            </MudStack>
+        </MudForm>
+
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Variant="Variant.Text" OnClick="Cancel">
+            Cancel
+        </MudButton>
+
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   OnClick="Submit"
+                   Disabled="@_loading">
+            @if (_loading)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+            }
+            else
+            {
+                @("Add")
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter]
+    public string DeviceId { get; set; } = string.Empty;
+
+    private const string DefaultIcon = "dashboard";
+
+    private bool _loading;
+
+    MudForm? _form;
+
+    private DashboardAddModel _model { get; set; } = new();
+
+    private class DashboardAddModel
+    {
+        [MinLength(3)]
+        [MaxLength(32)]
+        public string Name { get; set; } = string.Empty;
+
+        [Range(1, 10, ErrorMessage = "Value must be between 1 and 10")]
+        public int Rows { get; set; } = 6;
+
+        [Range(1, 6, ErrorMessage = "Value must be between 1 and 6")]
+        public int Columns { get; set; } = 4;
+    }
+
+    private async Task Submit()
+    {
+        if (_loading)
+            return;
+
+        await _form!.Validate();
+
+        if (!_form.IsValid)
+            return;
+
+        _loading = true;
+
+        var config = new JsonObject()
+        {
+            ["rows"] = _model.Rows,
+            ["columns"] = _model.Columns,
+        };
+
+        var request = new CreateDashboardRequest(DeviceId, _model.Name, DefaultIcon, config);
+
+        try
+        {
+
+            await DashboardIntegrationService.CreateDashboardAsync(request);
+            Snackbar.Add("Dashboard created.", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(request));
+        }
+        catch (ApiException ex)
+        {
+            var error = await ErrorFactory.FromApiExceptionAsync(ex, "FailedToCreateDashboard");
+
+            Snackbar.Add(error.Errors.First().Description, Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+}
