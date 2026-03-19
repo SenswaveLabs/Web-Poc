@@ -17,4 +17,6 @@ public interface IDeviceDetailsService
     Task<Result> CreateDevice(DeviceModel dto);
 
     Task<Result> UpdateDevice(DeviceModel dto);
+
+    Task<Result> DeleteDevice(string id);
 }

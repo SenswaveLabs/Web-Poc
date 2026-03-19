@@ -4,6 +4,7 @@
 @using Senswave.Web.Components.Devices
 @using Senswave.Web.Devices.Integration
 @using Senswave.Web.Devices.Models
+@using Senswave.Web.Devices.Components
 @using Senswave.Web.Devices.Services
 @using Senswave.Web.Homes.Integration
 @using Senswave.Web.Homes.Services
@@ -15,6 +16,7 @@
 @inject ISnackbar Snackbar
 @inject ILogger<AddDeviceDialog> Logger
 @inject IDialogService DialogService
+@inject NavigationManager Navigation
 
 <PageTitle>@(DeviceModel?.Name ?? "Device")</PageTitle>
 
@@ -191,9 +193,35 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await RefreshPage();
+    }
+
+    private bool HasChanges()
+    {
+        if (ReferenceModel.Name != DeviceModel.Name)
+            return true;
+
+        if (ReferenceModel.Icon != DeviceModel.Icon)
+            return true;
+
+        if (ReferenceModel.TileOperationId != DeviceModel.TileOperationId)
+            return true;
+
+        if (ReferenceModel.TileType != DeviceModel.TileType)
+            return true;
+
+        if (ReferenceModel.RoomId != DeviceModel.RoomId)
+            return true;
+
+        return false;
+    }
+
+    private async Task RefreshPage()
+    {
         _loading = true;
         try
         {
+            Rooms = [];
             Rooms.Add(new(null, "No Room"));
             await RoomService.LoadRooms();
             var rooms = RoomService.Rooms;
@@ -206,7 +234,7 @@
                 Snackbar.Add($"Failed to load device.", Severity.Error);
                 return;
             }
-
+            deviceResult.Value.TileType = deviceResult.Value.TileType is null ? "Default" : deviceResult.Value.TileType;
             ReferenceModel = deviceResult.Value;
             DeviceModel = new DeviceModel
             {
@@ -263,21 +291,70 @@
         }
     }
 
-    private bool HasChanges() => false;
-
-    private async Task RefreshPage()
-    {
-
-    }
-
     private async Task SaveChanges()
     {
+        if (DeviceForm is null)
+            return;
 
+        var valid = await DeviceForm.Validate();
+        if (!valid)
+            return;
+
+        try
+        {
+            _loading = true;
+            StateHasChanged();
+
+            var result = await DeviceService.UpdateDevice(DeviceModel);
+
+            if (result.IsFailure)
+            {
+                Snackbar.Add(result.Errors.First().Description, Severity.Error);
+                return;    
+            }
+
+            await RefreshPage();
+            Snackbar.Add("Device updated", Severity.Success);
+        }
+        catch
+        {
+            Snackbar.Add("Failed to update device", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
     }
 
     private async Task DeleteDevice()
     {
+        var confirm = await DialogService.ShowMessageBoxAsync(
+            "Confirm",
+            "Are you sure to delete this device?",
+            yesText: "Delete",
+            cancelText: "Cancel",
+            options: new DialogOptions
+            {
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+                CloseOnEscapeKey = true
+            });
 
+        if (confirm != true)
+            return;
+
+        _loading = true;
+        StateHasChanged();
+        var result = await DeviceService.DeleteDevice(DeviceModel.Id);
+
+        if (result.IsFailure)
+        {
+            Snackbar.Add(result.Errors.First().Description, Severity.Error);
+            return;
+        }
+
+        Snackbar.Add("Device deleted", Severity.Success);
+        Navigation.NavigateTo("/devices");
     }
 
     private async Task AddOperation()
@@ -297,14 +374,35 @@
 
     private async Task AddDashboard()
     {
+        var parameters = new DialogParameters
+            {
+                ["DeviceId"] = Id
+            };
 
+        var dialog = await DialogService.ShowAsync<AddDashboardDialog>("Create Dasboard",
+            parameters,
+            new DialogOptions
+            {
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+                CloseOnEscapeKey = true
+            });
+
+        var result = await dialog.Result;
+
+        if (!result!.Canceled)
+        {
+            _loading = true;
+            StateHasChanged();
+            await RefreshPage();
+        }
     }
 
     private async Task DeleteDashboard(EditableDashboard dto)
     {
         var confirm = await DialogService.ShowMessageBoxAsync(
            "Confirm",
-           "Delete this home?",
+           "Are you sure to delete this dashboard?",
            yesText: "Delete",
            cancelText: "Cancel",
            options: new DialogOptions
@@ -320,6 +418,7 @@
         try
         {
             _loading = true;
+            StateHasChanged();
 
             await DashboardIntegrationService.DeleteDashboardAsync(dto.Id);
             await RefreshPage();
@@ -328,6 +427,10 @@
         catch
         {
             Snackbar.Add("Failed to remove dashboard", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
         }
     }
 

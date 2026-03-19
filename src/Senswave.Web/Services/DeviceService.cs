@@ -4,6 +4,7 @@ using Senswave.Web.Devices.Models;
 using Senswave.Web.Devices.Services;
 using Senswave.Web.Homes.Services;
 using Senswave.Web.Shared.Resulting;
+using System.Text.Json.Nodes;
 
 namespace Senswave.Web.Services;
 
@@ -159,8 +160,48 @@ public class DeviceService(
         return Task.FromResult(room.Name);
     }
 
-    public Task<Result> UpdateDevice(DeviceModel dto)
+    public async Task<Result> UpdateDevice(DeviceModel dto)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var request = new JsonObject
+            {
+                ["roomId"] = dto.RoomId,
+                ["name"] = dto.Name,
+                ["icon"] = dto.Icon,
+            };
+
+            if (dto.TileType != "Default")
+            {
+                request["type"] = dto.TileType;
+                request["operationId"] = dto.TileOperationId;
+            }
+
+            await integrationService.UpdateDeviceAsync(dto.Id,request);
+
+            logger.LogInformation("Device updated");
+            return Result.Success();
+        }
+        catch (ApiException ex)
+        {
+            logger.LogError(ex, "Failed to update device.");
+            return await errorFactory.FromApiExceptionAsync(ex, "FailedToUpdateDevice");
+        }
+    }
+
+    public async Task<Result> DeleteDevice(string id)
+    {
+        try
+        {
+            await integrationService.DeleteDeviceAsync(id);
+
+            logger.LogInformation("Device deleted");
+            return Result.Success();
+        }
+        catch (ApiException ex)
+        {
+            logger.LogError(ex, "Failed to delete device.");
+            return await errorFactory.FromApiExceptionAsync(ex, "FailedToDeleteDevice");
+        }
     }
 }
