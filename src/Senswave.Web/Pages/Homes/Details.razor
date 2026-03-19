@@ -42,8 +42,7 @@
         <MudContainer MaxWidth="MaxWidth.False" Class="pb-6">
             <MudGrid Spacing="3">
 
-                <MudHidden Breakpoint="Breakpoint.Md">
-
+          
                     <MudGrid>
 
                         <MudItem xs="12" md="6">
@@ -141,7 +140,7 @@
 
                                 @if (_sharings.Count != 0)
                                 {
-                                    <MudTable Items="_sharings" Dense="true" Class="mt-3">
+                                    <MudTable Items="_sharings" Dense="true" Class="mt-3" Breakpoint="Breakpoint.None">
 
                                         <HeaderContent>
                                             <MudTh>Email</MudTh>
@@ -166,7 +165,6 @@
                         </MudItem>
                     </MudGrid>
 
-                </MudHidden>
 
 
             </MudGrid>
