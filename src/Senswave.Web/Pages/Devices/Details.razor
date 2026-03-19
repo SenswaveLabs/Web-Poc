@@ -1,6 +1,7 @@
 ﻿@page "/devices/details/{Id}"
-@attribute [Authorize]
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
 
+@using Refit
 @using Senswave.Web.Components.Devices
 @using Senswave.Web.Devices.Integration
 @using Senswave.Web.Devices.Models
@@ -9,7 +10,10 @@
 @using Senswave.Web.Homes.Integration
 @using Senswave.Web.Homes.Services
 @using Senswave.Web.Shared.Components
+@using Senswave.Web.Shared.Resulting
 
+@inject IOperationIntegrationService OperationIntegrationService
+@inject IWidgetIntegrationService WidgetIntegrationService
 @inject IDashboardIntegrationService DashboardIntegrationService
 @inject IDeviceDetailsService DeviceService
 @inject IRoomService RoomService
@@ -17,6 +21,7 @@
 @inject ILogger<AddDeviceDialog> Logger
 @inject IDialogService DialogService
 @inject NavigationManager Navigation
+@inject IErrorFactory ErrorFactory
 
 <PageTitle>@(DeviceModel?.Name ?? "Device")</PageTitle>
 
@@ -40,7 +45,6 @@
     </LoadingContent>
     <Content>
         <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column pb-3">
-
             <MudGrid Spacing="3" Class="p-0 d-flex flex-row flex-wrap" Style="padding-bottom: 64px!important;">
 
                 <MudItem xs="12" md="6">
@@ -124,7 +128,6 @@
 
                 <MudItem xs="12" md="6">
                     <MudStack>
-
                         <MudPaper Class="pa-3">
                             <MudText Typo="Typo.h6">Device Operations and Widgets</MudText>
 
@@ -147,7 +150,7 @@
                             <MudPaper Class="pa-3 mt-4">
 
                                 <MudStack Row="true">
-                                    <MudStack Spacing="0">
+                                    <MudStack Spacing="0" Class="flex-1">
                                         <MudText Typo="Typo.subtitle1">@($"Operation: {group.Operation.Name}")</MudText>
                                         <MudText Typo="Typo.caption" Class="mud-text-secondary">
                                             Type: @group.Operation.Type
@@ -167,7 +170,7 @@
                             <MudStack Row="true">
                                 <MudButton Variant="Variant.Filled"
                                            Color="Color.Primary"
-                                           OnClick="AddDashboard">
+                                           OnClick="() => AddWidget(group.Operation)">
                                     @($"Add Widget to Operation: {group.Operation.Name}")
                                 </MudButton>
                             </MudStack>
@@ -201,10 +204,8 @@
                                 </MudTable>
                             }
                         }
-
                     </MudStack>
                 </MudItem>
-
             </MudGrid>
 
             @if (HasChanges())
@@ -232,8 +233,6 @@
                                     OnClick="DeleteDevice" />
                 </MudFabMenu>
             }
-
-
         </MudContainer>
     </Content>
 </SensPage>
@@ -444,22 +443,108 @@
 
     private async Task AddOperation()
     {
+        var parameters = new DialogParameters
+        {
+            ["DeviceId"] = Id
+        };
 
+        var dialog = await DialogService.ShowAsync<AddOperationDialog>("Create Operation",
+            parameters,
+            new DialogOptions
+            {
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+                CloseOnEscapeKey = true
+            });
+
+        var result = await dialog.Result;
+
+        if (!result!.Canceled)
+        {
+            _loading = true;
+            StateHasChanged();
+            await RefreshPage();
+        }
     }
 
     private async Task DeleteOperation(string id)
     {
+        var confirm = await DialogService.ShowMessageBoxAsync(
+            "Confirm",
+            "Are you sure to delete this operation?",
+            yesText: "Delete",
+            cancelText: "Cancel",
+            options: new DialogOptions
+            {
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+                CloseOnEscapeKey = true
+            });
 
+        if (confirm != true)
+            return;
+
+        try
+        {
+            _loading = true;
+            StateHasChanged();
+
+            await OperationIntegrationService.DeleteOperationAsync(id);
+            Snackbar.Add("Operation removed.", Severity.Success);
+
+            await RefreshPage();
+        }
+        catch (ApiException ex)
+        {
+            var operation = await ErrorFactory.FromApiExceptionAsync(ex, "FailedToDeleteOperation");
+            Snackbar.Add(operation.Errors.First().Description, Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
     }
 
-    private async Task AddWidget()
+    private async Task AddWidget(DisplayOperationDto operation)
     {
 
     }
 
     private async Task DeleteWidget(string id)
     {
+        var confirm = await DialogService.ShowMessageBoxAsync(
+            "Confirm",
+            "Are you sure to delete this widget?",
+            yesText: "Delete",
+            cancelText: "Cancel",
+            options: new DialogOptions
+           {
+               MaxWidth = MaxWidth.Medium,
+               FullWidth = true,
+               CloseOnEscapeKey = true
+           });
 
+        if (confirm != true)
+            return;
+
+        try 
+        {
+            _loading = true;
+            StateHasChanged();
+
+            await WidgetIntegrationService.DeleteWidgetAsync(id);
+            Snackbar.Add("Widget removed.", Severity.Success);
+            await RefreshPage();
+        }
+        catch (ApiException ex)
+        {
+            var operation = await ErrorFactory.FromApiExceptionAsync(ex, "FailedToDeleteWidget");
+            Snackbar.Add(operation.Errors.First().Description, Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
     }
 
     private async Task AddDashboard()
