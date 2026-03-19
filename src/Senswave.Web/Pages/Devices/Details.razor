@@ -31,6 +31,9 @@
                 <MudItem xs="12" md="6">
                     <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:256px;" />
                 </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:256px;" />
+                </MudItem>
             </MudGrid>
         </MudContainer>
 
@@ -42,6 +45,7 @@
 
                 <MudItem xs="12" md="6">
                     <MudStack>
+
                         <MudPaper Class="pa-4">
                             <MudText Typo="Typo.h6" Class="mb-3">General</MudText>
 
@@ -52,7 +56,7 @@
                         </MudPaper>
 
                         <MudPaper Class="pa-4">
-                            <MudText Typo="Typo.h6" Class="mb-3">Dashboards</MudText>
+                            <MudText Typo="Typo.h6">Dashboards</MudText>
 
                             @if (Dashboards.Count == 0)
                             {
@@ -63,7 +67,7 @@
 
                         @if(Dashboards.Count != 0)
                         {
-                            <MudTable Items="Dashboards" Dense="true" Hover="true" Bordered="false">
+                            <MudTable Items="Dashboards" Dense="true" Hover="true" Breakpoint="Breakpoint.None">
                                 <HeaderContent>
                                     <MudTh>Name</MudTh>
                                     <MudTh>Rows</MudTh>
@@ -106,18 +110,99 @@
 
                         @if (Dashboards.Count < 3)
                         {
-                            <MudButton Class="mt-3" Variant="Variant.Filled"
-                                       Color="Color.Primary"
-                                       OnClick="AddDashboard">
-                                Add Dashboard
-                            </MudButton>
+                            <MudStack Row="true">
+                                <MudButton Variant="Variant.Filled"
+                                           Color="Color.Primary"
+                                           OnClick="AddDashboard">
+                                    Add Dashboard
+                                </MudButton>
+                            </MudStack>
                         }
 
                     </MudStack>
                 </MudItem>
 
                 <MudItem xs="12" md="6">
+                    <MudStack>
 
+                        <MudPaper Class="pa-3">
+                            <MudText Typo="Typo.h6">Device Operations and Widgets</MudText>
+
+                            @if (OperationGroups.Count == 0)
+                            {
+                                <MudText Class="mt-3">No operations configured for this device.</MudText>
+                            }
+                        </MudPaper>
+
+                        <MudStack Row="true">
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       OnClick="AddOperation">
+                                Add Operation
+                            </MudButton>
+                        </MudStack>
+
+                        @foreach (var group in OperationGroups)
+                        {
+                            <MudPaper Class="pa-3 mt-4">
+
+                                <MudStack Row="true">
+                                    <MudStack Spacing="0">
+                                        <MudText Typo="Typo.subtitle1">@($"Operation: {group.Operation.Name}")</MudText>
+                                        <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                                            Type: @group.Operation.Type
+                                        </MudText>
+                                    </MudStack>
+
+                                    @if (group.Widgets.Count == 0)
+                                    {
+                                        <MudIconButton Icon="@Icons.Material.Rounded.Delete"
+                                                       Color="Color.Error"
+                                                       OnClick="@(() => DeleteOperation(group.Operation.Id))" />
+                                    }
+                                </MudStack>
+
+                            </MudPaper>
+
+                            <MudStack Row="true">
+                                <MudButton Variant="Variant.Filled"
+                                           Color="Color.Primary"
+                                           OnClick="AddDashboard">
+                                    @($"Add Widget to Operation: {group.Operation.Name}")
+                                </MudButton>
+                            </MudStack>
+
+                            @if (group.Widgets.Count == 0)
+                            {
+                                <MudPaper Class="pa-3">
+                                    <MudText>@($"No widgets configured for opertaion: {group.Operation.Name}.")</MudText>
+                                </MudPaper>
+                            }
+                            else
+                            {
+                                <MudTable Items="group.Widgets" Dense="true" Hover="true" Breakpoint="Breakpoint.None">
+
+                                    <HeaderContent>
+                                        <MudTh>Name</MudTh>
+                                        <MudTh>Type</MudTh>
+                                        <MudTh Class="text-end">Actions</MudTh>
+                                    </HeaderContent>
+
+                                    <RowTemplate>
+                                        <MudTd>@context.Name</MudTd>
+                                        <MudTd>@context.Type</MudTd>
+                                        <MudTd Class="text-end">
+                                            <MudIconButton Icon="@Icons.Material.Rounded.Delete"
+                                                           Color="Color.Error"
+                                                           OnClick="@(() => DeleteWidget(context.Id))" />
+                                        </MudTd>
+                                    </RowTemplate>
+
+                                </MudTable>
+                            }
+                        }
+
+                    </MudStack>
                 </MudItem>
 
             </MudGrid>
@@ -362,12 +447,17 @@
 
     }
 
+    private async Task DeleteOperation(string id)
+    {
+
+    }
+
     private async Task AddWidget()
     {
 
     }
 
-    private async Task DeleteWidget()
+    private async Task DeleteWidget(string id)
     {
 
     }
