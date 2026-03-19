@@ -507,7 +507,28 @@
 
     private async Task AddWidget(DisplayOperationDto operation)
     {
+        var parameters = new DialogParameters
+        {
+            ["OperationId"] = operation.Id
+        };
 
+        var dialog = await DialogService.ShowAsync<AddWidgetDialog>("Create Widget",
+            parameters,
+            new DialogOptions
+            {
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+                CloseOnEscapeKey = true
+            });
+
+        var result = await dialog.Result;
+
+        if (!result!.Canceled)
+        {
+            _loading = true;
+            StateHasChanged();
+            await RefreshPage();
+        }
     }
 
     private async Task DeleteWidget(string id)
