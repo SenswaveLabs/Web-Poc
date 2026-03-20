@@ -14,12 +14,11 @@
     {
         case "Button":
             <MudButton Variant="Variant.Filled"
-                       Color="Color.Primary"
+                       Color="Color.Surface"
                        FullWidth
                        Disabled="@(Disabled || _loading)"
                        Class="mud-height-full rounded-lg"
-                       OnClick="HandleButtonAction"
-                       OnLongPress="OnLongPress">
+                       OnClick="HandleButtonAction">
                 @if (_loading)
                 {
                     <MudProgressCircular Size="Size.Small" Indeterminate="true" />
@@ -34,7 +33,7 @@
 
         case "Display":
             <MudPaper Elevation="2"
-                      Class="d-flex align-center justify-center mud-height-full rounded-lg mud-theme-primary"
+                      Class="d-flex align-center justify-center mud-height-full rounded-lg"
                       @oncontextmenu:preventDefault
                       @oncontextmenu="OnLongPress">
                 <MudText Typo="Typo.body1" Align="Align.Center">
@@ -64,16 +63,37 @@
             break;
 
         case "Slider":
-            <MudPaper Elevation="2" Class="pa-2 d-flex flex-column mud-height-full rounded-lg mud-theme-primary">
-                <MudText Typo="Typo.caption">@Widget.Name</MudText>
-                <MudSlider T="double"
-                           Value="@GetSliderValue()"
-                           Min="@GetSliderMin()"
-                           Max="@GetSliderMax()"
-                           Step="@GetSliderStep()"
-                           ValueChanged="HandleSliderChange"
-                           Disabled="@(Disabled || _loading)"
-                           Color="Color.Secondary" />
+            <MudPaper Elevation="2"
+                      Class="pa-2 d-flex flex-column mud-height-full rounded-lg justify-center">
+
+                <MudText Typo="Typo.caption">@($"{Widget.Name} ({GetSliderValue()})")</MudText>
+
+                <div class="d-flex flex-row align-center gap-3">
+
+                    <MudText Typo="Typo.h6" Class="flex-none">
+                        @GetSliderMin()
+                    </MudText>
+
+                    <div class="flex-grow-1 d-flex align-center">
+                        <MudSlider T="double"
+                                   ValueLabel="true"
+                                   Value="@GetSliderValue()"
+                                   Min="@GetSliderMin()"
+                                   Max="@GetSliderMax()"
+                                   Step="@GetSliderStep()"
+                                   ValueChanged="HandleSliderChange"
+                                   TickMarks="false"
+                                   Size="Size.Large"
+                                   Disabled="@(Disabled || _loading)"
+                                   Color="Color.Dark"
+                                   Class="ma-0" />
+                    </div>
+
+                    <MudText Typo="Typo.h6" Class="flex-none">
+                        @GetSliderMax()
+                    </MudText>
+
+                </div>
             </MudPaper>
             break;
         case "Color":
@@ -172,7 +192,15 @@
 
     private async Task HandleSliderChange(double val) => await ExecuteAction(JsonValue.Create(val));
 
-    private double GetSliderValue() => double.TryParse(GetRuntimeValue(), out var v) ? v : 0;
+    private double GetSliderValue()
+    {
+        var runtimeValue = Widget.Configuration?.Runtime?.Value;
+
+        if (runtimeValue is not null)
+            return runtimeValue.AsValue().GetValue<double>();   
+        
+        return 0;
+    }
 
     private double GetSliderMin()
     {
