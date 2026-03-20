@@ -1,0 +1,56 @@
+﻿@using MudBlazor
+@using Senswave.Web.Devices.Integration
+@using Senswave.Web.Devices.Models
+
+<div style="@GetContainerStyle()">
+    @if (Widget.Type == "Button")
+    {
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   FullWidth
+                   Style="height: 100%"
+                   OnClick="OnAction"
+                   OnLongPress="OnLongPress">
+            @Widget.Name
+        </MudButton>
+    }
+    else if (Widget.Type == "Switch")
+    {
+        <MudPaper Class="pa-4 d-flex flex-column align-center justify-center"
+                  Style="@($"height: 100%; background-color: {(IsChecked ? "var(--mud-palette-success)" : "var(--mud-palette-error)")}")">
+            <MudIconButton Icon="@Icons.Material.Filled.PowerSettingsNew"
+                           Color="Color.Inherit"
+                           OnClick="ToggleSwitch" />
+            <MudText Typo="Typo.caption">@Widget.Name</MudText>
+        </MudPaper>
+    }
+    else
+    {
+        <MudPaper Class="pa-4 d-flex align-center justify-center" Style="height: 100%">
+            <MudText Color="Color.Error">Invalid Widget</MudText>
+        </MudPaper>
+    }
+</div>
+
+@code {
+    [Parameter] public CalculatedWidgetDto Widget { get; set; } = null!;
+    [Parameter] public PositionedWidgetDto Position { get; set; } = null!;
+    [Parameter] public double GridUnitSize { get; set; } = 100; // Equivalent to itemHeight/Width
+    [Parameter] public int Gap { get; set; } = 7;
+    [Parameter] public EventCallback OnLongPress { get; set; }
+
+    private bool IsChecked => Widget.Configuration?.Runtime?.Value?.AsArray().GetValueKind() == System.Text.Json.JsonValueKind.True;
+
+    private string GetContainerStyle()
+    {
+        var width = (GridUnitSize * Position.ColumnSpan) + (Gap * (Position.ColumnSpan - 1));
+        var height = (GridUnitSize * Position.RowSpan) + (Gap * (Position.RowSpan - 1));
+        var left = Position.Column * (GridUnitSize + Gap);
+        var top = Position.Row * (GridUnitSize + Gap);
+
+        return $"position: absolute; width: {width}px; height: {height}px; left: {left}px; top: {top}px;";
+    }
+
+    private async Task OnAction() => await Task.CompletedTask; // Implement HttpClient.Post here
+    private async Task ToggleSwitch() => await Task.CompletedTask;
+}

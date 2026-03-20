@@ -1,0 +1,90 @@
+﻿@page "/dashboard"
+@using MudBlazor
+@using Senswave.Web.Devices.Integration
+
+@inject IDialogService DialogService
+
+<MudContainer MaxWidth="MaxWidth.Medium" Style="background-color: red">
+    <MudGrid class="p-5">
+        
+        @foreach (var posWidget in PositionedWidgets)
+        {
+            var calcWidget = CalculatedWidgets.FirstOrDefault(w => w.Id == posWidget.WidgetId);
+
+            @*Reimplement*@
+
+            <SensWidget Widget="calcWidget" 
+                        Position="posWidget" 
+                        GridUnitSize="CalculateUnitSize()" 
+                        Gap="5" 
+                        OnLongPress="@(() => ConfirmUnlink(calcWidget))" />
+        }
+
+        @if (ToggleMode)
+        {
+            @* Render 'Add' placeholders for empty cells *@
+            @for (int r = 0; r < Rows; r++)
+            {
+                @for (int c = 0; c < Columns; c++)
+                {
+                    @if (!IsOccupied(r, c))
+                    {
+                        <div style="@GetPlaceholderStyle(r, c)" @onclick="() => StartAddWidget(r, c)">
+                            <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Primary" />
+                        </div>
+                    }
+                }
+            }
+        }
+    </MudGrid>
+
+    @* Bottom Toolbar *@
+    @* <MudAppBar Bottom="true" Fixed="true" Color="Color.Transparent" Elevation="0" Class="pa-4">
+        <MudIconButton Icon="@(ToggleMode ? Icons.Material.Filled.Undo : Icons.Material.Filled.Apps)" 
+                       OnClick="() => ToggleMode = !ToggleMode" 
+                       Variant="Variant.Filled" Color="Color.Primary" />
+        
+        <MudSpacer />
+        <MudText Typo="Typo.caption" Class="mud-text-secondary">Visible values are only informational.</MudText>
+        <MudSpacer />
+        
+        <MudIconButton Icon="@Icons.Material.Filled.Refresh" 
+                       OnClick="RefreshData" 
+                       Variant="Variant.Filled" Color="Color.Secondary" />
+    </MudAppBar> *@
+</MudContainer>
+
+@code {
+    private bool ToggleMode { get; set; }
+    private int Rows = 6;
+    private int Columns = 4;
+
+    [Parameter]
+    public List<PositionedWidgetDto> PositionedWidgets { get; set; } = [];
+
+    [Parameter]
+    public List<CalculatedWidgetDto> CalculatedWidgets { get; set; } = [];
+
+    private double CalculateUnitSize() => 120; // Logic for dynamic sizing based on container width
+
+    private bool IsOccupied(int row, int col) => 
+        PositionedWidgets.Any(w => row >= w.Row && row < w.Row + w.RowSpan && 
+                                   col >= w.Column && col < w.Column + w.ColumnSpan);
+
+    private string GetPlaceholderStyle(int r, int c)
+    {
+        var size = CalculateUnitSize();
+        var gap = 7;
+        return $"position: absolute; top: {r*(size+gap)}px; left: {c*(size+gap)}px; width: {size}px; height: {size}px; border: 1px dashed gray; display: flex; align-items: center; justify-content: center; opacity: 0.5;";
+    }
+
+    private async Task ConfirmUnlink(CalculatedWidgetDto widget)
+    {
+        bool? result = await DialogService.ShowMessageBoxAsync("Unlink Widget", 
+            $"Do you really want to unlink {widget.Name}?", yesText: "Unlink", cancelText: "Cancel");
+
+        if (result == true) { /* Call API Delete */ }
+    }
+
+    private void StartAddWidget(int row, int col) { /* Navigate to placement logic */ }
+}
