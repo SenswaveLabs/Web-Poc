@@ -1,0 +1,284 @@
+﻿@using MudBlazor
+@using Refit
+@using Senswave.Web.Devices.Integration
+@using System.Text.Json.Nodes
+@using System.ComponentModel.DataAnnotations
+
+@inject IWidgetIntegrationService WidgetService
+@inject IOperationIntegrationService OperationService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">Add Widget</MudText>
+    </TitleContent>
+    <DialogContent>
+        @if (_initLoading)
+        {
+            <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+        }
+        else
+        {
+            <MudForm @ref="_form" Model="_model">
+                <MudStack Spacing="4">
+                    @* Read-only info about the operation *@
+                    <MudAlert Severity="Severity.Info" Dense="true" NoIcon="true">
+                        Operation: <b>@_operation?.Name</b> (@_operation?.Type)
+                    </MudAlert>
+
+                    <MudTextField T="string" Label="Widget Name" @bind-Value="_model.Name"
+                                  For="@(() => _model.Name)" Required="true" Variant="Variant.Outlined" />
+
+                    <MudSelect T="string" Label="Widget Type" @bind-Value="_model.Type"
+                               Required="true" Variant="Variant.Outlined">
+                        @foreach (var type in GetAvailableWidgetTypes())
+                        {
+                            <MudSelectItem Value="@type">@type</MudSelectItem>
+                        }
+                    </MudSelect>
+
+                    @* Polymorphic Configuration Forms *@
+                    @if (_model.Type == "Button")
+                    {
+                        <MudDivider />
+                        <MudText Typo="Typo.subtitle2">Button Configuration</MudText>
+                        @RenderButtonForm()
+                    }
+                    else if (_model.Type == "Display")
+                    {
+                        <MudTextField T="string" Label="Unit (e.g. °C, %)" @bind-Value="_model.Unit"
+                                      Variant="Variant.Outlined" Counter="10" MaxLength="10" />
+                    }
+                    else if (_model.Type == "Slider")
+                    {
+                        <MudNumericField T="double" Label="Step" @bind-Value="_model.Step"
+                                         Variant="Variant.Outlined" Min="0.0001"
+                                         HelperText="Increment value for the slider" />
+                    }
+                    else if (_model.Type == "Radio")
+                    {
+                        <MudText Typo="Typo.subtitle2">Mapped Options</MudText>
+                        <MudTable Items="_model.RadioOptions" Dense="true" Hover="true" Elevation="0" Outlined="true">
+                            <HeaderContent>
+                                <MudTh>Op Option</MudTh>
+                                <MudTh>Display Name</MudTh>
+                                <MudTh>Icon</MudTh>
+                                <MudTh Style="width:40px"></MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd>@context.OptionName</MudTd>
+                                <MudTd>@context.DisplayName</MudTd>
+                                <MudTd><MudIcon Icon="@context.Icon" Size="Size.Small" /></MudTd>
+                                <MudTd>
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error"
+                                                   OnClick="@(() => _model.RadioOptions.Remove(context))" />
+                                </MudTd>
+                            </RowTemplate>
+                            <FooterContent>
+                                <MudTFootRow>
+                                    <MudTd>
+                                        <MudSelect T="string" @bind-Value="_newRadioOpName" Dense="true" Margin="Margin.Dense">
+                                            @foreach (var opt in _opOptions)
+                                            {
+                                                <MudSelectItem Value="@opt">@opt</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    </MudTd>
+                                    <MudTd>
+                                        <MudTextField @bind-Value="_newRadioDisplayName" Placeholder="Label" Margin="Margin.Dense" />
+                                    </MudTd>
+                                    <MudTd>
+                                        <MudTextField @bind-Value="_newRadioIcon" Placeholder="Icon Name" Margin="Margin.Dense" />
+                                    </MudTd>
+                                    <MudTd>
+                                        <MudIconButton Icon="@Icons.Material.Filled.AddCircle" Color="Color.Primary" OnClick="AddRadioOption" />
+                                    </MudTd>
+                                </MudTFootRow>
+                            </FooterContent>
+                        </MudTable>
+                    }
+                </MudStack>
+            </MudForm>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit" Disabled="_loading || _initLoading">
+            @if (_loading)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+            }
+            else
+            {
+
+                <MudText>Create Widget</MudText>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] 
+    IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] 
+    public string OperationId { get; set; } = string.Empty;
+
+    private bool _loading;
+    private bool _initLoading = true;
+    private MudForm? _form;
+    private GetOperationResponse? _operation;
+    private List<string> _opOptions = new();
+    private WidgetAddModel _model = new();
+
+    // Footer Fields for Radio Table
+    private string _newRadioOpName = "";
+    private string _newRadioDisplayName = "";
+    private string _newRadioIcon = "bulb-outline";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _operation = await OperationService.GetOperationAsync(OperationId);
+            if (_operation.Configuration.TryGetValue("options", out var optsNode) && optsNode is JsonArray arr)
+            {
+                _opOptions = arr.Select(x => x?["name"]?.ToString() ?? "").Where(s => !string.IsNullOrEmpty(s)).ToList();
+            }
+            _model.Name = _operation.Name;
+        }
+        catch (Exception) { Snackbar.Add("Failed to load operation details", Severity.Error); MudDialog.Cancel(); }
+        finally { _initLoading = false; }
+    }
+
+    private IEnumerable<string> GetAvailableWidgetTypes()
+    {
+        if (_operation == null) yield break;
+        var type = _operation.Type;
+        if (type is "Text" or "Number" or "Integer" or "Boolean" or "Options" or "HexColor") yield return "Button";
+        if (type is "Text" or "Number" or "Integer") yield return "Display";
+        if (type is "Number" or "Integer") yield return "Slider";
+        if (type == "HexColor") yield return "Color";
+        if (type == "Options") yield return "Radio";
+
+        if (type == "Boolean") yield return "Switch";
+    }
+
+    private RenderFragment RenderButtonForm() => builder =>
+    {
+        if (_operation?.Type == "Boolean")
+        {
+            builder.OpenComponent<MudSwitch<bool>>(0);
+            builder.AddAttribute(1, "Label", "Value to send");
+            builder.AddAttribute(2, "Color", Color.Primary);
+            builder.AddAttribute(3, "Value", _model.ButtonBoolValue);
+            builder.AddAttribute(4, "ValueChanged", EventCallback.Factory.Create<bool>(this, v => _model.ButtonBoolValue = v));
+            builder.CloseComponent();
+        }
+        else if (_operation?.Type is "Number" or "Integer")
+        {
+            builder.OpenComponent<MudNumericField<double>>(5);
+            builder.AddAttribute(6, "Label", "Value to send");
+            builder.AddAttribute(7, "Value", _model.ButtonNumValue);
+            builder.AddAttribute(8, "ValueChanged", EventCallback.Factory.Create<double>(this, v => _model.ButtonNumValue = v));
+            builder.CloseComponent();
+        }
+        else if (_operation?.Type == "Options")
+        {
+            builder.OpenComponent<MudSelect<string>>(9);
+            builder.AddAttribute(10, "Label", "Select Option to send");
+            builder.AddAttribute(11, "Value", _model.ButtonStringValue);
+            builder.AddAttribute(12, "ValueChanged", EventCallback.Factory.Create<string>(this, v => _model.ButtonStringValue = v));
+            foreach (var opt in _opOptions)
+            {
+                builder.OpenComponent<MudSelectItem<string>>(13);
+                builder.AddAttribute(14, "Value", opt);
+                builder.CloseComponent();
+            }
+            builder.CloseComponent();
+        }
+        else
+        {
+            builder.OpenComponent<MudTextField<string>>(15);
+            builder.AddAttribute(16, "Label", "Value to send");
+            builder.AddAttribute(17, "Value", _model.ButtonStringValue);
+            builder.AddAttribute(18, "ValueChanged", EventCallback.Factory.Create<string>(this, v => _model.ButtonStringValue = v));
+            builder.CloseComponent();
+        }
+    };
+
+    private void AddRadioOption()
+    {
+        if (string.IsNullOrWhiteSpace(_newRadioOpName) || string.IsNullOrWhiteSpace(_newRadioDisplayName)) return;
+        if (_model.RadioOptions.Any(x => x.OptionName == _newRadioOpName)) return;
+
+        _model.RadioOptions.Add(new RadioOptionItem(_newRadioOpName, _newRadioDisplayName, _newRadioIcon));
+        _newRadioOpName = ""; _newRadioDisplayName = "";
+    }
+
+    private async Task Submit()
+    {
+        await _form!.Validate();
+        if (!_form.IsValid) return;
+
+        _loading = true;
+        try
+        {
+            var config = new JsonObject();
+            switch (_model.Type)
+            {
+                case "Button":
+                    config["value"] = _operation?.Type switch
+                    {
+                        "Boolean" => JsonValue.Create(_model.ButtonBoolValue),
+                        "Number" or "Integer" => JsonValue.Create(_model.ButtonNumValue),
+                        _ => JsonValue.Create(_model.ButtonStringValue)
+                    };
+                    break;
+                case "Display": config["unit"] = _model.Unit; break;
+                case "Slider": config["step"] = _model.Step; break;
+                case "Switch":
+                    break;
+                case "Radio":
+                    var arr = new JsonArray();
+                    foreach (var o in _model.RadioOptions)
+                        arr.Add(new JsonObject { ["optionName"] = o.OptionName, ["displayName"] = o.DisplayName, ["icon"] = o.Icon });
+                    config["options"] = arr;
+                    break;
+            }
+
+            var request = new CreateWidgetRequest(
+                OperationId,
+                _model.Name,
+                _model.Type,
+                config.ToDictionary(k => k.Key, v => v.Value)
+            );
+
+            await WidgetService.CreateWidgetAsync(request);
+            Snackbar.Add($"{_model.Type} widget created.", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch (Exception ex) { Snackbar.Add($"Error: {ex.Message}", Severity.Error); }
+        finally { _loading = false; }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    public class WidgetAddModel
+    {
+        [Required] public string Name { get; set; } = "";
+        [Required] public string Type { get; set; } = "Button";
+        // Button Config
+        public bool ButtonBoolValue { get; set; }
+        public double ButtonNumValue { get; set; }
+        public string ButtonStringValue { get; set; } = "";
+        // Display Config
+        public string Unit { get; set; } = "";
+        // Slider Config
+        public double Step { get; set; } = 1.0;
+        // Radio Config
+        public List<RadioOptionItem> RadioOptions { get; set; } = new();
+    }
+
+    public record RadioOptionItem(string OptionName, string DisplayName, string Icon);
+}

@@ -1,0 +1,202 @@
+﻿@using MudBlazor
+@using Refit
+@using Senswave.Web.Devices.Integration
+@using System.Text.Json.Nodes
+@using System.ComponentModel.DataAnnotations
+
+@inject IOperationIntegrationService OperationService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">Add New Operation</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudForm @ref="_form" Model="_model">
+            <MudStack Spacing="3">
+
+                <MudTextField T="string"
+                              Label="Name"
+                              @bind-Value="_model.Name"
+                              For="@(() => _model.Name)"
+                              Required="true"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense" />
+
+                <MudTextField T="string"
+                              Label="Topic"
+                              @bind-Value="_model.Topic"
+                              Placeholder="e.g., sensors/temperature/livingroom"
+                              For="@(() => _model.Topic)"
+                              Required="true"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense" />
+
+                <MudSelect T="string" Label="Operation Type" @bind-Value="_model.Type" Variant="Variant.Outlined" Margin="Margin.Dense">
+                    <MudSelectItem Value="@("Boolean")">Boolean Value</MudSelectItem>
+                    <MudSelectItem Value="@("Number")">Number Value</MudSelectItem>
+                    <MudSelectItem Value="@("Integer")">Integer Value</MudSelectItem>
+                    <MudSelectItem Value="@("Text")">Text Value</MudSelectItem>
+                    <MudSelectItem Value="@("HexColor")">Hex Color Value</MudSelectItem>
+                    <MudSelectItem Value="@("Options")">Option Value</MudSelectItem>
+                </MudSelect>
+
+                @if (_model.Type is "Number" or "Integer")
+                {
+                    <MudDivider Class="my-2" />
+                    <MudCheckBox @bind-Value="_model.EnableRangeCheck" Label="Enable Range Check" Color="Color.Primary" />
+
+                    @if (_model.EnableRangeCheck)
+                    {
+                        <MudGrid>
+                            <MudItem xs="6">
+                                <MudNumericField @bind-Value="_model.Min" Label="Min Value" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudNumericField @bind-Value="_model.Max" Label="Max Value" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            </MudItem>
+                        </MudGrid>
+                    }
+                }
+
+                @if (_model.Type == "Options")
+                {
+                    <MudText Typo="Typo.subtitle2" Class="mt-4"><b>Configured Options</b></MudText>
+                    <MudTable Items="_model.Options" Dense="true" Hover="true" Elevation="0" Outlined="true" Context="optContext">
+                        <HeaderContent>
+                            <MudTh>Option Name</MudTh>
+                            <MudTh>Value</MudTh>
+                            <MudTh Style="width:40px"></MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd>@optContext.Name</MudTd>
+                            <MudTd>@optContext.Value</MudTd>
+                            <MudTd>
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error"
+                                               OnClick="@(() => _model.Options.Remove(optContext))" />
+                            </MudTd>
+                        </RowTemplate>
+                        <FooterContent>
+                            <MudTFootRow>
+                                <MudTd>
+                                    <MudTextField @bind-Value="_newOptionName" Placeholder="Name" Margin="Margin.Dense" />
+                                </MudTd>
+                                <MudTd>
+                                    <MudTextField @bind-Value="_newOptionValue" Placeholder="Value" Margin="Margin.Dense" />
+                                </MudTd>
+                                <MudTd>
+                                    <MudIconButton Icon="@Icons.Material.Filled.AddCircle" Color="Color.Primary" OnClick="AddOptionToList" />
+                                </MudTd>
+                            </MudTFootRow>
+                        </FooterContent>
+                    </MudTable>
+                }
+            </MudStack>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit" Disabled="_loading">
+            @if (_loading)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+            }
+            else
+            {
+
+                <MudText>Create Operation</MudText>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public string DeviceId { get; set; } = string.Empty;
+
+    private bool _loading;
+    private MudForm? _form;
+    private OperationModel _model = new();
+
+    private string _newOptionName = "";
+    private string _newOptionValue = "";
+
+    public class OperationModel
+    {
+        [Required, MinLength(3), MaxLength(64)] public string Name { get; set; } = "";
+        [Required, MinLength(3), MaxLength(256)] public string Topic { get; set; } = "";
+        public string Type { get; set; } = "Boolean";
+        public bool EnableRangeCheck { get; set; }
+        public double Min { get; set; } = 0;
+        public double Max { get; set; } = 100;
+        public List<OptionItem> Options { get; set; } = new();
+    }
+
+    public record OptionItem(string Name, string Value);
+
+    private void AddOptionToList()
+    {
+        if (string.IsNullOrWhiteSpace(_newOptionName) || string.IsNullOrWhiteSpace(_newOptionValue)) return;
+
+        if (_model.Options.Any(x => x.Name == _newOptionName))
+        {
+            Snackbar.Add("Option name already exists.", Severity.Warning);
+            return;
+        }
+
+        _model.Options.Add(new OptionItem(_newOptionName, _newOptionValue));
+        _newOptionName = "";
+        _newOptionValue = "";
+    }
+
+    private async Task Submit()
+    {
+        await _form!.Validate();
+        if (!_form.IsValid) return;
+
+        if (_model.Type == "Options" && _model.Options.Count < 2)
+        {
+            Snackbar.Add("At least two options are required.", Severity.Info);
+            return;
+        }
+
+        _loading = true;
+        try
+        {
+            var config = new JsonObject();
+
+            if (_model.EnableRangeCheck && (_model.Type is "Number" or "Integer"))
+            {
+                config["min"] = _model.Min;
+                config["max"] = _model.Max;
+            }
+
+            if (_model.Type == "Options")
+            {
+                var optsArray = new JsonArray();
+                foreach (var o in _model.Options)
+                    optsArray.Add(new JsonObject { ["name"] = o.Name, ["value"] = o.Value });
+                config["options"] = optsArray;
+            }
+
+            var request = new CreateOperationRequest(
+                DeviceId,
+                _model.Name,
+                _model.Type,
+                config.ToDictionary(x => x.Key, x => x.Value),
+                _model.Topic
+            );
+
+            await OperationService.CreateOperationAsync(request);
+            Snackbar.Add("Operation created successfully.", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch (ApiException ex)
+        {
+            Snackbar.Add($"API Error: {ex.Message}", Severity.Error);
+        }
+        finally { _loading = false; }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}
