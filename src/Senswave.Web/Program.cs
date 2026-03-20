@@ -62,7 +62,4 @@ builder.Services.AddSingleton<DeviceService>();
 builder.Services.AddSingleton<IDeviceListService>(sp => sp.GetRequiredService<DeviceService>());
 builder.Services.AddSingleton<IDeviceDetailsService>(sp => sp.GetRequiredService<DeviceService>());
 
-
-
-
 await builder.Build().RunAsync();

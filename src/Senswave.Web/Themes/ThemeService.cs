@@ -98,7 +98,7 @@ internal sealed class ThemeService(
         {
             Primary = "#FFC107",     
             PrimaryContrastText = "#000000", 
-            Secondary = "#80CBC4",    
+            Secondary = "#5FA8A2",    
             Tertiary = "#C5CAE9",     
 
             Background = "#121212",

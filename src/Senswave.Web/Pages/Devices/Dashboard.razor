@@ -54,7 +54,6 @@
                              Class="flex-grow-1"
                              Style="height: calc(100% - var(--mud-appbar-height));">
                     <MudCarouselItem Transition="Transition.Slide">
-                        @* This div is the key to passing height to the child component *@
                         <div class="d-flex flex-column mud-height-full mud-width-full">
                             <SensDashboard Rows="CurrentConfiguration.Rows"
                                            Name="@(CurrentDashboard?.Name ?? string.Empty)"
@@ -77,7 +76,7 @@
                         var index = i;
                         <MudIcon Icon="@(index == _currentIndex ? Icons.Material.Filled.Circle : Icons.Material.Filled.RadioButtonUnchecked)"
                                  Size="Size.Small"
-                                 @onclick="() => _currentIndex = index"
+                                 @onclick="() => OnClick(index)"
                                  Style="cursor: pointer;"
                                  Color="@(index == _currentIndex ? Color.Primary : Color.Default)" />
                     }
@@ -126,6 +125,14 @@
         if (Dashboards.Count == 0) return;
 
         _currentIndex = Math.Max(0, _currentIndex - 1);
+        UpdateActiveDashboard();
+    }
+
+    private void OnClick(int index)
+    {
+        if (Dashboards.Count == 0) return;
+
+        _currentIndex = index;
         UpdateActiveDashboard();
     }
 
