@@ -12,11 +12,20 @@
 @inject IErrorFactory ErrorFactory
 @inject NavigationManager Navigation
 
-<PageTitle>@("Device Dashboard")</PageTitle>
+<PageTitle>@(CurrentDashboard?.Name ?? "Device Dashboard")</PageTitle>
+
+<style>
+    /* MudCarousel has internal wrappers that don't always stretch. This fixes it. */
+    .mud-carousel-item-container {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+</style>
 
 <SensPage Loading="@_loading" FailedToLoad="@_failedToLoad" RefreshContent="@RefreshPage">
     <LoadingContent>
-        
+
         <MudContainer Class="flex-1 justify-content-center align-items-center">
             <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="m-1">
                 <MudItem xs="12" sm="6" md="4" lg="3">
@@ -33,22 +42,55 @@
                 </MudGrid>
             </MudContainer>
         </MudContainer>
-        
+
     </LoadingContent>
     <Content>
-        <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column pb-3">
 
-            <MudGrid Spacing="3" Class="p-0 d-flex flex-row flex-wrap justify-content-center align-items-center" Style="padding-bottom: 64px!important;">
+        <MudContainer MaxWidth="MaxWidth.Medium"
+                      Class="d-flex flex-column p-0"
+                      Style="height: calc(100vh - 80px); overflow: hidden;">
+            @if (Configuration != null)
+            {
+                <MudCarousel ShowArrows="true"
+                             ShowBullets="false"
+                             EnableSwipeGesture="true"
+                             AutoCycle="false"
+                             TData="object"
+                             Class="flex-grow-1"
+                             Style="height: 100%;">
+                    <MudCarouselItem Transition="Transition.Slide">
+                        @* This div is the key to passing height to the child component *@
+                        <div class="d-flex flex-column mud-height-full mud-width-full">
+                            <SensDashboard Rows="Configuration.Rows"
+                                           Name="@(CurrentDashboard?.Name ?? string.Empty)"
+                                           Columns="Configuration.Columns"
+                                           PositionedWidgets="@Configuration.PositionedWidgets"
+                                           CalculatedWidgets="@Configuration.CalculatedWidgets" />
+                        </div>
+                    </MudCarouselItem>
+                </MudCarousel>
+                
+                @* <div class="d-flex align-center justify-center gap-4 py-2">
+                    <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft"
+                                   OnClick="Previous"
+                                   Disabled="@(_currentIndex == 0)" />
 
-                <MudContainer MaxWidth="MaxWidth.Medium">
-                    <MudCarousel Style="min-height: 85vh;" ShowArrows="true" ShowBullets="false" EnableSwipeGesture="true" AutoCycle="false" TData="object">
-                        <MudCarouselItem Color="@Color.Secondary" Transition="Transition.Slide">
-                            <SensDashboard PositionedWidgets="@(Configuration?.PositionedWidgets ?? [])" CalculatedWidgets="@(Configuration?.CalculatedWidgets ?? [])" />
-                        </MudCarouselItem>
-                    </MudCarousel>
-                </MudContainer>
+                    @* Manual Bullets *@
+                    @for (int i = 0; i < TotalDashboards; i++)
+                    {
+                        var index = i;
+                        <MudIcon Icon="@(index == _currentIndex ? Icons.Material.Filled.Circle : Icons.Material.Filled.RadioButtonUnchecked)"
+                                 Size="Size.Small"
+                                 @onclick="() => _currentIndex = index"
+                                 Style="cursor: pointer;"
+                                 Color="@(index == _currentIndex ? Color.Primary : Color.Default)" />
+                    }
 
-            </MudGrid>
+                    <MudIconButton Icon="@Icons.Material.Filled.ChevronRight"
+                                   OnClick="Next"
+                                   Disabled="@(_currentIndex == TotalDashboards - 1)" />
+                </div> *@
+            }
 
             <MudFabMenu Class="position-absolute m-3 m-lg-4"
                         Style="right:0;bottom:0;"
@@ -62,16 +104,22 @@
 
                 @* <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Add"
                                 Color="Color.Secondary"
-                                OnClick="AddDashboard" /> *@
+                                OnClick="AddDashboard" />  *@
 
 
             </MudFabMenu>
-
         </MudContainer>
     </Content>
 </SensPage>
 
 @code {
+
+    private int _currentIndex = 0;
+    private int TotalDashboards = 2; // Derived from your Dashboards list
+
+    private void Next() => _currentIndex = Math.Min(TotalDashboards - 1, _currentIndex + 1);
+    private void Previous() => _currentIndex = Math.Max(0, _currentIndex - 1);
+
     private bool _open;
     private bool _fixed;
     private bool _loading = true;
@@ -82,7 +130,7 @@
 
     private List<DashboardDto> Dashboards = [];
 
-    private string CurrentDashboardId { get; set; } = string.Empty;
+    private DashboardDto? CurrentDashboard { get; set; }
 
     private GridDashboardConfiguration? Configuration { get; set; }
 
@@ -91,7 +139,7 @@
         await base.OnInitializedAsync();
 
         await RefreshPage();
-    }  
+    }
 
     private async Task RefreshPage()
     {
@@ -114,16 +162,16 @@
 
         try
         {
-            if (Dashboards.Select(x => x.Id).Contains(CurrentDashboardId))
+            if (Dashboards.Select(x => x.Id).Contains(CurrentDashboard?.Id))
             {
                 Logger.LogInformation("Dashboard still exists");
             }
             else
             {
-                CurrentDashboardId = Dashboards.First().Id;
+                CurrentDashboard = Dashboards.First();
             }
 
-            var details = await DashboardIntegrationService.GetDashboardDisplayAsync(CurrentDashboardId);
+            var details = await DashboardIntegrationService.GetDashboardDisplayAsync(CurrentDashboard!.Id);
 
             Configuration = details.Configuration;
 

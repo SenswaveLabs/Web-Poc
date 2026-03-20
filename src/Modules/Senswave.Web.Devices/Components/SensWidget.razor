@@ -1,14 +1,13 @@
 ﻿@using MudBlazor
 @using Senswave.Web.Devices.Integration
-@using Senswave.Web.Devices.Models
 
-<div style="@GetContainerStyle()">
+<div style="@GetWidgetGridStyle()">
     @if (Widget.Type == "Button")
     {
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    FullWidth
-                   Style="height: 100%"
+                   Class="mud-height-full"
                    OnClick="OnAction"
                    OnLongPress="OnLongPress">
             @Widget.Name
@@ -16,18 +15,20 @@
     }
     else if (Widget.Type == "Switch")
     {
-        <MudPaper Class="pa-4 d-flex flex-column align-center justify-center"
-                  Style="@($"height: 100%; background-color: {(IsChecked ? "var(--mud-palette-success)" : "var(--mud-palette-error)")}")">
+        <MudPaper Elevation="2"
+                  Class="d-flex flex-column align-center justify-center mud-height-full"
+                  Style="@($"background-color: {(IsChecked ? "var(--mud-palette-success)" : "var(--mud-palette-error)")}; color: white;")">
             <MudIconButton Icon="@Icons.Material.Filled.PowerSettingsNew"
                            Color="Color.Inherit"
+                           Size="Size.Large"
                            OnClick="ToggleSwitch" />
-            <MudText Typo="Typo.caption">@Widget.Name</MudText>
+            <MudText Typo="Typo.caption" Class="px-2 text-center">@Widget.Name</MudText>
         </MudPaper>
     }
     else
     {
-        <MudPaper Class="pa-4 d-flex align-center justify-center" Style="height: 100%">
-            <MudText Color="Color.Error">Invalid Widget</MudText>
+        <MudPaper Class="d-flex align-center justify-center mud-height-full border-2 border-solid mud-border-error">
+            <MudText Color="Color.Error" Typo="Typo.caption">Invalid</MudText>
         </MudPaper>
     }
 </div>
@@ -35,22 +36,26 @@
 @code {
     [Parameter] public CalculatedWidgetDto Widget { get; set; } = null!;
     [Parameter] public PositionedWidgetDto Position { get; set; } = null!;
-    [Parameter] public double GridUnitSize { get; set; } = 100; // Equivalent to itemHeight/Width
-    [Parameter] public int Gap { get; set; } = 7;
     [Parameter] public EventCallback OnLongPress { get; set; }
 
-    private bool IsChecked => Widget.Configuration?.Runtime?.Value?.AsArray().GetValueKind() == System.Text.Json.JsonValueKind.True;
+    // Improved null-safe check for JsonNode
+    private bool IsChecked =>
+        Widget.Configuration?.Runtime?.Value?.GetValueKind() == System.Text.Json.JsonValueKind.True ||
+        (Widget.Configuration?.Runtime?.Value?.ToString().ToLower() == "true");
 
-    private string GetContainerStyle()
+    private string GetWidgetGridStyle()
     {
-        var width = (GridUnitSize * Position.ColumnSpan) + (Gap * (Position.ColumnSpan - 1));
-        var height = (GridUnitSize * Position.RowSpan) + (Gap * (Position.RowSpan - 1));
-        var left = Position.Column * (GridUnitSize + Gap);
-        var top = Position.Row * (GridUnitSize + Gap);
-
-        return $"position: absolute; width: {width}px; height: {height}px; left: {left}px; top: {top}px;";
+        // grid-row: start / span value
+        // grid-column: start / span value
+        // CSS Grid indices are 1-based
+        return $@"
+            grid-row: {Position.Row + 1} / span {Position.RowSpan};
+            grid-column: {Position.Column + 1} / span {Position.ColumnSpan};
+            height: 100%;
+            width: 100%;
+        ";
     }
 
-    private async Task OnAction() => await Task.CompletedTask; // Implement HttpClient.Post here
+    private async Task OnAction() => await Task.CompletedTask;
     private async Task ToggleSwitch() => await Task.CompletedTask;
 }
