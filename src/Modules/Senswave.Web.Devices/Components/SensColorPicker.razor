@@ -8,8 +8,10 @@
     <DialogContent>
         <div class="d-flex justify-center">
             <MudColorPicker Value="@_tempColor"
+                            ShowAlpha="false"
                             ValueChanged="@(c => _tempColor = c)"
-                            PickerVariant="PickerVariant.Static"/>
+                            PickerVariant="PickerVariant.Static"
+                            ColorPickerMode="ColorPickerMode.RGB" />
         </div>
     </DialogContent>
     <DialogActions>

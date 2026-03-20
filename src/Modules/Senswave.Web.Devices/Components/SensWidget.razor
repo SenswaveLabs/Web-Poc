@@ -77,10 +77,9 @@
             </MudPaper>
             break;
         case "Color":
-            <MudPaper Elevation="2"
-                      Style="@($"background-color: {GetRuntimeValue() ?? "#000000"}; color: {GetContrastColor(GetRuntimeValue())}; cursor: pointer;")"
-                      Class="d-flex align-center justify-center mud-height-full rounded-lg"
-                      @onclick="OpenColorDialog">
+            <MudButton Style="@($"background-color: {GetRuntimeValue() ?? "#000000"}; color: {GetContrastColor(GetRuntimeValue())}; cursor: pointer;")"
+                      Class="d-flex align-center justify-center mud-height-full rounded-lg w-100"
+                      OnClick="OpenColorDialog">
                 <div class="d-flex flex-column align-center">
                     <MudText Typo="Typo.button" Style="color: inherit">
                         @GetRuntimeValue()
@@ -89,7 +88,7 @@
                         @Widget.Name
                     </MudText>
                 </div>
-            </MudPaper>
+            </MudButton>
             break;
 
         case "Radio":
@@ -225,6 +224,7 @@
 
         if (!result.Canceled && result.Data is string newColor)
         {
+            newColor = newColor[..^2];
             await ExecuteAction(JsonValue.Create(newColor));
         }
     }

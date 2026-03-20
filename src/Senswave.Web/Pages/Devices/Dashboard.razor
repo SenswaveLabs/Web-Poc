@@ -204,6 +204,8 @@
                 CurrentDashboard = Dashboards.First();
             }
 
+            Grids = [];
+
             foreach(var dash in Dashboards)
             {
                 var details = await DashboardIntegrationService.GetDashboardDisplayAsync(dash!.Id);
