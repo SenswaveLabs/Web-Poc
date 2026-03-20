@@ -46,7 +46,7 @@
     </LoadingContent>
     <Content>
 
-        <MudContainer MaxWidth="MaxWidth.Medium"
+        <MudContainer MaxWidth="MaxWidth.Small"
                       Class="d-flex flex-column p-0"
                       Style="height: calc(100vh - 80px); overflow: hidden;">
             @if (Configuration != null)
@@ -70,12 +70,12 @@
                     </MudCarouselItem>
                 </MudCarousel>
                 
-                @* <div class="d-flex align-center justify-center gap-4 py-2">
+                @*  <div class="d-flex align-center justify-center gap-4 py-2">
                     <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft"
                                    OnClick="Previous"
                                    Disabled="@(_currentIndex == 0)" />
 
-                    @* Manual Bullets *@
+                  
                     @for (int i = 0; i < TotalDashboards; i++)
                     {
                         var index = i;
@@ -89,7 +89,7 @@
                     <MudIconButton Icon="@Icons.Material.Filled.ChevronRight"
                                    OnClick="Next"
                                    Disabled="@(_currentIndex == TotalDashboards - 1)" />
-                </div> *@
+                </div>  *@
             }
 
             <MudFabMenu Class="position-absolute m-3 m-lg-4"
