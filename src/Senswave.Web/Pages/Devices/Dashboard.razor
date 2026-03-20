@@ -186,6 +186,7 @@
         {
             Snackbar.Add("Create some dashboards first!", Severity.Warning);
             Navigation.NavigateTo($"/devices/details/{Id}");
+            return;
         }
         catch (Refit.ApiException ex)
         {
