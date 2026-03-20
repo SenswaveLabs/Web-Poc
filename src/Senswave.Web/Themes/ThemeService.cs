@@ -72,23 +72,26 @@ internal sealed class ThemeService(
     {
         PaletteLight = new PaletteLight()
         {
-            Primary = "#EBAB17",
-            PrimaryContrastText = "#1A1A1A",
-            Secondary = "#00695C",
+            Primary = "#C88900",              
+            PrimaryContrastText = "#000000", 
 
-            HoverOpacity=0.1,
-            Background = "#F5F5F5",
-            Surface = "#edebeb",
-            DrawerBackground = "#edebeb",
+            Secondary = "#004D40",            
 
-            AppbarBackground = "#EBAB17",
-            AppbarText = "#1A1A1A",
+            HoverOpacity = 0.15,
 
-            TextPrimary = "#000000",
-            TextSecondary = "#424242",
+            Background = "#FFFFFF",         
+            Surface = "#E0E0E0",             
+            DrawerBackground = "#E0E0E0",     
 
-            ActionDefault = "#1A1A1A",
-            Divider = "rgba(0,0,0,0.12)"
+            AppbarBackground = "#C88900",
+            AppbarText = "#000000",
+
+            TextPrimary = "#000000",          
+            TextSecondary = "#2B2B2B",      
+
+            ActionDefault = "#000000",
+
+            Divider = "rgba(0,0,0,0.3)"      
         }
     };
 
@@ -98,7 +101,7 @@ internal sealed class ThemeService(
         {
             Primary = "#FFC107",     
             PrimaryContrastText = "#000000", 
-            Secondary = "#80CBC4",    
+            Secondary = "#5FA8A2",    
             Tertiary = "#C5CAE9",     
 
             Background = "#121212",
@@ -124,12 +127,12 @@ internal sealed class ThemeService(
     {
         PaletteLight = new PaletteDark()
         {
-            Primary = "#EBAB17",      // brand accent
-            Secondary = "#00E5FF",    // bright for focus / borders
+            Primary = "#FF00FF",      
+            Secondary = "#00E5FF",    
             Tertiary = "#7C4DFF",
 
-            Background = "#000000",   // dark page
-            Surface = "#121212",      // dark cards/panels
+            Background = "#000000",
+            Surface = "#121212",      
 
             AppbarBackground = "#000000",
             AppbarText = "#FFFFFF",

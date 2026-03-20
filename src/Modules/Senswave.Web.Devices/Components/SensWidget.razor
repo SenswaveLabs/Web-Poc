@@ -1,0 +1,277 @@
+﻿@using MudBlazor
+@using MudBlazor.Utilities
+@using Senswave.Web.Devices.Integration
+@using System.Text.Json.Nodes
+@using Senswave.Web.Shared.Resulting
+
+@inject IWidgetIntegrationService WidgetIntegrationService
+@inject ISnackbar Snackbar
+@inject IErrorFactory ErrorFactory
+@inject IDialogService DialogService
+
+<div style="@GetWidgetGridStyle()" class="pa-1">
+    @switch (Widget.Type)
+    {
+        case "Button":
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Surface"
+                       FullWidth
+                       Disabled="@(Disabled || _loading)"
+                       Class="mud-height-full rounded-lg"
+                       OnClick="HandleButtonAction">
+                @if (_loading)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                }
+                else
+                {
+
+                    @Widget.Name
+                }
+            </MudButton>
+            break;
+
+        case "Display":
+            <MudPaper Elevation="2"
+                      Class="d-flex align-center justify-center mud-height-full rounded-lg"
+                      @oncontextmenu:preventDefault
+                      @oncontextmenu="OnLongPress">
+                <MudText Typo="Typo.body1" Align="Align.Center">
+                    @Widget.Name: @GetRuntimeValue() @(Widget.Configuration?.Unit ?? "")
+                </MudText>
+            </MudPaper>
+            break;
+
+        case "Switch":
+            <MudButton OnClick="ToggleSwitch"
+                       Disabled="@(Disabled || _loading)"
+                       Variant="Variant.Text"
+                       Class="mud-height-full mud-width-full pa-0 rounded-lg"
+                       Style="@($"{GetSwitchStyle()} text-transform: none;")">
+                <div class="d-flex flex-column align-center justify-center mud-height-full mud-width-full">
+                    @if (_loading)
+                    {
+                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Inherit" />
+                    }
+                    else
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.PowerSettingsNew" Size="Size.Large" Color="Color.Inherit" />
+                    }
+                    <MudText Typo="Typo.caption" Class="px-2 text-center" Color="Color.Inherit">@Widget.Name</MudText>
+                </div>
+            </MudButton>
+            break;
+
+        case "Slider":
+            <MudPaper Elevation="2"
+                      Class="pa-2 d-flex flex-column mud-height-full rounded-lg justify-center">
+
+                <MudText Typo="Typo.caption">@($"{Widget.Name} ({GetSliderValue()})")</MudText>
+
+                <div class="d-flex flex-row align-center gap-3">
+
+                    <MudText Typo="Typo.h6" Class="flex-none">
+                        @GetSliderMin()
+                    </MudText>
+
+                    <div class="flex-grow-1 d-flex align-center">
+                        <MudSlider T="double"
+                                   ValueLabel="true"
+                                   Value="@GetSliderValue()"
+                                   Min="@GetSliderMin()"
+                                   Max="@GetSliderMax()"
+                                   Step="@GetSliderStep()"
+                                   ValueChanged="HandleSliderChange"
+                                   TickMarks="false"
+                                   Size="Size.Large"
+                                   Disabled="@(Disabled || _loading)"
+                                   Color="Color.Dark"
+                                   Class="ma-0" />
+                    </div>
+
+                    <MudText Typo="Typo.h6" Class="flex-none">
+                        @GetSliderMax()
+                    </MudText>
+
+                </div>
+            </MudPaper>
+            break;
+        case "Color":
+            <MudButton Style="@($"background-color: {GetRuntimeValue() ?? "#000000"}; color: {GetContrastColor(GetRuntimeValue())}; cursor: pointer;")"
+                      Class="d-flex align-center justify-center mud-height-full rounded-lg w-100"
+                      OnClick="OpenColorDialog">
+                <div class="d-flex flex-column align-center">
+                    <MudText Typo="Typo.button" Style="color: inherit">
+                        @GetRuntimeValue()
+                    </MudText>
+                    <MudText Typo="Typo.caption" Style="color: inherit; opacity: 0.7;">
+                        @Widget.Name
+                    </MudText>
+                </div>
+            </MudButton>
+            break;
+
+        case "Radio":
+            <MudPaper Elevation="2" Class="mud-height-full rounded-lg d-flex flex-row align-center overflow-x-auto pa-1">
+                @foreach (var option in GetRadioOptions())
+                {
+                    <MudButton Variant="@(IsSelected(option) ? Variant.Filled: Variant.Outlined)"
+                               Color="@(IsSelected(option) ? Color.Primary : Color.Default)"
+                               OnClick="@(() => HandleRadioChange(option.OptionName))"
+                               Class="mx-1 flex-grow-1"
+                               Disabled="@(Disabled || _loading)"
+                               Size="Size.Small">
+                        @option.DisplayName
+                    </MudButton>
+                }
+            </MudPaper>
+            break;
+
+        default:
+            <MudPaper Class="d-flex align-center justify-center mud-height-full border-2 border-solid mud-border-error rounded-lg">
+                <MudText Color="Color.Error" Typo="Typo.caption">Invalid: @Widget.Type</MudText>
+            </MudPaper>
+        break;
+    }
+</div>
+
+@code {
+    [Parameter] public CalculatedWidgetDto Widget { get; set; } = null!;
+    [Parameter] public PositionedWidgetDto Position { get; set; } = null!;
+    [Parameter] public EventCallback OnLongPress { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+
+    private bool _loading;
+    private bool _colorPickerOpen;
+
+    private async Task ExecuteAction(JsonValue val)
+    {
+        if (_loading || Disabled) return;
+        _loading = true;
+        try
+        {
+            await WidgetIntegrationService.ExecuteWidgetActionAsync(Widget.Id, new WidgetActionRequest(val));
+        }
+        catch (Refit.ApiException ex)
+        {
+            var error = await ErrorFactory.FromApiExceptionAsync(ex, "Failed to update state");
+            Snackbar.Add(error.Errors.First().Description, Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private string? GetRuntimeValue() => Widget.Configuration?.Runtime?.Value?.ToString();
+
+    private string GetWidgetGridStyle() => $@"
+        grid-row: {Position.Row + 1} / span {Position.RowSpan};
+        grid-column: {Position.Column + 1} / span {Position.ColumnSpan};
+        height: 100%; width: 100%;";
+
+    #region Button
+
+    private async Task HandleButtonAction() => await ExecuteAction(JsonValue.Create(""));
+
+    #endregion
+
+    #region Switch 
+
+    private async Task ToggleSwitch() => await ExecuteAction(JsonValue.Create(!IsChecked()));
+
+    private bool IsChecked() => GetRuntimeValue()?.ToLower() == "true";
+
+    private string GetSwitchStyle() => IsChecked()
+    ? "background-color: var(--mud-palette-success); color: white;"
+    : "background-color: var(--mud-palette-error); color: white;";
+
+    #endregion
+
+    #region Slider
+
+    private async Task HandleSliderChange(double val) => await ExecuteAction(JsonValue.Create(val));
+
+    private double GetSliderValue()
+    {
+        var runtimeValue = Widget.Configuration?.Runtime?.Value;
+
+        if (runtimeValue is not null)
+            return runtimeValue.AsValue().GetValue<double>();   
+        
+        return 0;
+    }
+
+    private double GetSliderMin()
+    {
+        return Widget.Configuration.Range.Min;
+    }
+
+    private double GetSliderMax()
+    {
+        return Widget.Configuration.Range.Max;
+    }
+
+    private double GetSliderStep()
+    {
+        return Widget.Configuration.Step ?? 0.01;
+    }
+
+    #endregion
+
+    #region Radio
+
+    private bool IsSelected(RadioOption option) {
+
+        var runtime = GetRuntimeValue();
+
+        return runtime == option.OptionName;
+    }
+
+    private async Task HandleRadioChange(string val) => await ExecuteAction(JsonValue.Create(val));
+
+    private List<RadioOption> GetRadioOptions()
+    {
+        return Widget.Configuration.Options ?? [];
+    }
+
+    #endregion
+
+    #region Color
+
+    private async Task OpenColorDialog()
+    {
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall };
+        var parameters = new DialogParameters
+        {
+            ["InitialColor"] = GetRuntimeValue() ?? "#000000" 
+        };
+
+        var dialog = await DialogService.ShowAsync<SensColorPicker>("Select Color", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is string newColor)
+        {
+            newColor = newColor[..^2];
+            await ExecuteAction(JsonValue.Create(newColor));
+        }
+    }
+
+    private string GetContrastColor(string? hex)
+    {
+        if (string.IsNullOrEmpty(hex)) return "white";
+        try
+        {
+            // Simple brightness check: (R*299 + G*587 + B*114) / 1000
+            var color = new MudColor(hex);
+            double brightness = (color.R * 299 + color.G * 587 + color.B * 114) / 1000.0;
+            return brightness > 128 ? "black" : "white";
+        }
+        catch
+        {
+            return "white";
+        }
+    }
+
+    #endregion
+}

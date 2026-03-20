@@ -62,13 +62,11 @@
                             <HeaderContent>
                                 <MudTh>Op Option</MudTh>
                                 <MudTh>Display Name</MudTh>
-                                <MudTh>Icon</MudTh>
                                 <MudTh Style="width:40px"></MudTh>
                             </HeaderContent>
                             <RowTemplate>
                                 <MudTd>@context.OptionName</MudTd>
                                 <MudTd>@context.DisplayName</MudTd>
-                                <MudTd><MudIcon Icon="@context.Icon" Size="Size.Small" /></MudTd>
                                 <MudTd>
                                     <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error"
                                                    OnClick="@(() => _model.RadioOptions.Remove(context))" />
@@ -86,9 +84,6 @@
                                     </MudTd>
                                     <MudTd>
                                         <MudTextField @bind-Value="_newRadioDisplayName" Placeholder="Label" Margin="Margin.Dense" />
-                                    </MudTd>
-                                    <MudTd>
-                                        <MudTextField @bind-Value="_newRadioIcon" Placeholder="Icon Name" Margin="Margin.Dense" />
                                     </MudTd>
                                     <MudTd>
                                         <MudIconButton Icon="@Icons.Material.Filled.AddCircle" Color="Color.Primary" OnClick="AddRadioOption" />
@@ -134,7 +129,7 @@
     // Footer Fields for Radio Table
     private string _newRadioOpName = "";
     private string _newRadioDisplayName = "";
-    private string _newRadioIcon = "bulb-outline";
+    private string _newRadioIcon = "bulb";
 
     protected override async Task OnInitializedAsync()
     {

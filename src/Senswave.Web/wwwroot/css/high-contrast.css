@@ -4,7 +4,7 @@
 .high-contrast .mud-toolbar,
 .high-contrast a.mud-nav-link.mud-ripple.active,
 .high-contrast .mud-input-control {
-    border: 1px solid #EBAB17;
+    border: 1px solid #FF00FF;
 }
 
 .high-contrast :focus-visible {

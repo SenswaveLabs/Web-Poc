@@ -1,43 +1,92 @@
 ﻿@page "/devices/dashboard/{Id}"
-@using Senswave.Web.Shared.Components
 @attribute [Authorize]
 
-<PageTitle>@("Device")</PageTitle>
+@using Senswave.Web.Devices.Components
+@using Senswave.Web.Devices.Integration
+@using Senswave.Web.Shared.Components
+@using Senswave.Web.Shared.Resulting
+
+@inject ILogger<Dashboard> Logger
+@inject IDashboardIntegrationService DashboardIntegrationService
+@inject ISnackbar Snackbar
+@inject IErrorFactory ErrorFactory
+@inject NavigationManager Navigation
+
+<PageTitle>@(CurrentDashboard?.Name ?? "Device Dashboard")</PageTitle>
+
+<style>
+    /* MudCarousel has internal wrappers that don't always stretch. This fixes it. */
+    .mud-carousel-item-container {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+</style>
 
 <SensPage Loading="@_loading" FailedToLoad="@_failedToLoad" RefreshContent="@RefreshPage">
     <LoadingContent>
-        
-        <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="m-1">
-            <MudItem xs="12" sm="6" md="4" lg="3">
-                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:64px; width:256px;" />
-            </MudItem>
-        </MudContainer>
 
-        <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column">
-            <MudGrid Spacing="0" Class="p-0 d-flex flex-row flex-wrap justify-content-center align-content-center">
-                <MudItem xs="12" sm="6" md="4" lg="3">
-                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="width: 256px; height: 65vh;" />
+        <MudContainer MaxWidth="MaxWidth.Small" Class="display-flex flex-1 justify-content-center align-items-center">
+            <MudGrid Class="display-flex flex-1 justify-content-center align-items-center">
+                <MudItem Class="display-flex flex-1 justify-content-center align-items-center" xs="12">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2 flex-grow-1 display-flex" Style="height: 65vh;" />
                 </MudItem>
 
+                <MudItem xs="12">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="height: 8vh;" />
+                </MudItem>
             </MudGrid>
         </MudContainer>
-        
+
     </LoadingContent>
     <Content>
-        <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column pb-3">
 
-            <MudGrid Spacing="3" Class="p-0 d-flex flex-row flex-wrap" Style="padding-bottom: 64px!important;">
+        <MudContainer MaxWidth="MaxWidth.Small"
+                      Class="d-flex flex-column p-0"
+                      Style="height: calc(100vh - 80px); overflow: hidden;">
+            @if (CurrentConfiguration != null)
+            {
+                <MudCarousel ShowArrows="false"
+                             ShowBullets="false"
+                             EnableSwipeGesture="false"
+                             AutoCycle="false"
+                             TData="object"
+                             Class="flex-grow-1"
+                             Style="height: calc(100% - var(--mud-appbar-height));">
+                    <MudCarouselItem Transition="Transition.Slide">
+                        <div class="d-flex flex-column mud-height-full mud-width-full">
+                            <SensDashboard Rows="CurrentConfiguration.Rows"
+                                           Name="@(CurrentDashboard?.Name ?? string.Empty)"
+                                           Columns="CurrentConfiguration.Columns"
+                                           PositionedWidgets="@CurrentConfiguration.PositionedWidgets"
+                                           CalculatedWidgets="@CurrentConfiguration.CalculatedWidgets" />
+                        </div>
+                    </MudCarouselItem>
+                </MudCarousel>
+                
+                <div class="d-flex align-center justify-center gap-3 py-2" style="min-height: 64px!important;">
+                    <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft"
+                                   OnClick="Previous"
+                                   Class="pr-0"
+                                   Disabled="@(_currentIndex == 0)" />
 
-                <MudItem xs="12" md="6">
+                  
+                    @for (int i = 0; i < Dashboards.Count; i++)
+                    {
+                        var index = i;
+                        <MudIcon Icon="@(index == _currentIndex ? Icons.Material.Filled.Circle : Icons.Material.Filled.RadioButtonUnchecked)"
+                                 Size="Size.Small"
+                                 @onclick="() => OnClick(index)"
+                                 Style="cursor: pointer;"
+                                 Color="@(index == _currentIndex ? Color.Primary : Color.Default)" />
+                    }
 
-
-                </MudItem>
-
-                <MudItem xs="12" md="6">
-
-                </MudItem>
-
-            </MudGrid>
+                    <MudIconButton Icon="@Icons.Material.Filled.ChevronRight"
+                                   OnClick="Next"
+                                   Class="pl-0"
+                                   Disabled="@(_currentIndex == Dashboards.Count - 1)" />
+                </div> 
+            }
 
             <MudFabMenu Class="position-absolute m-3 m-lg-4"
                         Style="right:0;bottom:0;"
@@ -49,18 +98,54 @@
                                 Color="Color.Secondary"
                                 OnClick="RefreshPage" />
 
-                @* <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Add"
+                <MudFabMenuItem StartIcon="@Icons.Material.Rounded.OpenInNew"
                                 Color="Color.Secondary"
-                                OnClick="AddDashboard" /> *@
+                                OnClick="DeviceDetails" />
 
 
             </MudFabMenu>
-
         </MudContainer>
     </Content>
 </SensPage>
 
 @code {
+
+    private int _currentIndex = 0;
+
+    private void Next()
+    {
+        if (Dashboards.Count == 0) return;
+
+        _currentIndex = Math.Min(Dashboards.Count - 1, _currentIndex + 1);
+        UpdateActiveDashboard();
+    }
+
+    private void Previous()
+    {
+        if (Dashboards.Count == 0) return;
+
+        _currentIndex = Math.Max(0, _currentIndex - 1);
+        UpdateActiveDashboard();
+    }
+
+    private void OnClick(int index)
+    {
+        if (Dashboards.Count == 0) return;
+
+        _currentIndex = index;
+        UpdateActiveDashboard();
+    }
+
+    private void UpdateActiveDashboard()
+    {
+        CurrentDashboard = Dashboards.ElementAtOrDefault(_currentIndex);
+        CurrentConfiguration = Grids.ElementAtOrDefault(_currentIndex);
+        StateHasChanged();
+
+        Logger.LogInformation("Switched to dashboard index {Index}: {Name}",
+            _currentIndex, CurrentDashboard?.Name);
+    }
+
     private bool _open;
     private bool _fixed;
     private bool _loading = true;
@@ -69,16 +154,87 @@
     [Parameter]
     public string Id { get; set; } = string.Empty;
 
+    private List<DashboardDto> Dashboards = [];
+
+    private List<GridDashboardConfiguration> Grids = [];
+
+    private DashboardDto? CurrentDashboard { get; set; }
+
+    private GridDashboardConfiguration? CurrentConfiguration { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
 
+        await RefreshPage();
+    }
 
-    }  
+    private async Task DeviceDetails()
+    {
+        Navigation.NavigateTo($"/devices/details/{Id}");
+    }
 
     private async Task RefreshPage()
     {
-        
-    }
+        try
+        {
+            var dashboards = await DashboardIntegrationService.DisplayDashboardsAsync(Id);
 
+            Dashboards = dashboards.Items;
+        }
+        catch (Refit.ApiException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            Snackbar.Add("Create some dashboards first!", Severity.Warning);
+            Navigation.NavigateTo($"/devices/details/{Id}");
+            return;
+        }
+        catch (Refit.ApiException ex)
+        {
+            var result = await ErrorFactory.FromApiExceptionAsync(ex, "FailedToLoadDashboard");
+            Snackbar.Add(result.Errors.First().Description, Severity.Error);
+        }
+
+        try
+        {
+            if (Dashboards.Select(x => x.Id).Contains(CurrentDashboard?.Id))
+            {
+                Logger.LogInformation("Dashboard still exists");
+            }
+            else
+            {
+                CurrentDashboard = Dashboards.First();
+            }
+
+            Grids = [];
+
+            foreach(var dash in Dashboards)
+            {
+                var details = await DashboardIntegrationService.GetDashboardDisplayAsync(dash!.Id);
+
+                Grids.Add(new GridDashboardConfiguration(
+                    details.Configuration.Rows, 
+                    details.Configuration.Columns, 
+                    details.Configuration.PositionedWidgets, 
+                    details.Configuration.CalculatedWidgets, 
+                    dash.Id));
+            }
+
+            CurrentConfiguration = Grids.Where(x => x.Id == CurrentDashboard!.Id).First();
+            StateHasChanged();
+            _failedToLoad = false;
+        }
+        catch (Refit.ApiException ex)
+        {
+            var result = await ErrorFactory.FromApiExceptionAsync(ex, "FailedToLoadDashboard");
+            Snackbar.Add(result.Errors.First().Description, Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Failed to load dashboard", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
 }

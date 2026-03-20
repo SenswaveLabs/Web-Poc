@@ -1,0 +1,71 @@
+﻿@using MudBlazor
+@using Senswave.Web.Devices.Integration
+@inject IDialogService DialogService
+
+<MudContainer MaxWidth="MaxWidth.Medium"
+              Style="height: 100%; display: flex; flex-direction: column; padding: 0">
+
+    <MudText Typo="Typo.subtitle1" Class="text-center  pt-1 pb-2">@Name</MudText>
+
+    <div style="@GetGridStyle()" class="flex-grow-1">
+        @foreach (var posWidget in PositionedWidgets)
+        {
+            var calcWidget = CalculatedWidgets.FirstOrDefault(w => w.Id == posWidget.WidgetId);
+            if (calcWidget == null) continue;
+
+            <SensWidget Widget="calcWidget"
+                        Position="posWidget"
+                        OnLongPress="@(() => ConfirmUnlink(calcWidget))" />
+        }
+
+        @if (ToggleMode)
+        {
+            @for (int r = 0; r < Rows; r++)
+            {
+                @for (int c = 0; c < Columns; c++)
+                {
+                    @if (!IsOccupied(r, c))
+                    {
+                        <div style="@($"grid-row: {r + 1}; grid-column: {c + 1};")"
+                             class="d-flex align-center justify-center border-2 border-dashed mud-border-lines-default rounded-lg"
+                             @onclick="() => StartAddWidget(r, c)">
+                            <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Primary" Opacity="0.5" />
+                        </div>
+                    }
+                }
+            }
+        }
+    </div>
+</MudContainer>
+
+@code {
+    private bool ToggleMode { get; set; } = false;
+
+    [Parameter] public string Name { get; set; } = string.Empty;
+    [Parameter] public int Rows { get; set; } = 6;
+    [Parameter] public int Columns { get; set; } = 4;
+    [Parameter] public List<PositionedWidgetDto> PositionedWidgets { get; set; } = [];
+    [Parameter] public List<CalculatedWidgetDto> CalculatedWidgets { get; set; } = [];
+
+    private string GetGridStyle() => $@"
+        display: grid;
+        grid-template-rows: repeat({Rows}, 1fr);
+        grid-template-columns: repeat({Columns}, 1fr);
+        gap: 6px;
+        height: calc(100% - var(--mud-appbar-height));
+        width: 100%;
+        position: relative;
+    ";
+
+    private bool IsOccupied(int row, int col) =>
+        PositionedWidgets.Any(w => row >= w.Row && row < w.Row + w.RowSpan &&
+                                   col >= w.Column && col < w.Column + w.ColumnSpan);
+
+    private async Task ConfirmUnlink(CalculatedWidgetDto widget)
+    {
+        var result = await DialogService.ShowMessageBoxAsync("Unlink", $"Unlink {widget.Name}?", "Yes", "No");
+        if (result == true) { /* API Logic */ }
+    }
+
+    private void StartAddWidget(int row, int col) => Console.WriteLine($"Add at {row}:{col}");
+}

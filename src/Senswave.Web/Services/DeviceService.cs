@@ -56,8 +56,8 @@ public class DeviceService(
                     dashboard.Name,
                     dashboard.Icon,
                     dashboard.Type,
-                    details.Configuration["rows"].AsValue().GetValue<int>(),
-                    details.Configuration["columns"].AsValue().GetValue<int>()));
+                    details.Configuration.Rows,
+                    details.Configuration.Columns));
             }
 
             logger.LogInformation("Returnigng dashboard for home");
