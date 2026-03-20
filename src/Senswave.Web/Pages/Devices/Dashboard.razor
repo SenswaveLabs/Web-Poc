@@ -217,7 +217,7 @@
             }
 
             CurrentConfiguration = Grids.Where(x => x.Id == CurrentDashboard!.Id).First();
-
+            StateHasChanged();
             _failedToLoad = false;
         }
         catch (Refit.ApiException ex)

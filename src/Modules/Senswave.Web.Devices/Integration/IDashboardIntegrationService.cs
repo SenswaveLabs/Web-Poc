@@ -46,9 +46,11 @@ public record WidgetDetailsDto(
     [property: JsonPropertyName("unit")] string? Unit,
     [property: JsonPropertyName("step")] double? Step,
     [property: JsonPropertyName("range")] WidgetRangeDto? Range,
-    [property: JsonPropertyName("options")] List<JsonNode>? Options, 
+    [property: JsonPropertyName("options")] List<RadioOption>? Options, 
     [property: JsonPropertyName("runtime")] WidgetRuntimeDto? Runtime
 );
+
+public record RadioOption(string OptionName, string DisplayName, string Icon);
 
 public record WidgetRangeDto(double Min, double Max);
 

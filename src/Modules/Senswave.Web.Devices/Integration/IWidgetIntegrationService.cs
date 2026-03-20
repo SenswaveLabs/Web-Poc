@@ -5,7 +5,7 @@ namespace Senswave.Web.Devices.Integration;
 
 public record CreateWidgetRequest(string OperationId, string Name, string Type, Dictionary<string, JsonNode> Configuration);
 public record WidgetCreatedResponse(string Id);
-public record GetWidgetResponse(string Id, string DeviceId, string OperationId, string Name, string Type, bool Enabled, Dictionary<string, JsonNode> Configuration);
+public record GetWidgetResponse(string Id, string DeviceId, string OperationId, string Name, string Type, bool Enabled, JsonObject Configuration);
 public record DisplayWidgetsResponse(List<DisplayGroupDto> Items);
 public record DisplayGroupDto(DisplayOperationDto Operation, List<WidgetDto> Widgets);
 public record DisplayOperationDto(string Id, string Name, string Type);

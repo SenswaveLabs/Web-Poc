@@ -1,0 +1,37 @@
+﻿@using MudBlazor
+@using MudBlazor.Utilities
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">Choose Color</MudText>
+    </TitleContent>
+    <DialogContent>
+        <div class="d-flex justify-center">
+            <MudColorPicker Value="@_tempColor"
+                            ValueChanged="@(c => _tempColor = c)"
+                            PickerVariant="PickerVariant.Static"/>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Confirm</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] 
+    IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter] 
+    public string InitialColor { get; set; } = "#000000";
+
+    private MudColor _tempColor = "#000000";
+
+    protected override void OnInitialized()
+    {
+        _tempColor = new MudColor(InitialColor);
+    }
+
+    private void Submit() => MudDialog.Close(DialogResult.Ok(_tempColor.Value));
+    private void Cancel() => MudDialog.Cancel();
+}
