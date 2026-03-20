@@ -22,7 +22,8 @@ public record GridDashboardConfiguration(
     [property: JsonPropertyName("rows")] int Rows,
     [property: JsonPropertyName("columns")] int Columns,
     [property: JsonPropertyName("positionedWidgets")] List<PositionedWidgetDto> PositionedWidgets,
-    [property: JsonPropertyName("calculatedWidgets")] List<CalculatedWidgetDto> CalculatedWidgets
+    [property: JsonPropertyName("calculatedWidgets")] List<CalculatedWidgetDto> CalculatedWidgets,
+    string? Id = ""
 );
 
 public record PositionedWidgetDto(

@@ -26,21 +26,16 @@
 <SensPage Loading="@_loading" FailedToLoad="@_failedToLoad" RefreshContent="@RefreshPage">
     <LoadingContent>
 
-        <MudContainer Class="flex-1 justify-content-center align-items-center">
-            <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="m-1">
-                <MudItem xs="12" sm="6" md="4" lg="3">
-                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:64px; width:256px;" />
+        <MudContainer MaxWidth="MaxWidth.Small" Class="display-flex flex-1 justify-content-center align-items-center">
+            <MudGrid Class="display-flex flex-1 justify-content-center align-items-center">
+                <MudItem Class="display-flex flex-1 justify-content-center align-items-center" xs="12">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2 flex-grow-1 display-flex" Style="height: 65vh;" />
                 </MudItem>
-            </MudContainer>
 
-            <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column">
-                <MudGrid Spacing="0" Class="p-0 d-flex flex-row flex-wrap justify-content-center align-content-center">
-                    <MudItem xs="12" sm="6" md="4" lg="3">
-                        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="width: 256px; height: 65vh;" />
-                    </MudItem>
-
-                </MudGrid>
-            </MudContainer>
+                <MudItem xs="12">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="height: 8vh;" />
+                </MudItem>
+            </MudGrid>
         </MudContainer>
 
     </LoadingContent>
@@ -49,34 +44,35 @@
         <MudContainer MaxWidth="MaxWidth.Small"
                       Class="d-flex flex-column p-0"
                       Style="height: calc(100vh - 80px); overflow: hidden;">
-            @if (Configuration != null)
+            @if (CurrentConfiguration != null)
             {
-                <MudCarousel ShowArrows="true"
+                <MudCarousel ShowArrows="false"
                              ShowBullets="false"
-                             EnableSwipeGesture="true"
+                             EnableSwipeGesture="false"
                              AutoCycle="false"
                              TData="object"
                              Class="flex-grow-1"
-                             Style="height: 100%;">
+                             Style="height: calc(100% - var(--mud-appbar-height));">
                     <MudCarouselItem Transition="Transition.Slide">
                         @* This div is the key to passing height to the child component *@
                         <div class="d-flex flex-column mud-height-full mud-width-full">
-                            <SensDashboard Rows="Configuration.Rows"
+                            <SensDashboard Rows="CurrentConfiguration.Rows"
                                            Name="@(CurrentDashboard?.Name ?? string.Empty)"
-                                           Columns="Configuration.Columns"
-                                           PositionedWidgets="@Configuration.PositionedWidgets"
-                                           CalculatedWidgets="@Configuration.CalculatedWidgets" />
+                                           Columns="CurrentConfiguration.Columns"
+                                           PositionedWidgets="@CurrentConfiguration.PositionedWidgets"
+                                           CalculatedWidgets="@CurrentConfiguration.CalculatedWidgets" />
                         </div>
                     </MudCarouselItem>
                 </MudCarousel>
                 
-                @*  <div class="d-flex align-center justify-center gap-4 py-2">
+                <div class="d-flex align-center justify-center gap-3 py-2" style="min-height: 64px!important;">
                     <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft"
                                    OnClick="Previous"
+                                   Class="pr-0"
                                    Disabled="@(_currentIndex == 0)" />
 
                   
-                    @for (int i = 0; i < TotalDashboards; i++)
+                    @for (int i = 0; i < Dashboards.Count; i++)
                     {
                         var index = i;
                         <MudIcon Icon="@(index == _currentIndex ? Icons.Material.Filled.Circle : Icons.Material.Filled.RadioButtonUnchecked)"
@@ -88,8 +84,9 @@
 
                     <MudIconButton Icon="@Icons.Material.Filled.ChevronRight"
                                    OnClick="Next"
-                                   Disabled="@(_currentIndex == TotalDashboards - 1)" />
-                </div>  *@
+                                   Class="pl-0"
+                                   Disabled="@(_currentIndex == Dashboards.Count - 1)" />
+                </div> 
             }
 
             <MudFabMenu Class="position-absolute m-3 m-lg-4"
@@ -102,9 +99,9 @@
                                 Color="Color.Secondary"
                                 OnClick="RefreshPage" />
 
-                @* <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Add"
+                <MudFabMenuItem StartIcon="@Icons.Material.Rounded.OpenInNew"
                                 Color="Color.Secondary"
-                                OnClick="AddDashboard" />  *@
+                                OnClick="DeviceDetails" />
 
 
             </MudFabMenu>
@@ -115,10 +112,32 @@
 @code {
 
     private int _currentIndex = 0;
-    private int TotalDashboards = 2; // Derived from your Dashboards list
 
-    private void Next() => _currentIndex = Math.Min(TotalDashboards - 1, _currentIndex + 1);
-    private void Previous() => _currentIndex = Math.Max(0, _currentIndex - 1);
+    private void Next()
+    {
+        if (Dashboards.Count == 0) return;
+
+        _currentIndex = Math.Min(Dashboards.Count - 1, _currentIndex + 1);
+        UpdateActiveDashboard();
+    }
+
+    private void Previous()
+    {
+        if (Dashboards.Count == 0) return;
+
+        _currentIndex = Math.Max(0, _currentIndex - 1);
+        UpdateActiveDashboard();
+    }
+
+    private void UpdateActiveDashboard()
+    {
+        CurrentDashboard = Dashboards.ElementAtOrDefault(_currentIndex);
+        CurrentConfiguration = Grids.ElementAtOrDefault(_currentIndex);
+        StateHasChanged();
+
+        Logger.LogInformation("Switched to dashboard index {Index}: {Name}",
+            _currentIndex, CurrentDashboard?.Name);
+    }
 
     private bool _open;
     private bool _fixed;
@@ -130,15 +149,22 @@
 
     private List<DashboardDto> Dashboards = [];
 
+    private List<GridDashboardConfiguration> Grids = [];
+
     private DashboardDto? CurrentDashboard { get; set; }
 
-    private GridDashboardConfiguration? Configuration { get; set; }
+    private GridDashboardConfiguration? CurrentConfiguration { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
 
         await RefreshPage();
+    }
+
+    private async Task DeviceDetails()
+    {
+        Navigation.NavigateTo($"/devices/details/{Id}");
     }
 
     private async Task RefreshPage()
@@ -171,9 +197,19 @@
                 CurrentDashboard = Dashboards.First();
             }
 
-            var details = await DashboardIntegrationService.GetDashboardDisplayAsync(CurrentDashboard!.Id);
+            foreach(var dash in Dashboards)
+            {
+                var details = await DashboardIntegrationService.GetDashboardDisplayAsync(dash!.Id);
 
-            Configuration = details.Configuration;
+                Grids.Add(new GridDashboardConfiguration(
+                    details.Configuration.Rows, 
+                    details.Configuration.Columns, 
+                    details.Configuration.PositionedWidgets, 
+                    details.Configuration.CalculatedWidgets, 
+                    dash.Id));
+            }
+
+            CurrentConfiguration = Grids.Where(x => x.Id == CurrentDashboard!.Id).First();
 
             _failedToLoad = false;
         }
@@ -190,7 +226,5 @@
         {
             _loading = false;
         }
-
     }
-
 }
