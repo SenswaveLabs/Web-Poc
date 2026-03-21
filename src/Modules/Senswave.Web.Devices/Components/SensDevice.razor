@@ -4,7 +4,12 @@
 @using Senswave.Web.Devices.Services
 @using Senswave.Web.Shared.Components
 @using System.Text.Json
+@using System.Text.Json.Nodes
+@using Senswave.Web.Shared.Resulting
 
+@inject ISnackbar Snackbar
+@inject IErrorFactory ErrorFactory
+@inject IDeviceIntegrationService DeviceIntegrationService
 @inject IDeviceDetailsService DeviceDetailsService
 @inject NavigationManager Navigation
 
@@ -60,7 +65,16 @@
 
     @if (Device?.Tile?.Type == "Switch")
     {
-        <MudIconButton OnClick="HandleStateUpdate" Icon="@Icons.Material.Rounded.PowerSettingsNew" Variant="Variant.Outlined" Color="GetColor()" Size="Size.Medium" />
+        <MudStack>
+            @if (_action)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+            }
+            else
+            {
+                <MudIconButton OnClick="HandleStateUpdate" Icon="@Icons.Material.Rounded.PowerSettingsNew" Variant="Variant.Outlined" Color="GetColor()" Size="Size.Medium" />
+            }
+        </MudStack>
     }
 
     <MudIconButton OnClick="NavigateToDetails" Icon="@Icons.Material.Rounded.Info" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" />
@@ -75,6 +89,8 @@
     public EventCallback<DisplayDeviceDto> OnClick { get; set; }
 
     private string RoomName { get; set; } = string.Empty;
+
+    private bool _action = false;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -92,7 +108,27 @@
 
     private async Task HandleStateUpdate()
     {
+        try
+        {
+            _action = true;
+            StateHasChanged();
 
+            var toSend = !(Device?.Tile?.Value?.AsValue().GetValueKind() == JsonValueKind.True);
+            var request = new DeviceTileActionRequest(JsonValue.Create(toSend));
+
+            await DeviceIntegrationService.ExecuteDeviceTileActionAsync(Device!.Id, request);
+
+            Device?.Tile?.Value = JsonValue.Create(toSend);
+        }
+        catch (Refit.ApiException ex)
+        {
+            var error = await ErrorFactory.FromApiExceptionAsync(ex, "Failed to update device state");
+            Snackbar.Add(error.Errors.First().Description, Severity.Error);
+        }
+        finally
+        {
+            _action = false;
+        }
     }
 
     private bool HasRoomName() => RoomName != string.Empty;

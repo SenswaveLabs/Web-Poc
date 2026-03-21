@@ -53,7 +53,6 @@
             </MudSelect>
         </MudItem>
 
-        <!-- Tile Type & Operation (Edit Mode Only) -->
         @if (Edit)
         {
             <MudItem xs="12" md="6">
@@ -68,10 +67,10 @@
             @if (Model.TileType == "Switch")
             {
                 <MudItem xs="12" md="6">
-                    <MudSelect T="string" Label="Operation" For="@(() => Model.TileOperationId)" @bind-Value="Model.TileOperationId">
-                        @foreach (var op in Operations)
+                    <MudSelect T="string" Label="Tile Operation (Boolean)" For="@(() => Model.TileOperationId)" @bind-Value="Model.TileOperationId">
+                        @foreach (var op in Operations.Where(x => x.Type == "Boolean").ToList())
                         {
-                            <MudSelectItem Value="@op.Id">@($"{op.Type} - {op.Name}")</MudSelectItem>
+                            <MudSelectItem Value="@op.Id">@($"{op.Name}")</MudSelectItem>
                         }
                     </MudSelect>
                 </MudItem>
