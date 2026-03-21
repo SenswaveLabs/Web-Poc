@@ -61,7 +61,7 @@
                    ClipMode="DrawerClipMode.Always"
                    Elevation="1">
 
-            @if (_drawerOpen)
+            @* @if (_drawerOpen)
             {
                 @if (HomeService.CurrentHome is not null)
                 {
@@ -75,7 +75,7 @@
                         </MudChip>
                     </div>
                 }
-            }
+            } *@
 
             <NavigationMenu />
 

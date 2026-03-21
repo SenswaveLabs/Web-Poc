@@ -39,14 +39,19 @@
     <Content>
         <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column pb-3">
 
-            <MudContainer MaxWidth="MaxWidth.Large" Gutters="false">
-                <MudGrid>
-                    <MudItem xs="12">
+            <MudGrid Style="padding-bottom: 64px!important;">
+                <MudItem xs="12" md ="6">
+                    <MudStack>
                         <SensDataSourceState ConnectionStatus="@ConnectionState" Name="@EditableModel.Name" Port="@EditableModel.Port" Server="@EditableModel.Url" />
-                    </MudItem>
+                        
+                        <MudPaper>
+                            <MudText Typo="Typo.subtitle2" Class="pa-4">Client Connection Management</MudText>
+                        </MudPaper>
 
-                    <MudItem xs="12" md="4">
-                        <MudText Typo="Typo.subtitle2" Class="mb-2">Client Controls</MudText>
+                        <MudAlert Severity="Severity.Info" Class="pa-2" Variant="Variant.Outlined">
+                            One data source belongs only to one user account. Do not share credentials.
+                        </MudAlert>
+
                         <MudStack Spacing="2">
                             <MudButton Variant="Variant.Filled"
                                        Color="Color.Success"
@@ -75,22 +80,18 @@
                                 Stop Client
                             </MudButton>
                         </MudStack>
+                    </MudStack>
+                </MudItem>
 
-                        <MudAlert Severity="Severity.Info" Class="mt-4" Variant="Variant.Outlined">
-                            One data source belongs only to one user account. Do not share credentials.
-                        </MudAlert>
-                    </MudItem>
-
-                    <MudItem xs="12" md="8" Style="padding-bottom: 64px!important;">
+                <MudItem xs="12" md="6">
                         
-                        <MudPaper Class="pa-6">
-                            <MudText Typo="Typo.h6" Class="mb-4">Configuration</MudText>
-                            <BrokerForm @ref="_form" Model="EditableModel" Edit="true" NameChanged="@(_ => StateHasChanged())" />
-                        </MudPaper>
-                    </MudItem>
-                </MudGrid>
+                    <MudPaper Class="pa-6">
+                        <MudText Typo="Typo.h6" Class="mb-4">Configuration</MudText>
+                        <BrokerForm @ref="_form" Model="EditableModel" Edit="true" NameChanged="@(_ => StateHasChanged())" />
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
 
-            </MudContainer>
 
             @if(HasChanges())
             {

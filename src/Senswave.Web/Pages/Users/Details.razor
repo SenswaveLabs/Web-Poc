@@ -17,20 +17,22 @@
     <Content>
         <MudGrid>
             <MudItem xs="12">
-                <MudCard Class="pa-6">
+                <MudContainer Gutters="false" MaxWidth="MaxWidth.Medium">
+                    <MudCard Class="pa-6">
 
-                    <MudStack AlignItems="AlignItems.Center" Spacing="2">
+                        <MudStack AlignItems="AlignItems.Center" Spacing="2">
 
-                        <MudAvatar Elevation="2" Color="Color.Primary" Size="Size.Large">@UserEmail?.First().ToString().ToUpper()</MudAvatar>
+                            <MudAvatar Elevation="2" Color="Color.Primary" Size="Size.Large">@UserEmail?.First().ToString().ToUpper()</MudAvatar>
 
-                        <MudText Typo="Typo.h6">@UserEmail</MudText>
+                            <MudText Typo="Typo.h6">@UserEmail</MudText>
 
-                    </MudStack>
+                        </MudStack>
 
-                </MudCard>
+                    </MudCard>
+                </MudContainer>
             </MudItem>
 
-            <MudItem xs="12">
+            <MudItem xs="12" md="6">
                 <MudCard Class="pa-4">
 
                     <MudStack Spacing="3">
@@ -64,7 +66,7 @@
                 </MudCard>
             </MudItem>
 
-            <MudItem xs="12">
+            <MudItem xs="12" md="6">
                 <MudCard Class="pa-4">
 
                     <MudStack Spacing="2">

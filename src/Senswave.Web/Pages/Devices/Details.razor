@@ -373,9 +373,16 @@
             })
             .ToList();
 
-            var operationResponse = await OperationIntegrationService.DisplayOperationsAsync(Id, 1, 100);
+            try
+            {
+                var operationResponse = await OperationIntegrationService.DisplayOperationsAsync(Id, 1, 100);
 
-            Operations = operationResponse.Items;
+                Operations = operationResponse.Items;
+            }
+            catch (ApiException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                Operations = [];
+            }
 
             _failedToLoad = false;
         }
