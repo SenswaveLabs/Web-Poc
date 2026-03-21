@@ -14,5 +14,5 @@ public class DeviceModel
 
     // Tile properties
     public string TileType { get; set; } = "Default";
-    public string TileOperationId { get; set; } = string.Empty;
+    public string? TileOperationId { get; set; } = null;
 }

@@ -178,11 +178,11 @@ public class DeviceService(
             }
             else
             {
-                request["type"] = null;
-                request["operationId"] = null;
+                request["operationId"] = Guid.Empty.ToString();
+                request["type"] = dto.TileType;
             }
 
-                await integrationService.UpdateDeviceAsync(dto.Id, request);
+            await integrationService.UpdateDeviceAsync(dto.Id, request);
 
             logger.LogInformation("Device updated");
             return Result.Success();
