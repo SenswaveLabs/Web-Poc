@@ -1,13 +1,18 @@
-﻿.high-contrast .mud-paper,
+﻿:root {
+    --hc-border-color: #FF00FF;
+}
+
+.high-contrast .mud-paper,
 .high-contrast .mud-card,
+.high-contrast .mud-button,
 .high-contrast .mud-drawer-content,
 .high-contrast .mud-toolbar,
 .high-contrast a.mud-nav-link.mud-ripple.active,
 .high-contrast .mud-input-control {
-    border: 1px solid #FF00FF;
+    border: 1px solid var(--hc-border-color);
 }
 
 .high-contrast :focus-visible {
-    outline: 3px solid #FF00FF;
+    outline: 3px solid var(--hc-border-color);
     outline-offset: 2px;
 }

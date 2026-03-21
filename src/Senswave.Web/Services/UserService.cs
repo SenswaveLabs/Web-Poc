@@ -81,7 +81,7 @@ public class UserService(
                 settings.Language = language;
             }
 
-            //await userService.UpdateSettings(settings);
+            await userService.UpdateSettings(settings);
 
             if (!string.IsNullOrEmpty(theme))
             {
