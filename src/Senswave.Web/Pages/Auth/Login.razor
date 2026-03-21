@@ -13,6 +13,7 @@
 @inject ISnackbar Snackbar
 @inject ILoadingService LoadingService
 @inject IUserService UserService
+@inject IJSRuntime JS
 
 <MudGrid Class="d-flex h-100 p-0 m-0">
     <MudHidden Breakpoint="Breakpoint.SmAndDown"> 
@@ -146,9 +147,14 @@
     {
         try
         {
-            
-            var result = await AuthService.Login(
-                new LoginWithGoogleModel());
+            var token = await JS.InvokeAsync<string>("googleLogin", "YOUR_CLIENT_ID");
+
+            var request = new LoginWithGoogleModel()
+            {
+                Code = token
+            };
+
+            var result = await AuthService.Login(request);
 
             if (result.IsSuccess)
             {
