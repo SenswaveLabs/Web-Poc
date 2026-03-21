@@ -55,6 +55,7 @@
 
                             <DeviceForm @ref="DeviceForm"
                                 Model="DeviceModel"
+                                Operations="@Operations"
                                 Rooms="@Rooms"
                                 Edit="true" />
                         </MudPaper>
@@ -254,6 +255,8 @@
 
     public List<RoomDto> Rooms = [];
 
+    public List<OperationDto> Operations = [];
+
     public List<DisplayGroupDto> OperationGroups = [];
 
     private class EditableDashboard
@@ -362,6 +365,10 @@
                 Columns = d.Columns
             })
             .ToList();
+
+            var operationResponse = await OperationIntegrationService.DisplayOperationsAsync(Id, 1, 100);
+
+            Operations = operationResponse.Items;
 
             _failedToLoad = false;
         }
