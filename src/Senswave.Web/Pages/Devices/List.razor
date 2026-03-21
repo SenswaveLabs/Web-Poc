@@ -25,7 +25,7 @@
 
 <PageTitle>Home Dashboard</PageTitle>
 
-<SensPage Loading="@_loading" FailedToLoad="@_failedToLoad" RefreshContent="@RefreshPage">
+<SensPage Loading="@_loading" FailedToLoad="@_failedToLoad" RefreshContent="@RefreshPage" Breadcrumbs="@Breadcrumbs">
     <LoadingContent>
         
         <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="m-1">
@@ -156,18 +156,19 @@
     private bool _fixed;
     private bool _loading = true;
     private bool _failedToLoad = true;
-
-    // State for filtering
     private string? _selectedRoomId;
 
     private List<DisplayDeviceDto> displayDevices = [];
     private List<RoomDto> displayRooms = [];
 
-    // Computed property for filtering
     private IEnumerable<DisplayDeviceDto> FilteredDevices =>
         string.IsNullOrEmpty(_selectedRoomId)
             ? displayDevices
             : displayDevices.Where(d => d.RoomId == _selectedRoomId);
+
+    private List<BreadcrumbItem> Breadcrumbs => [
+        new("Home Dashboard", "/devices", true, $"{Icons.Material.Filled.Dashboard}")
+    ];
 
     protected override async Task OnInitializedAsync()
     {

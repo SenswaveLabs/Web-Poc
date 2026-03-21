@@ -2,8 +2,9 @@
 
 @inherits MudComponentBase
 
-<MudContainer 
-    MaxWidth="MaxWidth.False" Class="pl-0 pr-0 d-flex flex-column overflow-scroll" Style=" overflow-y: auto!important; overflow-x: hidden!important;">
+<MudContainer MaxWidth="MaxWidth.False" 
+              Class="pl-0 pr-0 d-flex flex-column overflow-scroll" 
+              Style=" overflow-y: auto!important; overflow-x: hidden!important;">
     <MudContainer 
         MaxWidth="MaxWidth.False" Class="p-3 p-lg-4 d-flex flex-column">
         @if (Loading)
@@ -28,10 +29,20 @@
         }
         else if (FailedToLoad)
         {
+            if (Breadcrumbs.Count != 0)
+            {
+                <MudBreadcrumbs Style="padding-left: 0;" Separator=">" Items="Breadcrumbs"></MudBreadcrumbs>
+            }
+
             @FailedContent
         }
         else
         {
+            if (Breadcrumbs.Count != 0)
+            {
+                <MudBreadcrumbs Style="padding-left: 0;" Separator=">" Items="Breadcrumbs"></MudBreadcrumbs>
+            }
+
             @Content
         }
     </MudContainer>
@@ -56,6 +67,9 @@
 
     [Parameter]
     public Func<Task> RefreshContent { get; set; } = default!;
+
+    [Parameter]
+    public List<BreadcrumbItem> Breadcrumbs { get; set; } = [];
 
     protected override void OnParametersSet()
     {

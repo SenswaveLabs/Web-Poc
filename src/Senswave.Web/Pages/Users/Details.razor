@@ -4,6 +4,7 @@
 @using Senswave.Web.Homes.Services
 @using Senswave.Web.Users.Auth.Services
 @using Senswave.Web.Users.Users.Services
+@using Senswave.Web.Shared.Components
 
 @inject NavigationManager Navigation
 @inject IUserService UserService
@@ -12,42 +13,43 @@
 @inject IDialogService DialogService
 @inject ILogger<Details> Logger
 
-<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-6">
-    <MudGrid>
-        <!-- Profile header -->
-        <MudItem xs="12">
-            <MudCard Class="pa-6">
+<SensPage Loading="false" FailedToLoad="false" Breadcrumbs="@Breadcrumbs" RefreshContent="async () => {}">
+    <Content>
+        <MudGrid>
+            <MudItem xs="12">
+                <MudContainer Gutters="false" MaxWidth="MaxWidth.Medium">
+                    <MudCard Class="pa-6">
 
-                <MudStack AlignItems="AlignItems.Center" Spacing="2">
+                        <MudStack AlignItems="AlignItems.Center" Spacing="2">
 
-                    <MudAvatar Elevation="2" Color="Color.Primary" Size="Size.Large">@UserEmail?.First().ToString().ToUpper()</MudAvatar>
+                            <MudAvatar Elevation="2" Color="Color.Primary" Size="Size.Large">@UserEmail?.First().ToString().ToUpper()</MudAvatar>
 
-                    <MudText Typo="Typo.h6">@UserEmail</MudText>
+                            <MudText Typo="Typo.h6">@UserEmail</MudText>
 
-                </MudStack>
+                        </MudStack>
 
-            </MudCard>
-        </MudItem>
+                    </MudCard>
+                </MudContainer>
+            </MudItem>
 
-        <!-- Settings -->
-        <MudItem xs="12">
-            <MudCard Class="pa-4">
+            <MudItem xs="12" md="6">
+                <MudCard Class="pa-4">
 
-                <MudStack Spacing="3">
+                    <MudStack Spacing="3">
 
-                    <MudSelect T="string"
-                               Label="Theme"
-                               Value="@SelectedTheme"
-                               ValueChanged="OnThemeChanged">
+                        <MudSelect T="string"
+                                   Label="Theme"
+                                   Value="@SelectedTheme"
+                                   ValueChanged="OnThemeChanged">
 
-                        @foreach (var theme in ThemeOptions)
-                        {
-                            <MudSelectItem Value="@theme.Item2">@theme.Item1</MudSelectItem>
-                        }
+                            @foreach (var theme in ThemeOptions)
+                            {
+                                <MudSelectItem Value="@theme.Item2">@theme.Item1</MudSelectItem>
+                            }
 
-                    </MudSelect>
+                        </MudSelect>
 
-                    @* <MudSelect T="string"
+                        @* <MudSelect T="string"
                                Label="Language"
                                Value="@SelectedLanguage"
                                ValueChanged="OnLanguageChanged">
@@ -59,41 +61,45 @@
 
                     </MudSelect> *@
 
-                </MudStack>
+                    </MudStack>
 
-            </MudCard>
-        </MudItem>
+                </MudCard>
+            </MudItem>
 
-        <MudItem xs="12">
-            <MudCard Class="pa-4">
+            <MudItem xs="12" md="6">
+                <MudCard Class="pa-4">
 
-                <MudStack Spacing="2">
+                    <MudStack Spacing="2">
 
-                    <MudButton Variant="Variant.Outlined"
-                               Color="Color.Warning"
-                               FullWidth="true"
-                               OnClick="Logout">
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Warning"
+                                   FullWidth="true"
+                                   OnClick="Logout">
 
-                        Logout
+                            Logout
 
-                    </MudButton>
+                        </MudButton>
 
-                    <MudButton Variant="Variant.Outlined"
-                               Color="Color.Error"
-                               FullWidth="true"
-                               OnClick="ConfirmRemoveAccount">
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Error"
+                                   FullWidth="true"
+                                   OnClick="ConfirmRemoveAccount">
 
-                        Remove Account
+                            Remove Account
 
-                    </MudButton>
+                        </MudButton>
 
-                </MudStack>
-            </MudCard>
-        </MudItem>
-    </MudGrid>
-</MudContainer>
+                    </MudStack>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+    </Content>
+</SensPage>
 
 @code {
+    private List<BreadcrumbItem> Breadcrumbs => [
+        new("Settings", "/users/details", true, $"{Icons.Material.Filled.Settings}")
+    ];
 
     string UserEmail = "";
     string SelectedTheme = "default";

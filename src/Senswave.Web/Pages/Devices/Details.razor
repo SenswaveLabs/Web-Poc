@@ -23,9 +23,9 @@
 @inject NavigationManager Navigation
 @inject IErrorFactory ErrorFactory
 
-<PageTitle>@(DeviceModel?.Name ?? "Device")</PageTitle>
+<PageTitle>@PageName()</PageTitle>
 
-<SensPage Loading="@_loading" FailedToLoad="@_failedToLoad" RefreshContent="@RefreshPage">
+<SensPage Loading="@_loading" FailedToLoad="@_failedToLoad" RefreshContent="@RefreshPage" Breadcrumbs="@Breadcrumbs">
     <LoadingContent>
 
         <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column">
@@ -239,6 +239,13 @@
 </SensPage>
 
 @code {
+    private List<BreadcrumbItem> Breadcrumbs => [
+        new("Home Dashboard", "/devices", false, $"{Icons.Material.Filled.Dashboard}"),
+        new($"{PageName()}", null, true, $"{Icons.Material.Filled.PermDeviceInformation}")
+    ];
+
+    private string PageName() => DeviceModel?.Name ?? "Device";
+
     private bool _open;
     private bool _fixed;
     private bool _loading = true;
@@ -366,9 +373,16 @@
             })
             .ToList();
 
-            var operationResponse = await OperationIntegrationService.DisplayOperationsAsync(Id, 1, 100);
+            try
+            {
+                var operationResponse = await OperationIntegrationService.DisplayOperationsAsync(Id, 1, 100);
 
-            Operations = operationResponse.Items;
+                Operations = operationResponse.Items;
+            }
+            catch (ApiException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                Operations = [];
+            }
 
             _failedToLoad = false;
         }

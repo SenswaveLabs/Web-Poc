@@ -4,9 +4,6 @@
 
 <MudContainer MaxWidth="MaxWidth.Medium"
               Style="height: 100%; display: flex; flex-direction: column; padding: 0">
-
-    <MudText Typo="Typo.subtitle1" Class="text-center  pt-1 pb-2">@Name</MudText>
-
     <div style="@GetGridStyle()" class="flex-grow-1">
         @foreach (var posWidget in PositionedWidgets)
         {

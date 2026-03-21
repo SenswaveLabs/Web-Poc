@@ -13,29 +13,29 @@
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
-<PageTitle>My Data Sources</PageTitle>
+<PageTitle>Data Sources</PageTitle>
 
-<SensPage Loading="@_loading" FailedToLoad="@_failedToLoad" RefreshContent="@RefreshPage">
+<SensPage Loading="@_loading" FailedToLoad="@_failedToLoad" RefreshContent="@RefreshPage" Breadcrumbs="@Breadcrumbs">
     <LoadingContent>
         <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column">
             <MudContainer xs="12" MaxWidth="MaxWidth.False" Gutters="false" Class="m-1">
                 <MudSkeleton Width="256px" />
             </MudContainer>
             <MudGrid Spacing="0" Class="p-0 d-flex flex-row flex-wrap">
-                <MudItem  xs="12" sm="6" md="6" lg="4">
-                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;"  />
-                </MudItem>
-                <MudItem   xs="12" sm="6" md="6" lg="4">
+                <MudItem xs="12" sm="6" md="6" lg="4">
                     <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;" />
                 </MudItem>
-                <MudItem  xs="12" sm="6" md="6" lg="4">
+                <MudItem xs="12" sm="6" md="6" lg="4">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;" />
+                </MudItem>
+                <MudItem xs="12" sm="6" md="6" lg="4">
                     <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:96px;" />
                 </MudItem>
             </MudGrid>
         </MudContainer>
     </LoadingContent>
     <Content>
-         <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column pb-3">
+        <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column pb-3">
 
             <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="m-0 pb-1">
                 <MudContainer Class="d-inline-flex align-items-center w-auto p-0">
@@ -88,6 +88,10 @@
     private bool _failedToLoad = true;
 
     private List<BrokerDto> brokers = [];
+
+    private List<BreadcrumbItem> Breadcrumbs => [
+        new("Data Sources", "/datasources", true, $"{Icons.Material.Filled.Hub}")
+    ];
 
     protected override async Task OnInitializedAsync()
     {
