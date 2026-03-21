@@ -13,9 +13,9 @@
 @inject ILogger<List> Logger
 @inject NavigationManager Navigation
 
-<PageTitle>Home Dashboard</PageTitle>
+<PageTitle>My Homes</PageTitle>
 
-<SensPage Loading="@_loading" FailedToLoad="@_failedToLoad" RefreshContent="@RefreshPage">
+<SensPage Loading="@_loading" FailedToLoad="@_failedToLoad" RefreshContent="@RefreshPage" Breadcrumbs="@Breadcrumbs">
     <LoadingContent>
 
         <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column">
@@ -103,6 +103,10 @@
     private bool _failedToLoad = true;
 
     private List<Home> Homes { get; set; } = [];
+
+    private List<BreadcrumbItem> Breadcrumbs => [
+        new("My Homes", "/homes/list", true, $"{Icons.Material.Filled.Info}")
+    ];
 
     protected override async Task OnInitializedAsync()
     {

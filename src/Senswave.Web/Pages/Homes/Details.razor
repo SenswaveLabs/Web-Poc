@@ -21,9 +21,9 @@
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 
-<PageTitle>@(Current?.Name ?? "Home Details")</PageTitle>
+<PageTitle>@PageName()</PageTitle>
 
-<SensPage Loading="@_loading" FailedToLoad="@_failedToLoad" RefreshContent="@RefreshPage">
+<SensPage Loading="@_loading" FailedToLoad="@_failedToLoad" RefreshContent="@RefreshPage" Breadcrumbs="@Breadcrumbs">
     <LoadingContent>
 
         <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column">
@@ -230,6 +230,11 @@
 
     private List<SharingDto> _sharings = new();
 
+    private List<BreadcrumbItem> Breadcrumbs => [
+        new("My Homes", "/homes/list", true, $"{Icons.Material.Filled.Info}"),
+        new($"{PageName()}", "/homes/details", true, $"{Icons.Material.Filled.Home}")
+    ];
+
     protected override async Task OnInitializedAsync()
     {
         await RefreshPage();
@@ -302,6 +307,8 @@
             _connectionState = "Unknown";
         }
     }
+
+    private string PageName() => Current?.Name ?? "Home Details";
 
     private bool HasChanges()
     {

@@ -15,9 +15,9 @@
 @inject IDialogService DialogService
 @inject NavigationManager Navigation
 
-<PageTitle>@(BaseModel is null ? "Broker" : BaseModel.Name)</PageTitle>
+<PageTitle>@PageName()</PageTitle>
 
-<SensPage Loading="@_loading" FailedToLoad="@_failedToLoad" RefreshContent="@RefreshPage">
+<SensPage Loading="@_loading" FailedToLoad="@_failedToLoad" RefreshContent="@RefreshPage" Breadcrumbs="@Breadcrumbs">
     <LoadingContent>
 
         <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column">
@@ -32,7 +32,6 @@
                 <MudItem xs="12" md="8">
                     <MudSkeleton SkeletonType="SkeletonType.Rectangle" Class="m-2" Style="min-height:384px;" />
                 </MudItem>
-
             </MudGrid>
         </MudContainer>
         
@@ -40,7 +39,7 @@
     <Content>
         <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column pb-3">
 
-            <MudContainer MaxWidth="MaxWidth.Large">
+            <MudContainer MaxWidth="MaxWidth.Large" Gutters="false">
                 <MudGrid>
                     <MudItem xs="12">
                         <SensDataSourceState ConnectionStatus="@ConnectionState" Name="@EditableModel.Name" Port="@EditableModel.Port" Server="@EditableModel.Url" />
@@ -134,13 +133,19 @@
 
     private BrokerForm? _form;
 
-    [Parameter] public string Id { get; set; }
+    [Parameter] 
+    public string Id { get; set; }
 
     private BrokerDetailedModel BaseModel { get; set; } = new();
 
     private BrokerDetailedModel EditableModel { get; set; } = new();
 
     private string ConnectionState = "Loading";
+
+    private List<BreadcrumbItem> Breadcrumbs => [
+        new("Data Sources", "/datasources", false, $"{Icons.Material.Filled.Hub}"),
+        new($"{PageName()}", "/datasources", true, $"{Icons.Material.Filled.DeviceHub}")
+    ];
 
     protected async override Task OnInitializedAsync()
     {
@@ -196,7 +201,9 @@
         }
     }
 
-    private bool HasChanges() => EditableModel.Name != BaseModel.Name; 
+    private bool HasChanges() => EditableModel.Name != BaseModel.Name;
+
+    private string PageName() => BaseModel is null ? "Data Source" : BaseModel.Name;
 
     private async Task SaveChanges()
     {
