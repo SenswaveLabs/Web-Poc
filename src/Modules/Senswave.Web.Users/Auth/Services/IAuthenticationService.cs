@@ -7,7 +7,7 @@ public interface IAuthenticationService
 {
     Task<Result> Login(LoginWithPasswordModel model);
 
-    Task<Result> Login(LoginWithGoogleModel model);
+    Task<Result> Login(string code);
 
     Task<Result> Logout();
 }

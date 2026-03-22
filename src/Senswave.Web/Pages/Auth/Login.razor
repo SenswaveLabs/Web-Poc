@@ -14,6 +14,7 @@
 @inject ILoadingService LoadingService
 @inject IUserService UserService
 @inject IJSRuntime JS
+@inject IConfiguration Configuration
 
 <MudGrid Class="d-flex h-100 p-0 m-0">
     <MudHidden Breakpoint="Breakpoint.SmAndDown"> 
@@ -145,16 +146,28 @@
 
     private async Task HandleGoogleLogin()
     {
+        string? clientId = Configuration["Auth:Google:ClientId"];
+
+        if (clientId is null)
+        {
+            Snackbar.Add("Google login failed. Please set proper google client Id.", Severity.Error);
+            return;
+        }
+
+
+        var token = await JS.InvokeAsync<string>("googleLogin", clientId);
+
+        if (token is null)
+        {
+            Snackbar.Add("Google login failed. Failed to get account for user.", Severity.Error);
+            return;
+        }
+
         try
         {
-            var token = await JS.InvokeAsync<string>("googleLogin", "YOUR_CLIENT_ID");
+            LoadingService.Show(SyncKey);
 
-            var request = new LoginWithGoogleModel()
-            {
-                Code = token
-            };
-
-            var result = await AuthService.Login(request);
+            var result = await AuthService.Login(token);
 
             if (result.IsSuccess)
             {
@@ -167,7 +180,7 @@
         }
         finally
         {
-            
+            LoadingService.Hide(SyncKey);
         }
     }
 }
