@@ -4,11 +4,11 @@ namespace Senswave.Web.LiveUpdate.Services;
 
 public interface ILiveUpdateService : IAsyncDisposable
 {
-    event Action<UpdateEvent>? OnUpdate;
+    event Func<UpdateEvent, Task>? OnUpdate;
 
     bool IsConnected { get; }
 
-    Task StartAsync();
+    Task Initialize(string homeId);
 
     void Trigger(UpdateEvent update);
 }
