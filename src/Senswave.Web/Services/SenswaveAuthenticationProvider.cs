@@ -87,9 +87,32 @@ public class SenswaveAuthenticationProvider(
         }
     }
 
-    public Task<Result> Login(LoginWithGoogleModel model)
+    public async Task<Result> Login(string token)
     {
-        throw new NotImplementedException();
+        logger.LogInformation("Attempting to log in user with google.");
+
+        try
+        {
+            var request = new LoginGoogleRequest
+            {
+                Token = token
+            };
+
+            var response = await authIntegrationService.LoginWithGoogleToken(request);
+
+            await InitializeSession(response.AccessToken, response.RefreshToken, response.ExpiresIn, true);
+
+            NotifyAuthenticationStateChanged(AuthenticatedState("User"));
+
+            logger.LogInformation("User logged in successfully. Access token expires at {ExpiresIn}.", _expiresIn);
+            return Result.Success();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Google login failed for user.");
+
+            return errorFactory.Create("LoginFailed");
+        }
     }
 
     public async Task<Result> Logout()

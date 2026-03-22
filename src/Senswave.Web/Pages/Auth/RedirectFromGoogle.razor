@@ -1,0 +1,62 @@
+﻿@page "/users/google"
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using Senswave.Web.Shared.Services
+@using Senswave.Web.Users.Auth.Services
+@using Senswave.Web.Users.Users.Services
+
+@inject IAuthenticationService AuthService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@inject IUserService UserService
+@inject ILoadingService LoadingService
+@inject ILogger<RedirectFromGoogle> Logger
+
+@code {
+
+    private const string SyncKey = "Auth:Login";
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        var uri = new Uri(Navigation.Uri);
+        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+
+        var code = query["code"] ?? "";
+
+        if (string.IsNullOrEmpty(code))
+        {
+            Snackbar.Add("Failed to login with google. Please try again", Severity.Error);
+            Navigation.NavigateToLogin("/auth/login");
+        }
+
+
+        try
+        {
+            LoadingService.Show(SyncKey);
+
+            Logger.LogInformation($"Code: {code}");
+
+            var result = await AuthService.Login(code);
+
+            if (result.IsSuccess)
+            {
+                await UserService.Initialize();
+
+                Navigation.NavigateTo("/");
+                return;
+            }
+
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to login with google.");
+        }
+        finally
+        {
+            LoadingService.Hide(SyncKey);
+        }
+
+        Snackbar.Add("Failed to login with google. Please try again", Severity.Error);
+        Navigation.NavigateToLogin("/auth/login");
+    }
+}
