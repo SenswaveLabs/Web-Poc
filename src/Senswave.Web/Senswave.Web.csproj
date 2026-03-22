@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -26,6 +26,7 @@
     <ProjectReference Include="..\Modules\Senswave.Web.DataSources\Senswave.Web.DataSources.csproj" />
     <ProjectReference Include="..\Modules\Senswave.Web.Devices\Senswave.Web.Devices.csproj" />
     <ProjectReference Include="..\Modules\Senswave.Web.Homes\Senswave.Web.Homes.csproj" />
+    <ProjectReference Include="..\Modules\Senswave.Web.LiveUpdate\Senswave.Web.LiveUpdate.csproj" />
     <ProjectReference Include="..\Modules\Senswave.Web.Users\Senswave.Web.Users.csproj" />
     <ProjectReference Include="..\Shared\Senswave.Web.Shared\Senswave.Web.Shared.csproj" />
   </ItemGroup>
