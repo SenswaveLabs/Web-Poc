@@ -9,18 +9,21 @@
 @inject ISnackbar Snackbar
 @inject IUserService UserService
 @inject ILoadingService LoadingService
+@inject ILogger<RedirectFromGoogle> Logger
 
 @code {
 
     private const string SyncKey = "Auth:Login";
 
-    [Parameter]
-    public string Code { get; set; } = "";
-
     protected override async Task OnInitializedAsync()
     {
 
-        if (string.IsNullOrEmpty(Code))
+        var uri = new Uri(Navigation.Uri);
+        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+
+        var code = query["code"] ?? "";
+
+        if (string.IsNullOrEmpty(code))
         {
             Snackbar.Add("Failed to login with google. Please try again", Severity.Error);
             Navigation.NavigateToLogin("/auth/login");
@@ -31,7 +34,9 @@
         {
             LoadingService.Show(SyncKey);
 
-            var result = await AuthService.Login(Code);
+            Logger.LogInformation($"Code: {code}");
+
+            var result = await AuthService.Login(code);
 
             if (result.IsSuccess)
             {
@@ -42,9 +47,9 @@
             }
 
         }
-        catch
+        catch (Exception ex)
         {
-            
+            Logger.LogError(ex, "Failed to login with google.");
         }
         finally
         {

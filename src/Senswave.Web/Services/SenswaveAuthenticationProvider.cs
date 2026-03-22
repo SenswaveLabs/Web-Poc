@@ -87,7 +87,7 @@ public class SenswaveAuthenticationProvider(
         }
     }
 
-    public async Task<Result> Login(string code)
+    public async Task<Result> Login(string token)
     {
         logger.LogInformation("Attempting to log in user with google.");
 
@@ -95,10 +95,10 @@ public class SenswaveAuthenticationProvider(
         {
             var request = new LoginGoogleRequest
             {
-                Code = code
+                Token = token
             };
 
-            var response = await authIntegrationService.LoginGoogle(request);
+            var response = await authIntegrationService.LoginWithGoogleToken(request);
 
             await InitializeSession(response.AccessToken, response.RefreshToken, response.ExpiresIn, true);
 
