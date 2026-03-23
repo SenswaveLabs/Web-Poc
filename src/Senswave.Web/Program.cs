@@ -17,6 +17,7 @@ using Senswave.Web.Users.Users.Services;
 using Senswave.Web.Devices.Services;
 using Senswave.Web.Homes;
 using Senswave.Web.DataSources.Services;
+using Senswave.Web.LiveUpdate;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
@@ -61,5 +62,8 @@ builder.Services.AddDevices(builder.Configuration);
 builder.Services.AddSingleton<DeviceService>();
 builder.Services.AddSingleton<IDeviceListService>(sp => sp.GetRequiredService<DeviceService>());
 builder.Services.AddSingleton<IDeviceDetailsService>(sp => sp.GetRequiredService<DeviceService>());
+
+// Modules - LiveUpdates
+builder.Services.AddLiveUpdates(builder.Configuration);
 
 await builder.Build().RunAsync();

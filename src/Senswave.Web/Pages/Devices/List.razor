@@ -10,6 +10,8 @@
 @using Senswave.Web.Homes.Integration
 @using Senswave.Web.Homes.Models
 @using Senswave.Web.Homes.Services
+@using Senswave.Web.LiveUpdate.Models
+@using Senswave.Web.LiveUpdate.Services
 @using Senswave.Web.Shared.Components
 @using Senswave.Web.Shared.Services
 @using Senswave.Web.Users.Users.Services
@@ -22,6 +24,9 @@
 @inject ISnackbar Snackbar
 @inject ILogger<List> Logger
 @inject IDialogService DialogService
+@inject ILiveUpdateService LiveUpdateService
+
+@implements IDisposable
 
 <PageTitle>Home Dashboard</PageTitle>
 
@@ -183,6 +188,10 @@
             return;
         }
 
+        await LiveUpdateService.Initialize(HomeService.CurrentHome.Id);
+
+        LiveUpdateService.OnUpdate += LiveUpdate;
+
         await RefreshPage();
     }
 
@@ -296,5 +305,36 @@
         {
             _loading = false;
         }
+    }
+
+    private async Task LiveUpdate(UpdateEvent updateEvent)
+    {
+        if (updateEvent.Type == UpdateType.DeviceTileActionUpdate)
+        {
+            try
+            {
+                var result = await DeviceListService.GetListDevicesForHome();
+
+                if (result.IsFailure)
+                {
+                    Snackbar.Add("Failed to refresh device states.", Severity.Error);
+                    return;
+                }
+
+                displayDevices = result.Value;
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                _failedToLoad = true;
+                Logger.LogError(ex, "Failed to load page.");
+                Snackbar.Add("Failed to refresh device states.", Severity.Error);
+            }
+        }
+    }
+    
+    public void Dispose()
+    {
+        LiveUpdateService.OnUpdate -= LiveUpdate;
     }
 }
