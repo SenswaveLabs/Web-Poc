@@ -45,7 +45,6 @@
 
     </LoadingContent>
     <Content>
-
         <MudContainer MaxWidth="MaxWidth.Small"
                       Class="d-flex flex-column p-0"
                       Style="height: calc(100vh - 80px); overflow: hidden;">
@@ -62,9 +61,12 @@
                         <div class="d-flex flex-column mud-height-full mud-width-full">
                             <SensDashboard Rows="CurrentConfiguration.Rows"
                                            Name="@(CurrentDashboard?.Name ?? string.Empty)"
+                                           @bind-EditMode="EditMode"
                                            Columns="CurrentConfiguration.Columns"
                                            PositionedWidgets="@CurrentConfiguration.PositionedWidgets"
-                                           CalculatedWidgets="@CurrentConfiguration.CalculatedWidgets" />
+                                           CalculatedWidgets="@CurrentConfiguration.CalculatedWidgets"
+                                           OnUnlinkWidget="UnlinkWidget"
+                                           OnAddWidget="CreateWidget"/>
                         </div>
                     </MudCarouselItem>
                 </MudCarousel>
@@ -173,6 +175,62 @@
     private DashboardDto? CurrentDashboard { get; set; }
 
     private GridDashboardConfiguration? CurrentConfiguration { get; set; }
+
+    #region WidgetManagement
+
+    private bool EditMode { get; set; } = false;
+
+    private async Task UnlinkWidget(string dashboardId, CalculatedWidgetDto widget)
+    {
+        // TODO: Finish passing edit mode
+        // design delete icon in corner for add
+        // design select widget dialog
+        // design how to extend shorten area to place widget
+
+        try
+        {
+            _loading = true;
+            StateHasChanged();
+
+            await DashboardIntegrationService.RemoveWidgetFromDashboardAsync(dashboardId, widget.Id);
+
+            await RefreshPage();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Failed to unlink widget. Please try again", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task CreateWidget(string dashboardId, string widgetId, int row, int rowSpan, int col, int colSpan)
+    {
+        try
+        {
+            _loading = true;
+            StateHasChanged();
+
+            var request = new SetWidgetOnDashboardRequest(widgetId, row, rowSpan, col, colSpan);
+
+            await DashboardIntegrationService.SetWidgetOnDashboardAsync(dashboardId, request);
+
+            await RefreshPage();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to place widget on dashboard");
+            Snackbar.Add("Failed to place widget on dashboard. Please try again", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    #endregion
 
     protected override async Task OnInitializedAsync()
     {

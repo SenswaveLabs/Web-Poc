@@ -12,10 +12,11 @@
 
             <SensWidget Widget="calcWidget"
                         Position="posWidget"
-                        OnLongPress="@(() => ConfirmUnlink(calcWidget))" />
+                        @bind-EditMode="EditMode"
+                        OnDelete="@(() => ConfirmUnlink(calcWidget))" />
         }
 
-        @if (ToggleMode)
+        @if (EditMode && !SelectionMode)
         {
             @for (int r = 0; r < Rows; r++)
             {
@@ -23,26 +24,42 @@
                 {
                     @if (!IsOccupied(r, c))
                     {
-                        <div style="@($"grid-row: {r + 1}; grid-column: {c + 1};")"
+                        <MudButton style="@($"grid-row: {r + 1}; grid-column: {c + 1};")"
                              class="d-flex align-center justify-center border-2 border-dashed mud-border-lines-default rounded-lg"
-                             @onclick="() => StartAddWidget(r, c)">
+                             OnClick="() => StartAddWidget(r, c)">
                             <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Primary" Opacity="0.5" />
-                        </div>
+                        </MudButton>
                     }
                 }
             }
         }
+
+        @if (SelectionMode)
+        {
+            
+        }
+
+
     </div>
 </MudContainer>
 
 @code {
-    private bool ToggleMode { get; set; } = false;
 
+    private bool SelectionMode { get; set; } = false;
+
+    [Parameter] public bool EditMode { get; set; }
+    [Parameter] public string Id { get; set; } = string.Empty;
     [Parameter] public string Name { get; set; } = string.Empty;
     [Parameter] public int Rows { get; set; } = 6;
     [Parameter] public int Columns { get; set; } = 4;
     [Parameter] public List<PositionedWidgetDto> PositionedWidgets { get; set; } = [];
     [Parameter] public List<CalculatedWidgetDto> CalculatedWidgets { get; set; } = [];
+
+    [Parameter]
+    public Func<string, CalculatedWidgetDto, Task> OnUnlinkWidget { get; set; } = default!;
+
+    [Parameter]
+    public Func<string, string, int, int, int, int, Task> OnAddWidget { get; set; } = default!;
 
     private string GetGridStyle() => $@"
         display: grid;
@@ -61,8 +78,49 @@
     private async Task ConfirmUnlink(CalculatedWidgetDto widget)
     {
         var result = await DialogService.ShowMessageBoxAsync("Unlink", $"Unlink {widget.Name}?", "Yes", "No");
-        if (result == true) { /* API Logic */ }
+
+        if (result == true)
+        {
+            await OnUnlinkWidget(Id, widget);
+        }
     }
 
-    private void StartAddWidget(int row, int col) => Console.WriteLine($"Add at {row}:{col}");
+    private string WidgetId { get; set; } = string.Empty;
+    private int Row { get; set; }
+    private int Column { get; set; }
+    private int RowSpan { get; set; }
+    private int ColumnSpan { get; set; }
+
+    private async Task StartAddWidget(int row, int col)
+    {
+        Row = row;
+        Column = col;
+
+        var dialog = await DialogService.ShowAsync<SelectWidgetDialog>(
+                    "Select Widget to Place",
+                    new DialogOptions
+                    {
+                        MaxWidth = MaxWidth.Medium,
+                        FullWidth = true,
+                        CloseOnEscapeKey = true
+                    });
+
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            // var credentials = (RequestCredentialsDialog.BrokerCredentials)result.Data;
+            WidgetId = string.Empty;
+            SelectionMode = true;
+        }
+        else
+        {
+            SelectionMode = false;
+        }
+    }
+
+    private async Task FinalizeAddWidget()
+    {
+        await OnAddWidget(Id, WidgetId, Row, RowSpan, Column, ColumnSpan);
+    }
 }
