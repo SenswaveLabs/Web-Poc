@@ -26,6 +26,8 @@
 @inject IDialogService DialogService
 @inject ILiveUpdateService LiveUpdateService
 
+@implements IDisposable
+
 <PageTitle>Home Dashboard</PageTitle>
 
 <SensPage Loading="@_loading" FailedToLoad="@_failedToLoad" RefreshContent="@RefreshPage" Breadcrumbs="@Breadcrumbs">
@@ -329,5 +331,10 @@
                 Snackbar.Add("Failed to refresh device states.", Severity.Error);
             }
         }
+    }
+    
+    public void Dispose()
+    {
+        LiveUpdateService.OnUpdate -= LiveUpdate;
     }
 }

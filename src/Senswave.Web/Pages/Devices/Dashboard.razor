@@ -3,6 +3,8 @@
 
 @using Senswave.Web.Devices.Components
 @using Senswave.Web.Devices.Integration
+@using Senswave.Web.LiveUpdate.Models
+@using Senswave.Web.LiveUpdate.Services
 @using Senswave.Web.Shared.Components
 @using Senswave.Web.Shared.Resulting
 
@@ -11,6 +13,9 @@
 @inject ISnackbar Snackbar
 @inject IErrorFactory ErrorFactory
 @inject NavigationManager Navigation
+@inject ILiveUpdateService LiveUpdateService
+
+@implements IDisposable
 
 <PageTitle>@PageName()</PageTitle>
 
@@ -173,6 +178,7 @@
     {
         await base.OnInitializedAsync();
 
+        LiveUpdateService.OnUpdate += LiveUpdate;
         await RefreshPage();
     }
 
@@ -243,5 +249,46 @@
         {
             _loading = false;
         }
+    }
+
+    private async Task LiveUpdate(UpdateEvent updateEvent)
+    {
+        if (updateEvent.Type != UpdateType.WidgetsActionUpdate)
+            return;
+
+        try
+        {
+            Grids = [];
+
+            foreach (var dash in Dashboards)
+            {
+                var details = await DashboardIntegrationService.GetDashboardDisplayAsync(dash!.Id);
+
+                Grids.Add(new GridDashboardConfiguration(
+                    details.Configuration.Rows,
+                    details.Configuration.Columns,
+                    details.Configuration.PositionedWidgets,
+                    details.Configuration.CalculatedWidgets,
+                    dash.Id));
+            }
+
+            CurrentConfiguration = Grids.Where(x => x.Id == CurrentDashboard!.Id).First();
+            StateHasChanged();
+            _failedToLoad = false;
+        }
+        catch (Refit.ApiException ex)
+        {
+            var result = await ErrorFactory.FromApiExceptionAsync(ex, "FailedToLoadDashboard");
+            Snackbar.Add(result.Errors.First().Description, Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Failed to refresh dashboard", Severity.Error);
+        }
+    }
+
+    public void Dispose()
+    {
+        LiveUpdateService.OnUpdate -= LiveUpdate;
     }
 }
