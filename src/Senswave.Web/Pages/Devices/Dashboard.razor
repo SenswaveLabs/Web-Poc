@@ -219,7 +219,13 @@
         try
         {
 
-            var result = await DialogService.ShowMessageBoxAsync("Confirm Unlink", $"Are you sure to unlink {widget.Name} from dashboard?", "Yes", "No");
+            var result = await DialogService.ShowMessageBoxAsync(
+                "Confirm Unlink", 
+            $"Are you sure to unlink {widget.Name} from dashboard?", "Yes", "No", options: new DialogOptions
+            {
+                FullScreen = true,
+                MaxWidth = MaxWidth.Medium
+            });
 
             if (result == false)
             {
