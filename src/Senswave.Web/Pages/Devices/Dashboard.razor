@@ -64,11 +64,15 @@
                                            Id="@CurrentDashboard!.Id"
                                            Name="@(CurrentDashboard?.Name ?? string.Empty)"
                                            @bind-EditMode="EditMode"
+                                           @bind-SelectionMode="SelectionMode"
+                                           @bind-Row="Row"
+                                           @bind-Column="Column"
+                                           @bind-RowSpan="RowSpan"
+                                           @bind-ColumnSpan="ColumnSpan"
                                            Columns="CurrentConfiguration.Columns"
                                            PositionedWidgets="@CurrentConfiguration.PositionedWidgets"
                                            CalculatedWidgets="@CurrentConfiguration.CalculatedWidgets"
-                                           OnUnlinkWidget="UnlinkWidget"
-                                           OnAddWidget="CreateWidget"/>
+                                           OnUnlinkWidget="UnlinkWidget"/>
                         </div>
                     </MudCarouselItem>
                 </MudCarousel>
@@ -110,6 +114,13 @@
                                     Color="Color.Secondary"
                                     OnClick="ToogleEditMode" />
 
+                    @if (SelectionMode)
+                    {
+                        <MudFabMenuItem StartIcon="@Icons.Material.Filled.Check"
+                                        Color="Color.Secondary"
+                                        OnClick="CreateWidget" />
+                    }
+
                 </MudFabMenu>
             }
             else
@@ -140,6 +151,11 @@
 </SensPage>
 
 @code {
+
+    public int Row { get; set; }
+    public int Column { get; set; }
+    public int RowSpan { get; set; }
+    public int ColumnSpan { get; set; }
 
     private List<BreadcrumbItem> Breadcrumbs => [
         new("Home Dashboard", "/devices", false, $"{Icons.Material.Filled.Dashboard}"),
@@ -202,12 +218,21 @@
 
     #region WidgetManagement
 
-    private bool EditMode { get; set; } = false;
+    private bool EditMode;
+
+    private bool SelectionMode;
 
     private void ToogleEditMode()
     {
-        EditMode = !EditMode;
-        StateHasChanged();
+        if (EditMode)
+        {
+            EditMode = false;
+            SelectionMode = false;
+        }
+        else
+        {
+            EditMode = true;
+        }
     }
 
     private async Task UnlinkWidget(string dashboardId, CalculatedWidgetDto widget)
@@ -234,6 +259,10 @@
             await DashboardIntegrationService.RemoveWidgetFromDashboardAsync(dashboardId, widget.Id);
 
             await LiteRefresh();
+
+
+            EditMode = false;
+            SelectionMode = false;
         }
         catch (Exception ex)
         {
@@ -242,25 +271,46 @@
         }
         finally
         {
-            EditMode = false;
             _loading = false;
         }
 
         StateHasChanged();
     }
 
-    private async Task CreateWidget(string dashboardId, string widgetId, int row, int rowSpan, int col, int colSpan)
+    private async Task CreateWidget()
     {
         try
         {
+            var dialog = await DialogService.ShowAsync<SelectWidgetDialog>(
+                    "Select Widget to Place",
+                    new DialogOptions
+                    {
+                        MaxWidth = MaxWidth.Medium,
+                        FullWidth = true,
+                        CloseOnEscapeKey = true
+                    });
+
+            var result = await dialog.Result;
+
+            if (result.Canceled)
+            {
+                return;
+            }
+
+            // var credentials = (RequestCredentialsDialog.BrokerCredentials)result.Data;
+            var widgetId = string.Empty;
+
             _loading = true;
             StateHasChanged();
 
-            var request = new SetWidgetOnDashboardRequest(widgetId, row, rowSpan, col, colSpan);
+            var request = new SetWidgetOnDashboardRequest(widgetId, Row, RowSpan, Column, ColumnSpan);
 
-            await DashboardIntegrationService.SetWidgetOnDashboardAsync(dashboardId, request);
+            await DashboardIntegrationService.SetWidgetOnDashboardAsync(CurrentDashboard!.Id, request);
 
-            await RefreshPage();
+            await LiteRefresh();
+
+            SelectionMode = false;
+            EditMode = false;
         }
         catch (Exception ex)
         {
@@ -270,6 +320,7 @@
         finally
         {
             _loading = false;
+            StateHasChanged();
         }
     }
 
