@@ -14,6 +14,7 @@
 @inject IErrorFactory ErrorFactory
 @inject NavigationManager Navigation
 @inject ILiveUpdateService LiveUpdateService
+@inject IDialogService DialogService
 
 @implements IDisposable
 
@@ -60,6 +61,7 @@
                     <MudCarouselItem Transition="Transition.Slide">
                         <div class="d-flex flex-column mud-height-full mud-width-full">
                             <SensDashboard Rows="CurrentConfiguration.Rows"
+                                           Id="@CurrentDashboard!.Id"
                                            Name="@(CurrentDashboard?.Name ?? string.Empty)"
                                            @bind-EditMode="EditMode"
                                            Columns="CurrentConfiguration.Columns"
@@ -95,22 +97,48 @@
                 </div> 
             }
 
-            <MudFabMenu Class="position-absolute m-3 m-lg-4"
-                        Style="right:0;bottom:0;"
-                        StartIcon="@Icons.Material.Rounded.MoreVert"
-                        Color="Color.Secondary"
-                        @bind-Open="@_open" Fixed="@_fixed">
 
-                <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Refresh"
-                                Color="Color.Secondary"
-                                OnClick="RefreshPage" />
+            @if(EditMode)
+            {
+                <MudFabMenu Class="position-absolute m-3 m-lg-4"
+                            Style="right:0;bottom:0;"
+                            StartIcon="@Icons.Material.Rounded.MoreVert"
+                            Color="Color.Secondary"
+                            Open="true" Fixed="@_fixed">
 
-                <MudFabMenuItem StartIcon="@Icons.Material.Rounded.OpenInNew"
-                                Color="Color.Secondary"
-                                OnClick="DeviceDetails" />
+                    <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Check"
+                                    Color="Color.Secondary"
+                                    OnClick="ToogleEditMode" />
 
+                    <MudFabMenuItem StartIcon="@Icons.Material.Filled.EditOff"
+                                    Color="Color.Secondary"
+                                    OnClick="ToogleEditMode" />
 
-            </MudFabMenu>
+                </MudFabMenu>
+            }
+            else
+            {
+                <MudFabMenu Class="position-absolute m-3 m-lg-4"
+                            Style="right:0;bottom:0;"
+                            StartIcon="@Icons.Material.Rounded.MoreVert"
+                            Color="Color.Secondary"
+                            @bind-Open="@_open" Fixed="@_fixed">
+
+                    <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Refresh"
+                                    Color="Color.Secondary"
+                                    OnClick="RefreshPage" />
+
+                    <MudFabMenuItem StartIcon="@Icons.Material.Rounded.OpenInNew"
+                                    Color="Color.Secondary"
+                                    OnClick="DeviceDetails" />
+
+                    <MudFabMenuItem StartIcon="@Icons.Material.Filled.Edit"
+                                    Color="Color.Secondary"
+                                    OnClick="ToogleEditMode" />
+
+                </MudFabMenu>
+            }
+
         </MudContainer>
     </Content>
 </SensPage>
@@ -180,30 +208,43 @@
 
     private bool EditMode { get; set; } = false;
 
+    private void ToogleEditMode()
+    {
+        EditMode = !EditMode;
+        StateHasChanged();
+    }
+
     private async Task UnlinkWidget(string dashboardId, CalculatedWidgetDto widget)
     {
-        // TODO: Finish passing edit mode
-        // design delete icon in corner for add
-        // design select widget dialog
-        // design how to extend shorten area to place widget
-
         try
         {
+
+            var result = await DialogService.ShowMessageBoxAsync("Confirm Unlink", $"Are you sure to unlink {widget.Name} from dashboard?", "Yes", "No");
+
+            if (result == false)
+            {
+                return;
+            }
+
             _loading = true;
             StateHasChanged();
 
             await DashboardIntegrationService.RemoveWidgetFromDashboardAsync(dashboardId, widget.Id);
 
-            await RefreshPage();
+            await LiteRefresh();
         }
         catch (Exception ex)
         {
+            Logger.LogError(ex, "Failed to unlink widget");
             Snackbar.Add("Failed to unlink widget. Please try again", Severity.Error);
         }
         finally
         {
+            EditMode = false;
             _loading = false;
         }
+
+        StateHasChanged();
     }
 
     private async Task CreateWidget(string dashboardId, string widgetId, int row, int rowSpan, int col, int colSpan)
@@ -314,6 +355,11 @@
         if (updateEvent.Type != UpdateType.WidgetsActionUpdate)
             return;
 
+        await LiteRefresh();
+    }
+
+    private async Task LiteRefresh()
+    {
         try
         {
             Grids = [];

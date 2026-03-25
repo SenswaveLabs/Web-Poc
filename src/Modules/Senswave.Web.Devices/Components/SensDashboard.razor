@@ -36,7 +36,7 @@
 
         @if (SelectionMode)
         {
-            
+            @*TODO: If initial add element selected - the display element with button that can shring and extend selected are - selected area should be displayed and accessible to parent component through paramerter*@
         }
 
 
@@ -48,6 +48,7 @@
     private bool SelectionMode { get; set; } = false;
 
     [Parameter] public bool EditMode { get; set; }
+    [Parameter] public EventCallback<bool> EditModeChanged { get; set; }
     [Parameter] public string Id { get; set; } = string.Empty;
     [Parameter] public string Name { get; set; } = string.Empty;
     [Parameter] public int Rows { get; set; } = 6;
@@ -77,12 +78,7 @@
 
     private async Task ConfirmUnlink(CalculatedWidgetDto widget)
     {
-        var result = await DialogService.ShowMessageBoxAsync("Unlink", $"Unlink {widget.Name}?", "Yes", "No");
-
-        if (result == true)
-        {
-            await OnUnlinkWidget(Id, widget);
-        }
+        await OnUnlinkWidget(Id, widget);
     }
 
     private string WidgetId { get; set; } = string.Empty;

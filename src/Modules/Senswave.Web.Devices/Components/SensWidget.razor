@@ -10,133 +10,156 @@
 @inject IDialogService DialogService
 
 <div style="@GetWidgetGridStyle()" class="pa-1">
-    @switch (Widget.Type)
+
+    @if (EditMode)
     {
-        case "Button":
-            <MudButton Variant="Variant.Filled"
-                       Color="Color.Surface"
-                       FullWidth
-                       Disabled="@(Disabled || _loading)"
-                       Class="mud-height-full rounded-lg"
-                       OnClick="HandleButtonAction">
-                @if (_loading)
-                {
-                    <MudProgressCircular Size="Size.Small" Indeterminate="true" />
-                }
-                else
-                {
+        <MudPaper Class="d-flex flex-column align-center justify-center mud-height-full rounded-lg pa-2"
+                  Elevation="1"
+                  Style="border: 2px solid var(--mud-palette-error);">
 
-                    @Widget.Name
-                }
-            </MudButton>
-            break;
+            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                           Color="Color.Error"
+                           Size="Size.Large"
+                           Class="mb-1"
+                           OnClick="OnDelete"
+                           Disabled="@Disabled" />
 
-        case "Display":
-            <MudPaper Elevation="2"
-                      Class="d-flex align-center justify-center mud-height-full rounded-lg"
-                      @oncontextmenu:preventDefault
-                      @oncontextmenu="OnLongPress">
-                <MudText Typo="Typo.body1" Align="Align.Center">
-                    @Widget.Name: @GetRuntimeValue() @(Widget.Configuration?.Unit ?? "")
-                </MudText>
-            </MudPaper>
-            break;
+            <MudText Typo="Typo.subtitle2" Align="Align.Center">
+                @Widget.Name
+            </MudText>
 
-        case "Switch":
-            <MudButton OnClick="ToggleSwitch"
-                       Disabled="@(Disabled || _loading)"
-                       Variant="Variant.Text"
-                       Class="mud-height-full mud-width-full pa-0 rounded-lg"
-                       Style="@($"{GetSwitchStyle()} text-transform: none;")">
-                <div class="d-flex flex-column align-center justify-center mud-height-full mud-width-full">
+        </MudPaper>
+    }
+    else
+    {
+        @switch (Widget.Type)
+        {
+            case "Button":
+                <MudButton Variant="Variant.Filled"
+                Color="Color.Surface"
+                FullWidth
+                Disabled="@(Disabled || _loading)"
+                Class="mud-height-full rounded-lg"
+                OnClick="HandleButtonAction">
                     @if (_loading)
                     {
-                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Inherit" />
+                        <MudProgressCircular Size="Size.Small" Indeterminate="true" />
                     }
                     else
                     {
-                        <MudIcon Icon="@Icons.Material.Filled.PowerSettingsNew" Size="Size.Large" Color="Color.Inherit" />
-                    }
-                    <MudText Typo="Typo.caption" Class="px-2 text-center" Color="Color.Inherit">@Widget.Name</MudText>
-                </div>
-            </MudButton>
-            break;
-
-        case "Slider":
-            <MudPaper Elevation="2"
-                      Class="pa-2 d-flex flex-column mud-height-full rounded-lg justify-center">
-
-                <MudText Typo="Typo.caption">@($"{Widget.Name} ({GetSliderValue()})")</MudText>
-
-                <div class="d-flex flex-row align-center gap-3">
-
-                    <MudText Typo="Typo.h6" Class="flex-none">
-                        @GetSliderMin()
-                    </MudText>
-
-                    <div class="flex-grow-1 d-flex align-center">
-                        <MudSlider T="double"
-                                   ValueLabel="true"
-                                   Value="@GetSliderValue()"
-                                   Min="@GetSliderMin()"
-                                   Max="@GetSliderMax()"
-                                   Step="@GetSliderStep()"
-                                   ValueChanged="HandleSliderChange"
-                                   TickMarks="false"
-                                   Size="Size.Large"
-                                   Disabled="@(Disabled || _loading)"
-                                   Color="Color.Primary"
-                                   Class="ma-0" />
-                    </div>
-
-                    <MudText Typo="Typo.h6" Class="flex-none">
-                        @GetSliderMax()
-                    </MudText>
-
-                </div>
-            </MudPaper>
-            break;
-        case "Color":
-            <MudButton Style="@($"background-color: {GetRuntimeValue() ?? "#000000"}; color: {GetContrastColor(GetRuntimeValue())}; cursor: pointer;")"
-                      Class="d-flex align-center justify-center mud-height-full rounded-lg w-100"
-                      OnClick="OpenColorDialog">
-                <div class="d-flex flex-column align-center">
-                    <MudText Typo="Typo.button" Style="color: inherit">
-                        @GetRuntimeValue()
-                    </MudText>
-                    <MudText Typo="Typo.caption" Style="color: inherit; opacity: 0.7;">
                         @Widget.Name
+                    }
+                </MudButton>
+                break;
+
+            case "Display":
+                <MudPaper Elevation="2"
+                Class="d-flex align-center justify-center mud-height-full rounded-lg"
+                @oncontextmenu:preventDefault
+                @oncontextmenu="OnLongPress">
+                    <MudText Typo="Typo.body1" Align="Align.Center">
+                        @Widget.Name: @GetRuntimeValue() @(Widget.Configuration?.Unit ?? "")
                     </MudText>
-                </div>
-            </MudButton>
-            break;
+                </MudPaper>
+                break;
 
-        case "Radio":
-            <MudPaper Elevation="2" Class="mud-height-full rounded-lg d-flex flex-row align-center overflow-x-auto pa-1">
-                @foreach (var option in GetRadioOptions())
-                {
-                    <MudButton Variant="@(IsSelected(option) ? Variant.Filled: Variant.Outlined)"
-                               Color="@(IsSelected(option) ? Color.Primary : Color.Default)"
-                               OnClick="@(() => HandleRadioChange(option.OptionName))"
-                               Class="mx-1 flex-grow-1"
-                               Disabled="@(Disabled || _loading)"
-                               Size="Size.Small">
-                        @option.DisplayName
-                    </MudButton>
-                }
-            </MudPaper>
-            break;
+            case "Switch":
+                <MudButton OnClick="ToggleSwitch"
+                Disabled="@(Disabled || _loading)"
+                Variant="Variant.Text"
+                Class="mud-height-full mud-width-full pa-0 rounded-lg"
+                Style="@($"{GetSwitchStyle()} text-transform: none;")">
+                    <div class="d-flex flex-column align-center justify-center mud-height-full mud-width-full">
+                        @if (_loading)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Inherit" />
+                        }
+                        else
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.PowerSettingsNew" Size="Size.Large" Color="Color.Inherit" />
+                        }
+                        <MudText Typo="Typo.caption" Class="px-2 text-center" Color="Color.Inherit">@Widget.Name</MudText>
+                    </div>
+                </MudButton>
+                break;
 
-        default:
-            <MudPaper Class="d-flex align-center justify-center mud-height-full border-2 border-solid mud-border-error rounded-lg">
-                <MudText Color="Color.Error" Typo="Typo.caption">Invalid: @Widget.Type</MudText>
-            </MudPaper>
-        break;
+            case "Slider":
+                <MudPaper Elevation="2"
+                Class="pa-2 d-flex flex-column mud-height-full rounded-lg justify-center">
+
+                    <MudText Typo="Typo.caption">@($"{Widget.Name} ({GetSliderValue()})")</MudText>
+
+                    <div class="d-flex flex-row align-center gap-3">
+
+                        <MudText Typo="Typo.h6" Class="flex-none">
+                            @GetSliderMin()
+                        </MudText>
+
+                        <div class="flex-grow-1 d-flex align-center">
+                            <MudSlider T="double"
+                            ValueLabel="true"
+                            Value="@GetSliderValue()"
+                            Min="@GetSliderMin()"
+                            Max="@GetSliderMax()"
+                            Step="@GetSliderStep()"
+                            ValueChanged="HandleSliderChange"
+                            TickMarks="false"
+                            Size="Size.Large"
+                            Disabled="@(Disabled || _loading)"
+                            Color="Color.Primary"
+                            Class="ma-0" />
+                        </div>
+
+                        <MudText Typo="Typo.h6" Class="flex-none">
+                            @GetSliderMax()
+                        </MudText>
+
+                    </div>
+                </MudPaper>
+                break;
+            case "Color":
+                <MudButton Style="@($"background-color: {GetRuntimeValue() ?? "#000000"}; color: {GetContrastColor(GetRuntimeValue())}; cursor: pointer;")"
+                Class="d-flex align-center justify-center mud-height-full rounded-lg w-100"
+                OnClick="OpenColorDialog">
+                    <div class="d-flex flex-column align-center">
+                        <MudText Typo="Typo.button" Style="color: inherit">
+                            @GetRuntimeValue()
+                        </MudText>
+                        <MudText Typo="Typo.caption" Style="color: inherit; opacity: 0.7;">
+                            @Widget.Name
+                        </MudText>
+                    </div>
+                </MudButton>
+                break;
+
+            case "Radio":
+                <MudPaper Elevation="2" Class="mud-height-full rounded-lg d-flex flex-row align-center overflow-x-auto pa-1">
+                    @foreach (var option in GetRadioOptions())
+                    {
+                        <MudButton Variant="@(IsSelected(option) ? Variant.Filled: Variant.Outlined)"
+                        Color="@(IsSelected(option) ? Color.Primary : Color.Default)"
+                        OnClick="@(() => HandleRadioChange(option.OptionName))"
+                        Class="mx-1 flex-grow-1"
+                        Disabled="@(Disabled || _loading)"
+                        Size="Size.Small">
+                            @option.DisplayName
+                        </MudButton>
+                    }
+                </MudPaper>
+                break;
+
+            default:
+                <MudPaper Class="d-flex align-center justify-center mud-height-full border-2 border-solid mud-border-error rounded-lg">
+                    <MudText Color="Color.Error" Typo="Typo.caption">Invalid: @Widget.Type</MudText>
+                </MudPaper>
+                break;
+        }
     }
 </div>
 
 @code {
     [Parameter] public bool EditMode { get; set; }
+    [Parameter] public EventCallback<bool> EditModeChanged { get; set; }
 
     [Parameter] public CalculatedWidgetDto Widget { get; set; } = null!;
     [Parameter] public PositionedWidgetDto Position { get; set; } = null!;
