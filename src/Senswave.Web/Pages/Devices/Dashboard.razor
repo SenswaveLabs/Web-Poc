@@ -14,6 +14,8 @@
 @inject IErrorFactory ErrorFactory
 @inject NavigationManager Navigation
 @inject ILiveUpdateService LiveUpdateService
+@inject IDialogService DialogService
+@inject IErrorFactory ErrorFactory
 
 @implements IDisposable
 
@@ -45,7 +47,6 @@
 
     </LoadingContent>
     <Content>
-
         <MudContainer MaxWidth="MaxWidth.Small"
                       Class="d-flex flex-column p-0"
                       Style="height: calc(100vh - 80px); overflow: hidden;">
@@ -61,10 +62,18 @@
                     <MudCarouselItem Transition="Transition.Slide">
                         <div class="d-flex flex-column mud-height-full mud-width-full">
                             <SensDashboard Rows="CurrentConfiguration.Rows"
+                                           Id="@CurrentDashboard!.Id"
                                            Name="@(CurrentDashboard?.Name ?? string.Empty)"
+                                           @bind-EditMode="EditMode"
+                                           @bind-SelectionMode="SelectionMode"
+                                           @bind-Row="Row"
+                                           @bind-Column="Column"
+                                           @bind-RowSpan="RowSpan"
+                                           @bind-ColumnSpan="ColumnSpan"
                                            Columns="CurrentConfiguration.Columns"
                                            PositionedWidgets="@CurrentConfiguration.PositionedWidgets"
-                                           CalculatedWidgets="@CurrentConfiguration.CalculatedWidgets" />
+                                           CalculatedWidgets="@CurrentConfiguration.CalculatedWidgets"
+                                           OnUnlinkWidget="UnlinkWidget"/>
                         </div>
                     </MudCarouselItem>
                 </MudCarousel>
@@ -93,27 +102,61 @@
                 </div> 
             }
 
-            <MudFabMenu Class="position-absolute m-3 m-lg-4"
-                        Style="right:0;bottom:0;"
-                        StartIcon="@Icons.Material.Rounded.MoreVert"
-                        Color="Color.Secondary"
-                        @bind-Open="@_open" Fixed="@_fixed">
 
-                <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Refresh"
-                                Color="Color.Secondary"
-                                OnClick="RefreshPage" />
+            @if(EditMode)
+            {
+                <MudFabMenu Class="position-absolute m-3 m-lg-4"
+                            Style="right:0;bottom:0;"
+                            StartIcon="@Icons.Material.Rounded.MoreVert"
+                            Color="Color.Secondary"
+                            Open="true" Fixed="@_fixed">
 
-                <MudFabMenuItem StartIcon="@Icons.Material.Rounded.OpenInNew"
-                                Color="Color.Secondary"
-                                OnClick="DeviceDetails" />
+                    <MudFabMenuItem StartIcon="@Icons.Material.Filled.EditOff"
+                                    Color="Color.Secondary"
+                                    OnClick="ToogleEditMode" />
 
+                    @if (SelectionMode)
+                    {
+                        <MudFabMenuItem StartIcon="@Icons.Material.Filled.Check"
+                                        Color="Color.Secondary"
+                                        OnClick="CreateWidget" />
+                    }
 
-            </MudFabMenu>
+                </MudFabMenu>
+            }
+            else
+            {
+                <MudFabMenu Class="position-absolute m-3 m-lg-4"
+                            Style="right:0;bottom:0;"
+                            StartIcon="@Icons.Material.Rounded.MoreVert"
+                            Color="Color.Secondary"
+                            @bind-Open="@_open" Fixed="@_fixed">
+
+                    <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Refresh"
+                                    Color="Color.Secondary"
+                                    OnClick="RefreshPage" />
+
+                    <MudFabMenuItem StartIcon="@Icons.Material.Rounded.OpenInNew"
+                                    Color="Color.Secondary"
+                                    OnClick="DeviceDetails" />
+
+                    <MudFabMenuItem StartIcon="@Icons.Material.Filled.Edit"
+                                    Color="Color.Secondary"
+                                    OnClick="ToogleEditMode" />
+
+                </MudFabMenu>
+            }
+
         </MudContainer>
     </Content>
 </SensPage>
 
 @code {
+
+    public int Row { get; set; }
+    public int Column { get; set; }
+    public int RowSpan { get; set; }
+    public int ColumnSpan { get; set; }
 
     private List<BreadcrumbItem> Breadcrumbs => [
         new("Home Dashboard", "/devices", false, $"{Icons.Material.Filled.Dashboard}"),
@@ -173,6 +216,126 @@
     private DashboardDto? CurrentDashboard { get; set; }
 
     private GridDashboardConfiguration? CurrentConfiguration { get; set; }
+
+    #region WidgetManagement
+
+    private bool EditMode;
+
+    private bool SelectionMode;
+
+    private void ToogleEditMode()
+    {
+        if (EditMode)
+        {
+            EditMode = false;
+            SelectionMode = false;
+        }
+        else
+        {
+            EditMode = true;
+        }
+    }
+
+    private async Task UnlinkWidget(string dashboardId, CalculatedWidgetDto widget)
+    {
+        try
+        {
+
+            var result = await DialogService.ShowMessageBoxAsync(
+                "Confirm Unlink", 
+            $"Are you sure to unlink {widget.Name} from dashboard?", "Yes", "No", options: new DialogOptions
+            {
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+                CloseOnEscapeKey = true
+            });
+
+            if (result == false)
+            {
+                return;
+            }
+
+            _loading = true;
+            StateHasChanged();
+
+            await DashboardIntegrationService.RemoveWidgetFromDashboardAsync(dashboardId, widget.Id);
+
+            await LiteRefresh();
+
+
+            EditMode = false;
+            SelectionMode = false;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to unlink widget");
+            Snackbar.Add("Failed to unlink widget. Please try again", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task CreateWidget()
+    {
+        try
+        {
+            var parameters = new DialogParameters<SelectWidgetDialog>
+            {
+                { x => x.DeviceId, Id }
+            };
+
+            var options = new DialogOptions
+            {
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+                CloseOnEscapeKey = true
+            };
+
+            var dialog = await DialogService.ShowAsync<SelectWidgetDialog>("Select Widget", parameters, options);
+
+            var result = await dialog.Result;
+
+            if (result.Canceled || result.Data == null)
+            {
+                return;
+            }
+
+            var widgetId = result.Data.ToString()!;
+
+            _loading = true;
+            StateHasChanged();
+
+            var request = new SetWidgetOnDashboardRequest(widgetId, Row, RowSpan, Column, ColumnSpan);
+
+            await DashboardIntegrationService.SetWidgetOnDashboardAsync(CurrentDashboard!.Id, request);
+
+            await LiteRefresh();
+
+            SelectionMode = false;
+            EditMode = false;
+        }
+        catch (Refit.ApiException ex)
+        {
+            var error = await ErrorFactory.FromApiExceptionAsync(ex, "Failed to place widget on dashboard. Please try again");
+            Snackbar.Add(error.Errors.First().Description, Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to place widget on dashboard");
+            Snackbar.Add("Failed to place widget on dashboard. Please try again", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+
+    #endregion
 
     protected override async Task OnInitializedAsync()
     {
@@ -256,6 +419,11 @@
         if (updateEvent.Type != UpdateType.WidgetsActionUpdate)
             return;
 
+        await LiteRefresh();
+    }
+
+    private async Task LiteRefresh()
+    {
         try
         {
             Grids = [];

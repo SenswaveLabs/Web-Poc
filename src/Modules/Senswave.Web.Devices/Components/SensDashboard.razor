@@ -12,37 +12,154 @@
 
             <SensWidget Widget="calcWidget"
                         Position="posWidget"
-                        OnLongPress="@(() => ConfirmUnlink(calcWidget))" />
+                        @bind-EditMode="EditMode"
+                        OnDelete="@(() => ConfirmUnlink(calcWidget))" />
         }
 
-        @if (ToggleMode)
+        @if (EditMode && !SelectionMode)
         {
             @for (int r = 0; r < Rows; r++)
             {
+                var row = r;
                 @for (int c = 0; c < Columns; c++)
                 {
-                    @if (!IsOccupied(r, c))
+                    var col = c;
+
+                    @if (!IsOccupied(row, col))
                     {
-                        <div style="@($"grid-row: {r + 1}; grid-column: {c + 1};")"
-                             class="d-flex align-center justify-center border-2 border-dashed mud-border-lines-default rounded-lg"
-                             @onclick="() => StartAddWidget(r, c)">
+                        <MudButton style="@($"grid-row: {row + 1}; grid-column: {col + 1};")"
+                                   class="d-flex align-center justify-center border-2 border-dashed mud-border-lines-default rounded-lg"
+                                   OnClick="() => StartAddWidget(row, col)">
                             <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Primary" Opacity="0.5" />
-                        </div>
+                        </MudButton>
                     }
                 }
             }
         }
+
+        @if (SelectionMode)
+        {
+            <div style="@GetSelectionStyle()" class="selection-box mud-border-primary">
+                <div class="selection-badge mud-theme-primary mud-elevation-2">
+                    @ColumnSpan × @RowSpan
+                </div>
+
+                <div class="internal-handle-right d-flex flex-column justify-center gap-2">
+                    @if (CanExpand(true))
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.Add"
+                                       Size="Size.Small"
+                                       Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       OnClick="() => AdjustSpan(true, true)" />
+                    }
+                    @if (ColumnSpan > 1)
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.Remove"
+                                       Size="Size.Small"
+                                       Variant="Variant.Filled"
+                                       Color="Color.Surface"
+                                       Class="mud-border-lines-default border-1"
+                                       OnClick="() => AdjustSpan(false, true)" />
+                    }
+                </div>
+
+                <div class="internal-handle-bottom d-flex justify-center gap-2">
+                    @if (CanExpand(false))
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.Add"
+                                       Size="Size.Small"
+                                       Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       OnClick="() => AdjustSpan(true, false)" />
+                    }
+                    @if (RowSpan > 1)
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.Remove"
+                                       Size="Size.Small"
+                                       Variant="Variant.Filled"
+                                       Color="Color.Surface"
+                                       Class="mud-border-lines-default border-1"
+                                       OnClick="() => AdjustSpan(false, false)" />
+                    }
+                </div>
+
+            </div>
+        }
     </div>
 </MudContainer>
 
-@code {
-    private bool ToggleMode { get; set; } = false;
+<style>
+    .selection-box {
+        position: relative;
+        z-index: 50;
+        border: 2px solid; /* Color handled by mud-border-primary class */
+        background-color: rgba(var(--mud-palette-primary-rgb), 0.1);
+        border-radius: var(--mud-default-borderradius);
+        overflow: hidden; /* Keeps handles tidy */
+    }
 
+    .selection-badge {
+        position: absolute;
+        top: 0;
+        left: 0;
+        padding: 2px 8px;
+        font-size: 0.75rem;
+        border-bottom-right-radius: var(--mud-default-borderradius);
+        z-index: 52;
+    }
+
+    /* Internal Handles - Floating inside the edges */
+    .internal-handle-right {
+        position: absolute;
+        right: 8px;
+        top: 0;
+        bottom: 0;
+        z-index: 51;
+    }
+
+    .internal-handle-bottom {
+        position: absolute;
+        bottom: 8px;
+        left: 0;
+        right: 0;
+        z-index: 51;
+    }
+
+    .selection-confirm-zone {
+        height: 100%;
+        width: 100%;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+        .selection-confirm-zone:hover {
+            background-color: rgba(var(--mud-palette-primary-rgb), 0.15);
+        }
+
+    /* Small adjustment to make surface buttons look better on the tinted background */
+    .mud-button-filled.mud-button-filled-surface {
+        background-color: var(--mud-palette-surface);
+        color: var(--mud-palette-text-primary);
+    }
+</style>
+
+@code {
+
+    [Parameter] public bool SelectionMode { get; set; }
+    [Parameter] public EventCallback<bool> SelectionModeChanged { get; set; }
+
+    [Parameter] public bool EditMode { get; set; }
+    [Parameter] public EventCallback<bool> EditModeChanged { get; set; }
+    [Parameter] public string Id { get; set; } = string.Empty;
     [Parameter] public string Name { get; set; } = string.Empty;
     [Parameter] public int Rows { get; set; } = 6;
     [Parameter] public int Columns { get; set; } = 4;
     [Parameter] public List<PositionedWidgetDto> PositionedWidgets { get; set; } = [];
     [Parameter] public List<CalculatedWidgetDto> CalculatedWidgets { get; set; } = [];
+
+    [Parameter]
+    public Func<string, CalculatedWidgetDto, Task> OnUnlinkWidget { get; set; } = default!;
 
     private string GetGridStyle() => $@"
         display: grid;
@@ -60,9 +177,88 @@
 
     private async Task ConfirmUnlink(CalculatedWidgetDto widget)
     {
-        var result = await DialogService.ShowMessageBoxAsync("Unlink", $"Unlink {widget.Name}?", "Yes", "No");
-        if (result == true) { /* API Logic */ }
+        await OnUnlinkWidget(Id, widget);
     }
 
-    private void StartAddWidget(int row, int col) => Console.WriteLine($"Add at {row}:{col}");
+
+    #region Selection Mode
+
+    [Parameter] public int Row { get; set; }
+    [Parameter] public EventCallback<int> RowChanged { get; set; }
+
+    [Parameter] public int Column { get; set; }
+    [Parameter] public EventCallback<int> ColumnChanged { get; set; }
+
+    [Parameter] public int RowSpan { get; set; }
+    [Parameter] public EventCallback<int> RowSpanChanged { get; set; }
+
+    [Parameter] public int ColumnSpan { get; set; }
+    [Parameter] public EventCallback<int> ColumnSpanChanged { get; set; }
+
+    private async Task StartAddWidget(int row, int col)
+    {
+        Row = row; RowSpan = 1; Column = col; ColumnSpan = 1;
+
+        await RowChanged.InvokeAsync(Row);
+        await ColumnChanged.InvokeAsync(Column);
+        await RowSpanChanged.InvokeAsync(RowSpan);
+        await ColumnSpanChanged.InvokeAsync(ColumnSpan);
+
+        SelectionMode = true;
+        await SelectionModeChanged.InvokeAsync(true);
+    }
+
+    private string GetSelectionStyle() => $@"
+        grid-row: {Row + 1} / span {RowSpan};
+        grid-column: {Column + 1} / span {ColumnSpan};
+        height: 100%; width: 100%;
+        transition: all 0.2s ease-in-out;
+        background-color: var(--mud-palette-primary-hover); position: relative; z-index: 10;
+    ";
+
+    private async Task AdjustSpan(bool increase, bool isHorizontal)
+    {
+        if (isHorizontal)
+        {
+            if (increase && CanExpand(true)) ColumnSpan++;
+            else if (!increase && ColumnSpan > 1) ColumnSpan--;
+        }
+        else
+        {
+            if (increase && CanExpand(false)) RowSpan++;
+            else if (!increase && RowSpan > 1) RowSpan--;
+        }
+
+        if (isHorizontal) await ColumnSpanChanged.InvokeAsync(ColumnSpan);
+        else await RowSpanChanged.InvokeAsync(RowSpan);
+    }
+
+    private bool CanExpand(bool isHorizontal)
+    {
+        if (isHorizontal)
+        {
+            int targetCol = Column + ColumnSpan; // The index of the column we want to move into
+            if (targetCol >= Columns) return false;
+
+            // Check every row within our current vertical span at that specific column
+            for (int r = Row; r < Row + RowSpan; r++)
+            {
+                if (IsOccupied(r, targetCol)) return false;
+            }
+        }
+        else
+        {
+            int targetRow = Row + RowSpan; // The index of the row we want to move into
+            if (targetRow >= Rows) return false;
+
+            // Check every column within our current horizontal span at that specific row
+            for (int c = Column; c < Column + ColumnSpan; c++)
+            {
+                if (IsOccupied(targetRow, c)) return false;
+            }
+        }
+        return true;
+    }
+
+    #endregion
 }

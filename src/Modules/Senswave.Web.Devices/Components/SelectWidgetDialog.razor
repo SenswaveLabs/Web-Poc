@@ -1,0 +1,91 @@
+﻿@using MudBlazor
+@using Senswave.Web.Devices.Integration
+@inject IWidgetIntegrationService WidgetService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">Select Widget</MudText>
+    </TitleContent>
+    <DialogContent>
+        @if (_loading)
+        {
+            <div class="d-flex flex-column align-center py-8">
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                <MudText Typo="Typo.caption" Class="mt-2">Fetching widgets...</MudText>
+            </div>
+        }
+        else if (_groups == null || !_groups.Any())
+        {
+            <MudAlert Severity="Severity.Info">No widgets available for this device.</MudAlert>
+        }
+        else
+        {
+            <MudSelect T="string"
+                       Label="Choose Widget"
+                       @bind-Value="_selectedWidgetId"
+                       AnchorOrigin="Origin.BottomCenter"
+                       Variant="Variant.Outlined"
+                       Dense="true"
+                       Required="true">
+
+                @foreach (var group in _groups)
+                {
+                    @* Group Header (Non-selectable) *@
+                    <MudSelectItem T="string" Disabled="true" Class="mud-bg-gray-100">
+                        <MudText Typo="Typo.overline" Color="Color.Primary"><b>@group.Operation.Name</b></MudText>
+                    </MudSelectItem>
+
+                    @foreach (var widget in group.Widgets)
+                    {
+                        <MudSelectItem T="string" Value="@widget.Id">
+                            @($"{widget.Name}")
+                            @if (!widget.Enabled)
+                            {
+                                <span class="ml-2 mud-text-secondary" style="font-size: 0.7rem;">[Disabled]</span>
+                            }
+                        </MudSelectItem>
+                    }
+                }
+            </MudSelect>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   Disabled="@(string.IsNullOrEmpty(_selectedWidgetId))"
+                   OnClick="Submit">Attach Widget</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public string DeviceId { get; set; } = string.Empty;
+
+    private List<DisplayGroupDto> _groups = new();
+    private string _selectedWidgetId = string.Empty;
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var response = await WidgetService.DisplayWidgetsAsync(DeviceId);
+            _groups = response.Items;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Error loading widgets", Severity.Error);
+            MudDialog.Cancel();
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void Submit() => MudDialog.Close(DialogResult.Ok(_selectedWidgetId));
+    private void Cancel() => MudDialog.Cancel();
+}
