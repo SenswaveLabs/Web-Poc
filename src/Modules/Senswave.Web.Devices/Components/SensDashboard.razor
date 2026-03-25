@@ -36,7 +36,7 @@
 
         @if (SelectionMode)
         {
-            @*TODO: If initial add element selected - the display element with button that can shring and extend selected are - selected area should be displayed and accessible to parent component through paramerter*@
+            @*TODO: If initial add element selected - the display element with button that can shring and extend selected are - selected area should be displayed with button to confirm selected area and then run function*@
         }
 
 
@@ -81,7 +81,9 @@
         await OnUnlinkWidget(Id, widget);
     }
 
-    private string WidgetId { get; set; } = string.Empty;
+
+    #region Selection Mode
+
     private int Row { get; set; }
     private int Column { get; set; }
     private int RowSpan { get; set; }
@@ -90,8 +92,14 @@
     private async Task StartAddWidget(int row, int col)
     {
         Row = row;
+        RowSpan = 1;
         Column = col;
+        ColumnSpan = 1;
+        SelectionMode = true;
+    }
 
+    private async Task FinalizeAddWidget()
+    {
         var dialog = await DialogService.ShowAsync<SelectWidgetDialog>(
                     "Select Widget to Place",
                     new DialogOptions
@@ -106,17 +114,11 @@
         if (!result.Canceled)
         {
             // var credentials = (RequestCredentialsDialog.BrokerCredentials)result.Data;
-            WidgetId = string.Empty;
-            SelectionMode = true;
-        }
-        else
-        {
+            // var widgetId = 
+            await OnAddWidget(Id, "", Row, RowSpan, Column, ColumnSpan);
             SelectionMode = false;
         }
     }
 
-    private async Task FinalizeAddWidget()
-    {
-        await OnAddWidget(Id, WidgetId, Row, RowSpan, Column, ColumnSpan);
-    }
+    #endregion
 }
