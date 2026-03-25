@@ -15,6 +15,7 @@
 @inject NavigationManager Navigation
 @inject ILiveUpdateService LiveUpdateService
 @inject IDialogService DialogService
+@inject IErrorFactory ErrorFactory
 
 @implements IDisposable
 
@@ -244,8 +245,9 @@
                 "Confirm Unlink", 
             $"Are you sure to unlink {widget.Name} from dashboard?", "Yes", "No", options: new DialogOptions
             {
-                FullScreen = true,
-                MaxWidth = MaxWidth.Medium
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+                CloseOnEscapeKey = true
             });
 
             if (result == false)
@@ -281,24 +283,28 @@
     {
         try
         {
-            var dialog = await DialogService.ShowAsync<SelectWidgetDialog>(
-                    "Select Widget to Place",
-                    new DialogOptions
-                    {
-                        MaxWidth = MaxWidth.Medium,
-                        FullWidth = true,
-                        CloseOnEscapeKey = true
-                    });
+            var parameters = new DialogParameters<SelectWidgetDialog>
+            {
+                { x => x.DeviceId, Id }
+            };
+
+            var options = new DialogOptions
+            {
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+                CloseOnEscapeKey = true
+            };
+
+            var dialog = await DialogService.ShowAsync<SelectWidgetDialog>("Select Widget", parameters, options);
 
             var result = await dialog.Result;
 
-            if (result.Canceled)
+            if (result.Canceled || result.Data == null)
             {
                 return;
             }
 
-            // var credentials = (RequestCredentialsDialog.BrokerCredentials)result.Data;
-            var widgetId = string.Empty;
+            var widgetId = result.Data.ToString()!;
 
             _loading = true;
             StateHasChanged();
@@ -311,6 +317,11 @@
 
             SelectionMode = false;
             EditMode = false;
+        }
+        catch (Refit.ApiException ex)
+        {
+            var error = await ErrorFactory.FromApiExceptionAsync(ex, "Failed to place widget on dashboard. Please try again");
+            Snackbar.Add(error.Errors.First().Description, Severity.Error);
         }
         catch (Exception ex)
         {
