@@ -106,14 +106,14 @@
         {
             var result = await DeviceService.CreateDevice(_deviceModel);
 
-            Snackbar.Add("Device created.", Severity.Success);
+            if (result.IsFailure)
+            {
+                Snackbar.Add(result.Errors.First().Description, Severity.Error);
+                return;
+            }
 
+            Snackbar.Add("Device created.", Severity.Success);
             MudDialog.Close();
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Failed to create device.");
-            Snackbar.Add("Operation failed.", Severity.Error);
         }
         finally
         {

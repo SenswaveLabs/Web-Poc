@@ -37,14 +37,14 @@
 
                 @foreach (var broker in _brokers)
                 {
-                    <MudItem xs="12" sm="6" md="4" lg="3">
+                    <MudItem xs="12" sm="6" md="4" lg="4">
                         <SensDataSource Broker="@broker"
                                         OnClick="() => Select(broker.Id)" />
                     </MudItem>
                 }
 
                 <!-- ADD NEW -->
-                <MudItem xs="12" sm="6" md="4" lg="3">
+                <MudItem xs="12" sm="6" md="4" lg="4">
                     <SensListAction Title="Create Data Source"
                                     OnClick="AddDataSource" />
                 </MudItem>
