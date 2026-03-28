@@ -121,3 +121,8 @@ code {
     height: 100%;
     overflow: scroll;
 }
+
+.mud-breadcrumb-separator span {
+    color: var(--mud-palette-text-primary);
+    opacity: 1
+}

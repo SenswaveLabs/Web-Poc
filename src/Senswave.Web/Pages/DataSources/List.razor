@@ -42,7 +42,7 @@
                     <MudText Typo="Typo.subtitle1" Class="me-1">Data Sources</MudText>
 
                     <MudTooltip Text="This is list of configured data sources that user has access to." Placement="Placement.Bottom">
-                        <MudIconButton Icon="@Icons.Material.Filled.Info" Size="Size.Small" Edge="Edge.End" Color="Color.Primary" Style="padding: 0;" />
+                        <MudIconButton Title="info" Icon="@Icons.Material.Filled.Info" Size="Size.Small" Edge="Edge.End" Color="Color.Primary" Style="padding: 0;" />
                     </MudTooltip>
                 </MudContainer>
             </MudContainer>
@@ -64,15 +64,18 @@
 
             <MudFabMenu Class="position-absolute m-3 m-lg-4"
                         Style="right:0;bottom:0;"
+                        Title="menu"
                         StartIcon="@Icons.Material.Rounded.MoreVert"
                         Color="Color.Secondary"
                         @bind-Open="@_open" Fixed="@_fixed">
 
                 <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Refresh"
+                                Title="refresh"
                                 Color="Color.Secondary"
                                 OnClick="RefreshPage" />
 
                 <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Add"
+                                Title="delete"
                                 Color="Color.Secondary"
                                 OnClick="AddDataSourceHandler" />
 
@@ -90,7 +93,7 @@
     private List<BrokerDto> brokers = [];
 
     private List<BreadcrumbItem> Breadcrumbs => [
-        new("Data Sources", "/datasources", true, $"{Icons.Material.Filled.Hub}")
+        new("Data Sources", "/datasources", false, $"{Icons.Material.Filled.Hub}")
     ];
 
     protected override async Task OnInitializedAsync()

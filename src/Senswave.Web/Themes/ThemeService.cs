@@ -127,7 +127,7 @@ internal sealed class ThemeService(
     {
         PaletteLight = new PaletteDark()
         {
-            Primary = "#FF00FF",      
+            Primary = "#B200B2",      
             Secondary = "#00E5FF",    
             Tertiary = "#7C4DFF",
 

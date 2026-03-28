@@ -47,7 +47,7 @@
                 <div class="internal-handle-right d-flex flex-column justify-center gap-2">
                     @if (CanExpand(true))
                     {
-                        <MudIconButton Icon="@Icons.Material.Filled.Add"
+                        <MudIconButton Title="adjust span"  Icon="@Icons.Material.Filled.Add"
                                        Size="Size.Small"
                                        Variant="Variant.Filled"
                                        Color="Color.Primary"
@@ -55,7 +55,8 @@
                     }
                     @if (ColumnSpan > 1)
                     {
-                        <MudIconButton Icon="@Icons.Material.Filled.Remove"
+                        <MudIconButton Title="adjust span"  
+                                    Icon="@Icons.Material.Filled.Remove"
                                        Size="Size.Small"
                                        Variant="Variant.Filled"
                                        Color="Color.Surface"
@@ -67,7 +68,7 @@
                 <div class="internal-handle-bottom d-flex justify-center gap-2">
                     @if (CanExpand(false))
                     {
-                        <MudIconButton Icon="@Icons.Material.Filled.Add"
+                        <MudIconButton Title="adjust span"  Icon="@Icons.Material.Filled.Add"
                                        Size="Size.Small"
                                        Variant="Variant.Filled"
                                        Color="Color.Primary"
@@ -75,7 +76,8 @@
                     }
                     @if (RowSpan > 1)
                     {
-                        <MudIconButton Icon="@Icons.Material.Filled.Remove"
+                        <MudIconButton Title="adjust span" 
+                            Icon="@Icons.Material.Filled.Remove"
                                        Size="Size.Small"
                                        Variant="Variant.Filled"
                                        Color="Color.Surface"

@@ -68,7 +68,7 @@
                                 <MudTd>@context.OptionName</MudTd>
                                 <MudTd>@context.DisplayName</MudTd>
                                 <MudTd>
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error"
+                                    <MudIconButton Title="Edit option" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error"
                                                    OnClick="@(() => _model.RadioOptions.Remove(context))" />
                                 </MudTd>
                             </RowTemplate>
@@ -86,7 +86,7 @@
                                         <MudTextField @bind-Value="_newRadioDisplayName" Placeholder="Label" Margin="Margin.Dense" />
                                     </MudTd>
                                     <MudTd>
-                                        <MudIconButton Icon="@Icons.Material.Filled.AddCircle" Color="Color.Primary" OnClick="AddRadioOption" />
+                                        <MudIconButton Title="add option" Icon="@Icons.Material.Filled.AddCircle" Color="Color.Primary" OnClick="AddRadioOption" />
                                     </MudTd>
                                 </MudTFootRow>
                             </FooterContent>

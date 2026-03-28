@@ -37,7 +37,7 @@
                 <MudTooltip Text="@($"Device is in room {RoomName}.")">
                     <MudChip T="string"
                              Size="Size.Small"
-                             Color="Color.Primary"
+                             Color="Color.Secondary"
                              Variant="Variant.Outlined"
                              Icon="@Icons.Material.Rounded.MyLocation">
                         @RoomName
@@ -72,12 +72,12 @@
             }
             else
             {
-                <MudIconButton OnClick="HandleStateUpdate" Icon="@Icons.Material.Rounded.PowerSettingsNew" Variant="Variant.Outlined" Color="GetColor()" Size="Size.Medium" />
+                <MudIconButton Title="update state" OnClick="HandleStateUpdate" Icon="@Icons.Material.Rounded.PowerSettingsNew" Variant="Variant.Outlined" Color="GetColor()" Size="Size.Medium" />
             }
         </MudStack>
     }
 
-    <MudIconButton OnClick="NavigateToDetails" Icon="@Icons.Material.Rounded.Info" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" />
+    <MudIconButton OnClick="NavigateToDetails" Title="details" Icon="@Icons.Material.Rounded.Info" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" />
 </MudPaper>
 
 @code {

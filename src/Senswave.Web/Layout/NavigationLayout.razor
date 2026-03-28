@@ -13,9 +13,8 @@
 @* Mobile Navigation *@
 <MudHidden Breakpoint="Breakpoint.Xs" Invert="true">
     <MudAppBar>
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        <MudIconButton Title="toogle" Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         <MudSpacer />
-        @* <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" /> *@
     </MudAppBar>
     <MudDrawer @bind-Open="_drawerOpen">
         <MudDrawerHeader Class="justify-content-center pt-6 pb-10">
@@ -31,7 +30,7 @@
             <div class="d-flex justify-center py-2">
                 <MudChip T="string"
                          Icon="@HomeService.CurrentHome!.Icon.TranslateIcon()"
-                         Color="Color.Primary"
+                         Color="Color.Secondary"
                          Variant="Variant.Outlined"
                          Size="Size.Medium">
                     @HomeService.CurrentHome!.Name
@@ -49,9 +48,8 @@
 <MudHidden Breakpoint="Breakpoint.Xs">
     <MudHidden Breakpoint="Breakpoint.LgAndUp">
         <MudAppBar Class="pl-0">
-            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+            <MudIconButton Title="toogle" Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
             <MudSpacer />
-            @* <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" /> *@
         </MudAppBar>
         <MudDrawer Fixed="true" 
                    Variant="@DrawerVariant.Mini" 
@@ -61,21 +59,7 @@
                    ClipMode="DrawerClipMode.Always"
                    Elevation="1">
 
-            @* @if (_drawerOpen)
-            {
-                @if (HomeService.CurrentHome is not null)
-                {
-                    <div class="d-flex justify-center py-2">
-                        <MudChip T="string"
-                                 Icon="@HomeService.CurrentHome!.Icon.TranslateIcon()"
-                                 Color="Color.Primary"
-                                 Variant="Variant.Outlined"
-                                 Size="Size.Medium">
-                            @HomeService.CurrentHome!.Name
-                        </MudChip>
-                    </div>
-                }
-            } *@
+           
 
             <NavigationMenu />
 
@@ -115,7 +99,7 @@
                 <div class="d-flex justify-center py-2">
                     <MudChip T="string"
                              Icon="@HomeService.CurrentHome!.Icon.TranslateIcon()"
-                             Color="Color.Primary"
+                             Color="Color.Secondary"
                              Variant="Variant.Outlined"
                              Size="Size.Medium">
                         @HomeService.CurrentHome!.Name

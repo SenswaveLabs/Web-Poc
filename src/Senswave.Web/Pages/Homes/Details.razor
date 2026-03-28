@@ -155,6 +155,7 @@
 
                                     <MudTd>
                                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                       Title="delete"
                                                         Color="Color.Error"
                                                         OnClick="() => RemoveSharing(context.SharingId)" />
                                     </MudTd>
@@ -178,21 +179,25 @@
             {
                 <MudFabMenu Class="position-fixed m-4"
                             Style="right:0;bottom:0;"
+                            Title="menu"
                             StartIcon="@Icons.Material.Rounded.MoreVert"
                             Color="Color.Secondary"
                             @bind-Open="_open" Fixed="@_fixed">
 
                     <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Refresh"
+                                    Title="refresh"
                                     OnClick="RefreshPage" />
 
                     @if (Current?.IsOwner == true)
                     {
                         <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Delete"
+                                        Title="delete"
                                         OnClick="DeleteHome" />
                     }
                     else
                     {
                         <MudFabMenuItem StartIcon="@Icons.Material.Rounded.ExitToApp"
+                                        Title="leave"
                                         OnClick="LeaveHome" />
                     }
 
@@ -224,8 +229,8 @@
     private List<SharingDto> _sharings = new();
 
     private List<BreadcrumbItem> Breadcrumbs => [
-        new("My Homes", "/homes/list", true, $"{Icons.Material.Filled.Info}"),
-        new($"{PageName()}", "/homes/details", true, $"{Icons.Material.Filled.Home}")
+        new("My Homes", "/homes/list", false, $"{Icons.Material.Filled.Info}"),
+        new($"{PageName()}", "/homes/details", false, $"{Icons.Material.Filled.Home}")
     ];
 
     protected override async Task OnInitializedAsync()

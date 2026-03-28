@@ -79,7 +79,7 @@
                 </MudCarousel>
                 
                 <div class="d-flex align-center justify-center gap-3 py-2" style="min-height: 64px!important;">
-                    <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft"
+                    <MudIconButton Title="go back" Icon="@Icons.Material.Filled.ChevronLeft"
                                    OnClick="Previous"
                                    Class="pr-0"
                                    Disabled="@(_currentIndex == 0)" />
@@ -95,7 +95,7 @@
                                  Color="@(index == _currentIndex ? Color.Primary : Color.Default)" />
                     }
 
-                    <MudIconButton Icon="@Icons.Material.Filled.ChevronRight"
+                    <MudIconButton Title="next"  Icon="@Icons.Material.Filled.ChevronRight"
                                    OnClick="Next"
                                    Class="pl-0"
                                    Disabled="@(_currentIndex == Dashboards.Count - 1)" />
@@ -108,16 +108,19 @@
                 <MudFabMenu Class="position-absolute m-3 m-lg-4"
                             Style="right:0;bottom:0;"
                             StartIcon="@Icons.Material.Rounded.MoreVert"
+                            Title="menu"
                             Color="Color.Secondary"
                             Open="true" Fixed="@_fixed">
 
                     <MudFabMenuItem StartIcon="@Icons.Material.Filled.EditOff"
+                                    Title="editoff"
                                     Color="Color.Secondary"
                                     OnClick="ToogleEditMode" />
 
                     @if (SelectionMode)
                     {
                         <MudFabMenuItem StartIcon="@Icons.Material.Filled.Check"
+                                        Title="check"
                                         Color="Color.Secondary"
                                         OnClick="CreateWidget" />
                     }
@@ -129,18 +132,22 @@
                 <MudFabMenu Class="position-absolute m-3 m-lg-4"
                             Style="right:0;bottom:0;"
                             StartIcon="@Icons.Material.Rounded.MoreVert"
+                            Title="menu"
                             Color="Color.Secondary"
                             @bind-Open="@_open" Fixed="@_fixed">
 
                     <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Refresh"
+                                    Title="refresh"
                                     Color="Color.Secondary"
                                     OnClick="RefreshPage" />
 
                     <MudFabMenuItem StartIcon="@Icons.Material.Rounded.OpenInNew"
+                                    Title="open"
                                     Color="Color.Secondary"
                                     OnClick="DeviceDetails" />
 
                     <MudFabMenuItem StartIcon="@Icons.Material.Filled.Edit"
+                                    Title="edit"
                                     Color="Color.Secondary"
                                     OnClick="ToogleEditMode" />
 
@@ -160,7 +167,7 @@
 
     private List<BreadcrumbItem> Breadcrumbs => [
         new("Home Dashboard", "/devices", false, $"{Icons.Material.Filled.Dashboard}"),
-        new($"{PageName()}", null, true, $"{Icons.Material.Filled.SpaceDashboard}")
+        new($"{PageName()}", $"/devices/dashboard/{Id}", false, $"{Icons.Material.Filled.SpaceDashboard}")
     ];
 
     private string PageName() => CurrentDashboard?.Name ?? "Device Dashboard";

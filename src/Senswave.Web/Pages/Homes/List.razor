@@ -49,7 +49,7 @@
                     <MudText Typo="Typo.subtitle1" Class="me-1">My Homes</MudText>
 
                     <MudTooltip Text="This is list of homes user is allowed to interact with. Owned homes are mared with 'Owner' chip." Placement="Placement.Bottom">
-                        <MudIconButton Icon="@Icons.Material.Filled.Info" Size="Size.Small" Edge="Edge.End" Color="Color.Primary" Style="padding: 0;" />
+                        <MudIconButton Title="delete" Icon="@Icons.Material.Filled.Info" Size="Size.Small" Edge="Edge.End" Color="Color.Primary" Style="padding: 0;" />
                     </MudTooltip>
                 </MudContainer>
             </MudContainer>
@@ -75,18 +75,22 @@
 
             <MudFabMenu Class="position-absolute m-3 m-lg-4"
                         Style="right:0;bottom:0;"
+                        Title="menu"
                         StartIcon="@Icons.Material.Rounded.MoreVert" 
                         Color="Color.Secondary"
                         @bind-Open="@_open" Fixed="@_fixed">
                 <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Refresh"
                                 Color="Color.Secondary"
+                                Title="refresh"
                                 OnClick="RefreshPage" />
 
                 <MudFabMenuItem StartIcon="@Icons.Material.Rounded.AddHome"
+                                Title="add"
                                 Color="Color.Secondary"
                                 OnClick="AddHomeDialog"/>
 
                 <MudFabMenuItem StartIcon="@Icons.Material.Filled.Attachment"
+                                Title="attach"
                                 Color="Color.Secondary"
                                 OnClick="JoinHomeDialog" />
             </MudFabMenu>
@@ -105,7 +109,7 @@
     private List<Home> Homes { get; set; } = [];
 
     private List<BreadcrumbItem> Breadcrumbs => [
-        new("My Homes", "/homes/list", true, $"{Icons.Material.Filled.Info}")
+        new("My Homes", "/homes/list", false, $"{Icons.Material.Filled.Info}")
     ];
 
     protected override async Task OnInitializedAsync()

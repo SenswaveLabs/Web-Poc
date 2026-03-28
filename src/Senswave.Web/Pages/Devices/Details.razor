@@ -99,11 +99,13 @@
                                     <MudTd Class="text-end">
                                         <MudIconButton Icon="@Icons.Material.Rounded.Delete"
                                                        Color="Color.Error"
-                                                       OnClick="@(() => DeleteDashboard(context))" />
+                                                       Title="delete"
+                                                       OnClick="@(() => DeleteDashboard(context))"/>
 
                                         @if (context.IsDirty)
                                         {
                                             <MudIconButton Icon="@Icons.Material.Rounded.Save"
+                                                           Title="save"
                                                            Color="Color.Success"
                                                            OnClick="@(() => UpdateDashboard(context))" />
                                         }
@@ -160,7 +162,7 @@
 
                                     @if (group.Widgets.Count == 0)
                                     {
-                                        <MudIconButton Icon="@Icons.Material.Rounded.Delete"
+                                        <MudIconButton Title="delete"  Icon="@Icons.Material.Rounded.Delete"
                                                        Color="Color.Error"
                                                        OnClick="@(() => DeleteOperation(group.Operation.Id))" />
                                     }
@@ -196,7 +198,8 @@
                                         <MudTd>@context.Name</MudTd>
                                         <MudTd>@context.Type</MudTd>
                                         <MudTd Class="text-end">
-                                            <MudIconButton Icon="@Icons.Material.Rounded.Delete"
+                                            <MudIconButton Title="delete" 
+                                                            Icon="@Icons.Material.Rounded.Delete"
                                                            Color="Color.Error"
                                                            OnClick="@(() => DeleteWidget(context.Id))" />
                                         </MudTd>
@@ -221,15 +224,18 @@
             {
                 <MudFabMenu Class="position-absolute m-3 m-lg-4"
                             Style="right:0;bottom:0;"
+                            Title="menu"
                             StartIcon="@Icons.Material.Rounded.MoreVert"
                             Color="Color.Secondary"
                             @bind-Open="@_open" Fixed="@_fixed">
 
                     <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Refresh"
+                                    Title="refresh"
                                     Color="Color.Secondary"
                                     OnClick="RefreshPage" />
 
                     <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Delete"
+                                    Title="delete"
                                     Color="Color.Secondary"
                                     OnClick="DeleteDevice" />
                 </MudFabMenu>
@@ -241,7 +247,7 @@
 @code {
     private List<BreadcrumbItem> Breadcrumbs => [
         new("Home Dashboard", "/devices", false, $"{Icons.Material.Filled.Dashboard}"),
-        new($"{PageName()}", null, true, $"{Icons.Material.Filled.PermDeviceInformation}")
+        new($"{PageName()}", $"/devices/details/{Id}", false, $"{Icons.Material.Filled.PermDeviceInformation}")
     ];
 
     private string PageName() => DeviceModel?.Name ?? "Device";

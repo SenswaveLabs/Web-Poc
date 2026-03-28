@@ -72,7 +72,7 @@
                             <MudTd>@optContext.Name</MudTd>
                             <MudTd>@optContext.Value</MudTd>
                             <MudTd>
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error"
+                                <MudIconButton Title="remove option" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error"
                                                OnClick="@(() => _model.Options.Remove(optContext))" />
                             </MudTd>
                         </RowTemplate>
@@ -85,7 +85,7 @@
                                     <MudTextField @bind-Value="_newOptionValue" Placeholder="Value" Margin="Margin.Dense" />
                                 </MudTd>
                                 <MudTd>
-                                    <MudIconButton Icon="@Icons.Material.Filled.AddCircle" Color="Color.Primary" OnClick="AddOptionToList" />
+                                    <MudIconButton Title="add option" Icon="@Icons.Material.Filled.AddCircle" Color="Color.Primary" OnClick="AddOptionToList" />
                                 </MudTd>
                             </MudTFootRow>
                         </FooterContent>

@@ -105,15 +105,18 @@
             {
                 <MudFabMenu Class="position-absolute m-3 m-lg-4"
                             Style="right:0;bottom:0;"
+                            Title="menu"
                             StartIcon="@Icons.Material.Rounded.MoreVert" 
                             Color="Color.Secondary"
                             @bind-Open="@_open" Fixed="@_fixed">
 
                     <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Refresh"
+                                    Title="refresh"
                                     Color="Color.Secondary"
                                     OnClick="RefreshPage" />
 
                     <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Delete"
+                                    Title="delete"
                                     Color="Color.Secondary"
                                     OnClick="DeleteDataSource" />
 
@@ -145,7 +148,7 @@
 
     private List<BreadcrumbItem> Breadcrumbs => [
         new("Data Sources", "/datasources", false, $"{Icons.Material.Filled.Hub}"),
-        new($"{PageName()}", "/datasources", true, $"{Icons.Material.Filled.DeviceHub}")
+        new($"{PageName()}", $"/datasources/details/{Id}", false, $"{Icons.Material.Filled.DeviceHub}")
     ];
 
     protected async override Task OnInitializedAsync()

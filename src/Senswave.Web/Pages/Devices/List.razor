@@ -78,7 +78,7 @@
                     <MudText Typo="Typo.subtitle1" Class="me-1">Rooms</MudText>
 
                     <MudTooltip Text="This is list of rooms in home. You can filter devices by selecting Rooms" Placement="Placement.Bottom">
-                        <MudIconButton Icon="@Icons.Material.Filled.Info" Size="Size.Small" Edge="Edge.End" Color="Color.Primary" Style="padding: 0;" />
+                        <MudIconButton Title="info" Icon="@Icons.Material.Filled.Info" Size="Size.Small" Edge="Edge.End" Color="Color.Primary" Style="padding: 0;" />
                     </MudTooltip>
                 </MudContainer>
             </MudContainer>
@@ -86,7 +86,8 @@
             <div class="mb-4 overflow-auto">
                 <MudChipSet Class="d-flex flex-row flex-wrap"  T="string" SelectionMode="SelectionMode.SingleSelection" CheckMark="true" @bind-SelectedValue="_selectedRoomId" Color="Color.Primary" Variant="Variant.Text">
 
-                    <MudIconButton Icon="@Icons.Material.Filled.AddHomeWork"
+                    <MudIconButton Title="add room" 
+                            Icon="@Icons.Material.Filled.AddHomeWork"
                                    OnClick="AddRoomDialogHandler"
                                    Color="Color.Secondary"
                                    Size="Size.Medium" />
@@ -102,6 +103,7 @@
 
                                 <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                                Size="Size.Small"
+                                               Title="Edit room"
                                                Class="ml-1"
                                                OnClick="@(() => ManageRoomDialog(room))" />
                             </div>
@@ -115,7 +117,7 @@
                     <MudText Typo="Typo.subtitle1" Class="me-1">Devices</MudText>
 
                     <MudTooltip Text="This is list of devices in home that are available to interact." Placement="Placement.Bottom">
-                        <MudIconButton Icon="@Icons.Material.Filled.Info" Size="Size.Small" Edge="Edge.End" Color="Color.Primary" Style="padding: 0;" />
+                        <MudIconButton Title="info" Icon="@Icons.Material.Filled.Info" Size="Size.Small" Edge="Edge.End" Color="Color.Primary" Style="padding: 0;" />
                     </MudTooltip>
                 </MudContainer>
             </MudContainer>
@@ -137,15 +139,18 @@
 
             <MudFabMenu Class="position-absolute m-3 m-lg-4"
                         Style="right:0;bottom:0;"
+                        Title="menu"
                         StartIcon="@Icons.Material.Rounded.MoreVert"
                         Color="Color.Secondary"
                         @bind-Open="@_open" Fixed="@_fixed">
 
                 <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Refresh"
+                                Title="refresh"
                                 Color="Color.Secondary"
                                 OnClick="RefreshPage" />
 
                 <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Add"
+                                Title="add"
                                 Color="Color.Secondary"
                                 OnClick="AddDeviceDialogHandler" />
 
@@ -172,7 +177,7 @@
             : displayDevices.Where(d => d.RoomId == _selectedRoomId);
 
     private List<BreadcrumbItem> Breadcrumbs => [
-        new("Home Dashboard", "/devices", true, $"{Icons.Material.Filled.Dashboard}")
+        new("Home Dashboard", "/devices", false, $"{Icons.Material.Filled.Dashboard}")
     ];
 
     protected override async Task OnInitializedAsync()

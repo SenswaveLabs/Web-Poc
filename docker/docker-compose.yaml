@@ -12,4 +12,4 @@ services:
     env_file:
       - .env
     ports:
-      - 7777:80
+      - 7162:80
