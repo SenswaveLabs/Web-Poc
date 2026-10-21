@@ -12,4 +12,10 @@ public interface IUserService
     Task<Result> RemoveAccount();
 
     Task<Result> OverrideSettings(string? theme = null, string? language = null);
+
+    Task<Result> AcceptConsents();
+
+    Task<Result<LegalDocumentResponse>> GetTermsAndConditions();
+
+    Task<Result<LegalDocumentResponse>> GetPrivacyPolicy();
 }

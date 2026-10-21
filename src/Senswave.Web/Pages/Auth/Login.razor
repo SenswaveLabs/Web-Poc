@@ -157,7 +157,7 @@
 
         var token = await JS.InvokeAsync<string>("googleLogin", clientId);
 
-        if (token is null)
+        if (string.IsNullOrEmpty(token))
         {
             Snackbar.Add("Google login failed. Failed to get account for user.", Severity.Error);
             return;

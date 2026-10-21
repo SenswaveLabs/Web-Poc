@@ -1,4 +1,5 @@
-﻿@using Senswave.Web.Shared.Services
+﻿@using Senswave.Web.Components.Users
+@using Senswave.Web.Shared.Services
 @using Senswave.Web.Themes
 @using Senswave.Web.Users.Auth.Services
 
@@ -18,21 +19,23 @@
 
     <AuthorizeView>
         <Authorized>
-            <MudLayout Class="main-layout d-flex" Style="overflow:hidden; height: 100vh;">
-                <NavigationLayout />
+            <ConsentGate>
+                <MudLayout Class="main-layout d-flex" Style="overflow:hidden; height: 100vh;">
+                    <NavigationLayout />
 
-                <MudHidden Breakpoint="Breakpoint.MdAndDown" Invert="true">
-                    <MudMainContent Class="d-flex flex-column">
-                        @Body
-                    </MudMainContent>
-                </MudHidden>
-                <MudHidden Breakpoint="Breakpoint.MdAndDown">
-                    <MudMainContent Class="d-flex flex-column pt-2">
-                        @Body
-                    </MudMainContent>
-                </MudHidden>
+                    <MudHidden Breakpoint="Breakpoint.MdAndDown" Invert="true">
+                        <MudMainContent Class="d-flex flex-column">
+                            @Body
+                        </MudMainContent>
+                    </MudHidden>
+                    <MudHidden Breakpoint="Breakpoint.MdAndDown">
+                        <MudMainContent Class="d-flex flex-column pt-2">
+                            @Body
+                        </MudMainContent>
+                    </MudHidden>
 
-            </MudLayout>
+                </MudLayout>
+            </ConsentGate>
         </Authorized>
         <NotAuthorized>
             <MudLayout Class="main-layout" Style="overflow:hidden; height: 100vh;">

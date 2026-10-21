@@ -13,4 +13,13 @@ public interface IUserIntegrationService
 
     [Patch("/api/v1/users/settings")]
     Task UpdateSettings([Body] UserSettingUpdateRequest settings);
+
+    [Post("/api/v1/users/consents")]
+    Task AcceptConsents();
+
+    [Get("/api/v1/legal/terms")]
+    Task<LegalDocumentResponse> GetTermsAndConditions();
+
+    [Get("/api/v1/legal/privacy")]
+    Task<LegalDocumentResponse> GetPrivacyPolicy();
 }

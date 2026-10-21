@@ -1,0 +1,166 @@
+@using Senswave.Web.Users.Auth.Services
+@using Senswave.Web.Users.Users.Models
+@using Senswave.Web.Users.Users.Services
+
+@inject IUserService UserService
+@inject IAuthenticationService AuthenticationService
+@inject ISnackbar Snackbar
+
+@* Backend blocks every non users/auth/legal request until latest consents are given, so app content is rendered only after acceptance. *@
+@if (_state == GateState.Accepted)
+{
+    @ChildContent
+}
+else
+{
+    <MudLayout Class="main-layout" Style="overflow:auto; height: 100vh;">
+        <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex align-center justify-center py-6" Style="min-height: 100vh;">
+            <MudPaper Elevation="6" Class="pa-6 rounded-lg" Style="width:100%;">
+                @switch (_state)
+                {
+                    case GateState.Loading:
+                        <MudStack AlignItems="AlignItems.Center" Class="py-6">
+                            <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+                        </MudStack>
+                        break;
+
+                    case GateState.Failed:
+                        <MudText Typo="Typo.h5" Class="mb-2">Something went wrong</MudText>
+                        <MudText Typo="Typo.body1" Class="mb-4">We couldn't load your account. Please try again.</MudText>
+                        <MudStack Row="true" Justify="Justify.FlexEnd">
+                            <MudButton Variant="Variant.Text" OnClick="Logout">Logout</MudButton>
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Load">Retry</MudButton>
+                        </MudStack>
+                        break;
+
+                    case GateState.ConsentRequired:
+                        <MudText Typo="Typo.h5" Class="mb-2">Before you continue</MudText>
+                        <MudText Typo="Typo.body1" Class="mb-4">
+                            Please read and accept the Terms and Conditions and the Privacy Policy to use Senswave.
+                        </MudText>
+
+                        <MudExpansionPanels MultiExpansion="true" Class="mb-4">
+                            @LegalPanel("Terms and Conditions", _terms)
+                            @LegalPanel("Privacy Policy", _privacy)
+                        </MudExpansionPanels>
+
+                        <MudCheckBox T="bool" @bind-Value="_agreed" Color="Color.Primary">
+                            I have read and accept the Terms and Conditions and the Privacy Policy.
+                        </MudCheckBox>
+
+                        <MudStack Row="true" Justify="Justify.FlexEnd" Class="mt-4">
+                            <MudButton Variant="Variant.Text" Disabled="_submitting" OnClick="Logout">Logout</MudButton>
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       Disabled="@(!_agreed || _submitting)"
+                                       OnClick="Accept">
+                                @if (_submitting)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                                }
+                                else
+                                {
+                                    <span>Accept and continue</span>
+                                }
+                            </MudButton>
+                        </MudStack>
+                        break;
+                }
+            </MudPaper>
+        </MudContainer>
+    </MudLayout>
+}
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private enum GateState { Loading, Failed, ConsentRequired, Accepted }
+
+    private GateState _state = GateState.Loading;
+
+    private LegalDocumentResponse? _terms;
+
+    private LegalDocumentResponse? _privacy;
+
+    private bool _agreed;
+
+    private bool _submitting;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        _state = GateState.Loading;
+
+        var result = await UserService.Initialize();
+
+        if (result.IsFailure)
+        {
+            _state = GateState.Failed;
+            return;
+        }
+
+        if (UserService.Details.HasActiveConsent)
+        {
+            _state = GateState.Accepted;
+            return;
+        }
+
+        var terms = UserService.GetTermsAndConditions();
+        var privacy = UserService.GetPrivacyPolicy();
+
+        await Task.WhenAll(terms, privacy);
+
+        _terms = terms.Result.IsSuccess ? terms.Result.Value : null;
+        _privacy = privacy.Result.IsSuccess ? privacy.Result.Value : null;
+
+        _state = GateState.ConsentRequired;
+    }
+
+    private async Task Accept()
+    {
+        _submitting = true;
+
+        try
+        {
+            var result = await UserService.AcceptConsents();
+
+            if (result.IsFailure)
+            {
+                Snackbar.Add("Failed to accept terms. Please try again.", Severity.Error);
+                return;
+            }
+
+            _state = GateState.Accepted;
+        }
+        finally
+        {
+            _submitting = false;
+        }
+    }
+
+    private async Task Logout()
+    {
+        await AuthenticationService.Logout();
+    }
+
+    private RenderFragment LegalPanel(string title, LegalDocumentResponse? document) =>
+        @<MudExpansionPanel Text="@(document is null ? title : $"{title} (v{document.Version})")">
+            @if (document is null)
+            {
+                <MudText Typo="Typo.body2" Color="Color.Error">Couldn't load this document. Please try again later.</MudText>
+            }
+            else
+            {
+                @if (!string.IsNullOrWhiteSpace(document.Summary))
+                {
+                    <MudText Typo="Typo.subtitle2" Class="mb-2">@document.Summary</MudText>
+                }
+                <MudText Typo="Typo.body2" Style="white-space: pre-wrap; max-height: 40vh; overflow-y: auto;">@document.Content</MudText>
+            }
+        </MudExpansionPanel>;
+}
