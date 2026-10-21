@@ -11,6 +11,7 @@
 	</ItemGroup>
 	
 	<ItemGroup>
+		<PackageReference Include="Markdig" />
 		<PackageReference Include="MudBlazor" />
 		<PackageReference Include="Refit" />
 		<PackageReference Include="Refit.HttpClientFactory" />

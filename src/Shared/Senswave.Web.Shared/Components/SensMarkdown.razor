@@ -1,0 +1,29 @@
+@using Markdig
+
+<div class="sens-markdown @Class" style="@Style">
+    @_html
+</div>
+
+@code {
+    // Raw HTML in the source is escaped, not rendered, so content from the API cannot inject markup or scripts.
+    private static readonly MarkdownPipeline Pipeline = new MarkdownPipelineBuilder()
+        .UseAdvancedExtensions()
+        .DisableHtml()
+        .Build();
+
+    [Parameter]
+    public string? Content { get; set; }
+
+    [Parameter]
+    public string? Class { get; set; }
+
+    [Parameter]
+    public string? Style { get; set; }
+
+    private MarkupString _html;
+
+    protected override void OnParametersSet()
+    {
+        _html = new MarkupString(Markdown.ToHtml(Content ?? string.Empty, Pipeline));
+    }
+}

@@ -1,0 +1,58 @@
+.sens-markdown ::deep h1,
+.sens-markdown ::deep h2,
+.sens-markdown ::deep h3,
+.sens-markdown ::deep h4 {
+    margin: 1em 0 0.5em;
+    line-height: 1.3;
+}
+
+.sens-markdown ::deep h1 { font-size: 1.5rem; }
+.sens-markdown ::deep h2 { font-size: 1.25rem; }
+.sens-markdown ::deep h3 { font-size: 1.1rem; }
+.sens-markdown ::deep h4 { font-size: 1rem; }
+
+.sens-markdown ::deep > :first-child {
+    margin-top: 0;
+}
+
+.sens-markdown ::deep p,
+.sens-markdown ::deep ul,
+.sens-markdown ::deep ol,
+.sens-markdown ::deep table,
+.sens-markdown ::deep blockquote {
+    margin: 0 0 0.75em;
+}
+
+.sens-markdown ::deep ul,
+.sens-markdown ::deep ol {
+    padding-left: 1.5em;
+}
+
+.sens-markdown ::deep ul { list-style: disc; }
+.sens-markdown ::deep ol { list-style: decimal; }
+
+.sens-markdown ::deep a {
+    color: var(--mud-palette-primary);
+    text-decoration: underline;
+}
+
+.sens-markdown ::deep blockquote {
+    padding-left: 1em;
+    border-left: 3px solid var(--mud-palette-lines-default);
+}
+
+.sens-markdown ::deep code {
+    font-family: monospace;
+    padding: 0 0.25em;
+    background: var(--mud-palette-background-gray);
+}
+
+.sens-markdown ::deep table {
+    border-collapse: collapse;
+}
+
+.sens-markdown ::deep th,
+.sens-markdown ::deep td {
+    padding: 0.25em 0.5em;
+    border: 1px solid var(--mud-palette-lines-default);
+}

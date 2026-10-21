@@ -1,3 +1,4 @@
+@using Senswave.Web.Shared.Components
 @using Senswave.Web.Users.Auth.Services
 @using Senswave.Web.Users.Users.Models
 @using Senswave.Web.Users.Users.Services
@@ -158,9 +159,9 @@ else
             {
                 @if (!string.IsNullOrWhiteSpace(document.Summary))
                 {
-                    <MudText Typo="Typo.subtitle2" Class="mb-2">@document.Summary</MudText>
+                    <SensMarkdown Content="@document.Summary" Class="mud-typography-subtitle2 mb-2" />
                 }
-                <MudText Typo="Typo.body2" Style="white-space: pre-wrap; max-height: 40vh; overflow-y: auto;">@document.Content</MudText>
+                <SensMarkdown Content="@document.Content" Class="mud-typography-body2" Style="max-height: 40vh; overflow-y: auto;" />
             }
         </MudExpansionPanel>;
 }
