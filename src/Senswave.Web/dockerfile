@@ -26,6 +26,8 @@ RUN rm -rf ./*
 
 COPY --from=build /app/publish/wwwroot .
 COPY src/Senswave.Web/nginx.conf /etc/nginx/nginx.conf
+COPY src/Senswave.Web/docker-entrypoint.d/40-appsettings.sh /docker-entrypoint.d/40-appsettings.sh
+RUN sed -i 's/\r$//' /docker-entrypoint.d/40-appsettings.sh && chmod +x /docker-entrypoint.d/40-appsettings.sh
 
 EXPOSE 80
 EXPOSE 443
