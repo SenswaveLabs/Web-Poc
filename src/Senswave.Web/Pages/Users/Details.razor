@@ -13,94 +13,65 @@
 @inject IDialogService DialogService
 @inject ILogger<Details> Logger
 
-<SensPage Loading="false" FailedToLoad="false" Breadcrumbs="@Breadcrumbs" RefreshContent="async () => {}">
+<PageTitle>Settings</PageTitle>
+
+<SensPage Loading="false" FailedToLoad="false" RefreshContent="async () => {}">
     <Content>
-        <MudGrid>
-            <MudItem xs="12">
-                <MudContainer Gutters="false" MaxWidth="MaxWidth.Medium">
-                    <MudCard Class="pa-6">
+        <MudContainer Gutters="false" MaxWidth="MaxWidth.Small" Class="d-flex flex-column gap-3 mx-0">
 
-                        <MudStack AlignItems="AlignItems.Center" Spacing="2">
+            <MudText Typo="Typo.h5" HtmlTag="h1">Settings</MudText>
 
-                            <MudAvatar Elevation="2" Color="Color.Primary" Size="Size.Large">@UserEmail?.First().ToString().ToUpper()</MudAvatar>
+            <MudPaper Outlined="true" Class="pa-4 rounded-lg d-flex flex-wrap align-center gap-3">
+                <MudAvatar Color="Color.Primary">@UserEmail?.FirstOrDefault().ToString().ToUpper()</MudAvatar>
+                <div class="flex-grow-1" style="min-width: 0;">
+                    <MudText Typo="Typo.subtitle1" Class="text-truncate">@UserEmail</MudText>
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Signed in</MudText>
+                </div>
+                <MudButton Variant="Variant.Outlined"
+                           StartIcon="@Icons.Material.Rounded.Logout"
+                           OnClick="Logout">
+                    Log out
+                </MudButton>
+            </MudPaper>
 
-                            <MudText Typo="Typo.h6">@UserEmail</MudText>
+            <MudPaper Outlined="true" Class="pa-4 rounded-lg d-flex flex-column gap-2">
+                <MudText Typo="Typo.subtitle1">Appearance</MudText>
+                <MudToggleGroup T="string"
+                                Value="@SelectedTheme"
+                                ValueChanged="OnThemeChanged"
+                                SelectionMode="SelectionMode.SingleSelection"
+                                Color="Color.Primary"
+                                CheckMark="true"
+                                Outlined="true"
+                                Class="flex-wrap"
+                                aria-label="Theme">
+                    @foreach (var theme in ThemeOptions)
+                    {
+                        <MudToggleItem Value="@theme.Item2" Text="@theme.Item1" />
+                    }
+                </MudToggleGroup>
+                <MudText Typo="Typo.caption" Class="mud-text-secondary">High contrast increases text and border contrast for low vision.</MudText>
+            </MudPaper>
 
-                        </MudStack>
+            <MudPaper Outlined="true" Class="pa-4 rounded-lg" Style="border-color: var(--mud-palette-error);">
+                <div class="d-flex flex-wrap align-center gap-3">
+                    <div class="flex-grow-1">
+                        <MudText Typo="Typo.subtitle1" Color="Color.Error">Remove account</MudText>
+                        <MudText Typo="Typo.body2" Class="mud-text-secondary">Deletes your homes, devices and data sources. This cannot be undone.</MudText>
+                    </div>
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Error"
+                               OnClick="ConfirmRemoveAccount">
+                        Remove account…
+                    </MudButton>
+                </div>
+            </MudPaper>
 
-                    </MudCard>
-                </MudContainer>
-            </MudItem>
-
-            <MudItem xs="12" md="6">
-                <MudCard Class="pa-4">
-
-                    <MudStack Spacing="3">
-
-                        <MudSelect T="string"
-                                   Label="Theme"
-                                   Value="@SelectedTheme"
-                                   ValueChanged="OnThemeChanged">
-
-                            @foreach (var theme in ThemeOptions)
-                            {
-                                <MudSelectItem Value="@theme.Item2">@theme.Item1</MudSelectItem>
-                            }
-
-                        </MudSelect>
-
-                        @* <MudSelect T="string"
-                               Label="Language"
-                               Value="@SelectedLanguage"
-                               ValueChanged="OnLanguageChanged">
-
-                        @foreach (var lang in LanguageOptions)
-                        {
-                            <MudSelectItem Value="@lang.Item2">@lang.Item1</MudSelectItem>
-                        }
-
-                    </MudSelect> *@
-
-                    </MudStack>
-
-                </MudCard>
-            </MudItem>
-
-            <MudItem xs="12" md="6">
-                <MudCard Class="pa-4">
-
-                    <MudStack Spacing="2">
-
-                        <MudButton Variant="Variant.Outlined"
-                                   Color="Color.Warning"
-                                   FullWidth="true"
-                                   OnClick="Logout">
-
-                            Logout
-
-                        </MudButton>
-
-                        <MudButton Variant="Variant.Outlined"
-                                   Color="Color.Error"
-                                   FullWidth="true"
-                                   OnClick="ConfirmRemoveAccount">
-
-                            Remove Account
-
-                        </MudButton>
-
-                    </MudStack>
-                </MudCard>
-            </MudItem>
-        </MudGrid>
+        </MudContainer>
     </Content>
 </SensPage>
 
 @code {
-    private List<BreadcrumbItem> Breadcrumbs => [
-        new("Settings", "/users/details", false, $"{Icons.Material.Filled.Settings}")
-    ];
-
     string UserEmail = "";
     string SelectedTheme = "default";
     string SelectedLanguage = "english";
@@ -164,8 +135,8 @@
     async Task ConfirmRemoveAccount()
     {
         var result = await DialogService.ShowMessageBoxAsync(
-            "Confirm Removal",
-            "Are you sure you want to remove your account? All of your data will be removed.",
+            "Remove account",
+            "Your homes, devices and data sources will be deleted. This cannot be undone.",
             yesText: "Remove",
             cancelText: "Cancel");
 
