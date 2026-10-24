@@ -92,6 +92,16 @@ public static class StringExtensions
             : FallbackIcon;
     }
 
+    /// <summary>Readable name for an icon key, e.g. "radio-outline" becomes "Radio".</summary>
+    public static string ToIconLabel(this string? icon)
+    {
+        if (string.IsNullOrWhiteSpace(icon))
+            return string.Empty;
+
+        var name = NormalizeIonIcon(icon).Replace('-', ' ');
+        return char.ToUpperInvariant(name[0]) + name[1..];
+    }
+
     private static string NormalizeIonIcon(string icon)
     {
         icon = icon.ToLowerInvariant();

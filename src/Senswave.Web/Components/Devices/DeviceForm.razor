@@ -3,6 +3,7 @@
 @using Senswave.Web.Devices.Integration
 @using Senswave.Web.Homes.Integration
 @using Senswave.Web.Shared.Components
+@using Senswave.Web.Shared.Extensions
 
 
 <MudForm @ref="_form" Model="Model" FieldChanged="@(_ => OnChange.InvokeAsync())">
@@ -115,14 +116,7 @@
     ];
 
     // Icons set in the mobile app use Ionicons names such as "radio-outline".
-    private static string IconLabel(string? icon)
-    {
-        if (string.IsNullOrWhiteSpace(icon))
-            return string.Empty;
-
-        var name = icon.Replace("-outline", string.Empty).Replace("-sharp", string.Empty).Replace('-', ' ');
-        return char.ToUpperInvariant(name[0]) + name[1..];
-    }
+    private static string IconLabel(string? icon) => icon.ToIconLabel();
 
     public async Task<bool> Validate()
     {

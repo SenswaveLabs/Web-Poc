@@ -1,0 +1,58 @@
+@using MudBlazor
+@using Microsoft.JSInterop
+
+@inject IJSRuntime JS
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3">
+            <MudText Typo="Typo.body2">
+                Send this code to <b>@Email</b>. They enter it in <b>My homes → Join home</b>.
+            </MudText>
+
+            <div class="d-flex align-center gap-2 pa-3 rounded-lg" style="background-color: var(--mud-palette-action-default-hover);">
+                <MudText Typo="Typo.h5" Class="flex-grow-1" Style="font-family: monospace; letter-spacing: 0.15em;">@Code</MudText>
+                <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.ContentCopy" OnClick="Copy">
+                    Copy
+                </MudButton>
+            </div>
+
+            <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                Valid until @ExpiresAtUtc.ToLocalTime().ToString("g").
+            </MudText>
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Close">Done</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    IMudDialogInstance? MudDialog { get; set; }
+
+    [Parameter]
+    public string Email { get; set; } = string.Empty;
+
+    [Parameter]
+    public string Code { get; set; } = string.Empty;
+
+    [Parameter]
+    public DateTime ExpiresAtUtc { get; set; }
+
+    private async Task Copy()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("navigator.clipboard.writeText", Code);
+            Snackbar.Add("Code copied", Severity.Success);
+        }
+        catch (JSException)
+        {
+            Snackbar.Add("Copy failed. Select the code and copy it manually.", Severity.Warning);
+        }
+    }
+
+    private void Close() => MudDialog?.Close();
+}
