@@ -1,0 +1,201 @@
+@page "/auth/register"
+
+@using Senswave.Web.Components.Auth
+@using Senswave.Web.Shared.Services
+@using Senswave.Web.Users.Auth.Models
+@using Senswave.Web.Users.Auth.Services
+
+@inject IAccountService AccountService
+@inject ISnackbar Snackbar
+@inject ILoadingService LoadingService
+
+<PageTitle>Create account - Senswave</PageTitle>
+
+<AuthShell @ref="_shell" Title="@(_registered ? "Check your inbox" : "Create account")">
+    @if (_registered)
+    {
+        <MudText Typo="Typo.body1" Class="mb-4">
+            We sent a confirmation link to <strong>@_email</strong>. Open it to activate your account, then sign in.
+        </MudText>
+
+        <MudText Typo="Typo.body2" Class="mb-1">Didn't get the email? Check spam or</MudText>
+        <ResendButton Text="Resend email" StartCooldown="true" OnResend="Resend" />
+
+        <MudButton Href="/auth/login"
+                   Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   FullWidth="true"
+                   Class="mt-4">
+            Back to sign in
+        </MudButton>
+    }
+    else
+    {
+        @if (_error is not null)
+        {
+            <MudAlert Severity="Severity.Error" Class="mb-4" role="alert">
+                @_error
+                @if (_emailTaken)
+                {
+                    <span>
+                        <MudLink Href="/auth/login" Typo="Typo.body2">Sign in</MudLink> or
+                        <MudLink Href="/auth/forgot-password" Typo="Typo.body2">reset your password</MudLink>.
+                    </span>
+                }
+            </MudAlert>
+        }
+
+        <MudForm @ref="_form">
+            <MudTextField @bind-Value="_email"
+                          Label="Email"
+                          Variant="Variant.Outlined"
+                          InputType="InputType.Email"
+                          Required="true"
+                          RequiredError="Email is required."
+                          Validation="@(new Func<string, string?>(EmailRules.Validate))"
+                          ErrorText="@_emailError"
+                          Error="@(_emailError is not null)"
+                          FullWidth="true"
+                          UserAttributes="@(new() { ["autocomplete"] = "email" })"
+                          Class="mb-2" />
+
+            <MudTextField @bind-Value="_password"
+                          Label="Password"
+                          Variant="Variant.Outlined"
+                          InputType="InputType.Password"
+                          Required="true"
+                          RequiredError="Password is required."
+                          Validation="@(new Func<string, IEnumerable<string>>(PasswordRules.Validate))"
+                          HelperText="@PasswordRules.Description"
+                          FullWidth="true"
+                          UserAttributes="@(new() { ["autocomplete"] = "new-password" })"
+                          Class="mb-2" />
+
+            <MudTextField @bind-Value="_confirmPassword"
+                          Label="Confirm password"
+                          Variant="Variant.Outlined"
+                          InputType="InputType.Password"
+                          Required="true"
+                          RequiredError="Confirm your password."
+                          Validation="@(new Func<string, string?>(MatchesPassword))"
+                          FullWidth="true"
+                          UserAttributes="@(new() { ["autocomplete"] = "new-password" })"
+                          Class="mb-4" />
+
+            <MudButton Color="Color.Primary"
+                       Variant="Variant.Filled"
+                       FullWidth="true"
+                       Disabled="LoadingService.Loading"
+                       OnClick="HandleRegister"
+                       Class="mb-3">
+                Create account
+            </MudButton>
+
+            <GoogleSignInButton Text="Sign up with Google" />
+
+            <MudDivider Class="my-4" />
+
+            <MudText Typo="Typo.body2" Align="Align.Center">
+                Already have an account?
+                <MudLink Href="/auth/login" Typo="Typo.body2">Sign in</MudLink>
+            </MudText>
+        </MudForm>
+    }
+</AuthShell>
+
+@code {
+    private const string SyncKey = "Auth:Register";
+
+    private AuthShell? _shell;
+
+    private MudForm? _form;
+
+    private string _email = string.Empty;
+
+    private string _password = string.Empty;
+
+    private string _confirmPassword = string.Empty;
+
+    private string? _emailError;
+
+    private string? _error;
+
+    private bool _emailTaken;
+
+    private bool _registered;
+
+    private string? MatchesPassword(string value) =>
+        value == _password ? null : "Passwords don't match.";
+
+    private async Task HandleRegister()
+    {
+        _error = null;
+        _emailError = null;
+        _emailTaken = false;
+
+        await _form!.Validate();
+
+        if (!_form.IsValid)
+            return;
+
+        try
+        {
+            LoadingService.Show(SyncKey);
+
+            var result = await AccountService.Register(_email, _password);
+
+            if (result.IsFailure)
+            {
+                ShowErrors(result.Errors);
+                return;
+            }
+
+            _registered = true;
+        }
+        finally
+        {
+            LoadingService.Hide(SyncKey);
+        }
+
+        StateHasChanged();
+        await _shell!.FocusHeading();
+    }
+
+    private void ShowErrors(IEnumerable<Senswave.Web.Shared.Resulting.Error> errors)
+    {
+        foreach (var error in errors)
+        {
+            switch (error.Code)
+            {
+                case "DuplicateUserName":
+                case "DuplicateEmail":
+                    _emailTaken = true;
+                    _error = "An account with this email already exists.";
+                    break;
+                case "InvalidEmail":
+                    _emailError = "The email address is invalid.";
+                    break;
+                case var code when code.StartsWith("Password"):
+                    _error = error.Description;
+                    break;
+                default:
+                    _error ??= "Couldn't create the account. Please try again later.";
+                    break;
+            }
+        }
+    }
+
+    private async Task<bool> Resend()
+    {
+        var result = await AccountService.ResendConfirmationEmail(_email);
+
+        if (result.IsFailure)
+        {
+            Snackbar.Add("Couldn't send the email. Please try again.", Severity.Error);
+            return false;
+        }
+
+        Snackbar.Add("Confirmation email sent.", Severity.Info);
+        return true;
+    }
+}

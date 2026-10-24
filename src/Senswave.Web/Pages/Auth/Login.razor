@@ -1,136 +1,139 @@
 ﻿@page "/login"
 @page "/auth/login"
 
+@using Senswave.Web.Components.Auth
 @using Senswave.Web.Shared.Services
 @using Senswave.Web.Users.Auth.Models
 @using Senswave.Web.Users.Auth.Services
-@using System.Text.RegularExpressions
-@using System.ComponentModel.DataAnnotations
 @using Senswave.Web.Users.Users.Services
 
 @inject IAuthenticationService AuthService
+@inject IAccountService AccountService
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 @inject ILoadingService LoadingService
 @inject IUserService UserService
-@inject IJSRuntime JS
-@inject IConfiguration Configuration
 
-<MudGrid Class="d-flex h-100 p-0 m-0">
-    <MudHidden Breakpoint="Breakpoint.SmAndDown"> 
-        <MudItem xs=0 sm="0" md=6 lg="7" Class="d-flex align-center justify-center mud-theme-primary p-0">
-            <MudPaper Elevation="6" Class="hero-card overflow-hidden d-flex align-items-center justify-content-center p-0 m-0 rounded-lg">
-                <MudImage Src="icon-192.png"
-                          Alt="icon"
-                          Class="p-0 m-0 rounded-lg" />
-            </MudPaper>
-        </MudItem>
-    </MudHidden>
- 
-    <MudItem xs="12" sm="12" md="6" lg="5" Class="d-flex align-center justify-center p-0">
-        <MudPaper Elevation="6"
-                  Class="pa-6 rounded-lg left-shadow"
-                  Style="width:100%;max-width:400px;">
-            <MudText Typo="Typo.h5" Class="mb-4">Login</MudText>
+<PageTitle>Sign in - Senswave</PageTitle>
 
-            <MudForm @ref="_form">
+<AuthShell Title="Sign in">
+    @if (_alert is not null)
+    {
+        <MudAlert Severity="_alert.Severity" Class="mb-4" role="alert">
+            @_alert.Message
+            @if (_alert.OfferResend)
+            {
+                <div class="mt-2">
+                    <ResendButton Text="Resend confirmation email" OnResend="ResendConfirmation" />
+                </div>
+            }
+        </MudAlert>
+    }
 
-                <MudTextField @bind-Value="_model.Username"
-                              Label="Email"
-                              Variant="Variant.Outlined"
-                              Required="true"
-                              FullWidth="true"
-                              Class="mb-0"
-                              T="string"
-                              RequiredError="Email is required!"
-                              Validation="@(new EmailAddressAttribute { ErrorMessage = @"The email address is invalid" })"    />
+    <MudForm @ref="_form">
+        <MudTextField @bind-Value="_model.Username"
+                      Label="Email"
+                      Variant="Variant.Outlined"
+                      InputType="InputType.Email"
+                      Required="true"
+                      RequiredError="Email is required."
+                      Validation="@(new Func<string, string?>(EmailRules.Validate))"
+                      FullWidth="true"
+                      UserAttributes="@(new() { ["autocomplete"] = "email" })"
+                      Class="mb-2" />
 
-                <MudTextField @bind-Value="_model.Password"
-                              Label="Password"
-                              Variant="Variant.Outlined"
-                              InputType="InputType.Password"
-                              HelperText="Choose a strong password"
-                              Validation="@(new Func<string, IEnumerable<string>>(PasswordStrength))" 
-                              Required="true"
-                              RequiredError="Password is required!"
-                              FullWidth="true"
-                              Class="mb-0" />
+        <MudTextField @bind-Value="_model.Password"
+                      Label="Password"
+                      Variant="Variant.Outlined"
+                      InputType="InputType.Password"
+                      Required="true"
+                      RequiredError="Password is required."
+                      FullWidth="true"
+                      UserAttributes="@(new() { ["autocomplete"] = "current-password" })"
+                      OnKeyDown="SubmitOnEnter"
+                      Class="mb-1" />
 
-                <MudCheckBox @bind-Value="_model.RememberMe">Remember Me</MudCheckBox>
+        <div class="d-flex align-center justify-space-between flex-wrap mb-3">
+            <MudCheckBox @bind-Value="_model.RememberMe" Color="Color.Primary">Remember me</MudCheckBox>
+            <MudLink Href="/auth/forgot-password" Typo="Typo.body2">Forgot password?</MudLink>
+        </div>
 
-                <MudButton Color="Color.Primary"
-                           Variant="Variant.Filled"
-                           FullWidth="true"
-                           Disabled="LoadingService.Loading"
-                           OnClick="HandleLogin"
-                           Class="mb-3">
-                    Sign In
-                </MudButton>
+        <MudButton Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   FullWidth="true"
+                   Disabled="LoadingService.Loading"
+                   OnClick="HandleLogin"
+                   Class="mb-3">
+            Sign in
+        </MudButton>
 
-                <MudButton Variant="Variant.Outlined"
-                           FullWidth="true"
-                           Disabled="LoadingService.Loading"
-                           Class="mb-4">
-                    Register
-                </MudButton>
+        <GoogleSignInButton />
 
-                <MudDivider Class="mb-4" />
+        <MudDivider Class="my-4" />
 
-                <MudButton Variant="Variant.Outlined"
-                           StartIcon="@Icons.Material.Filled.Login"
-                           FullWidth="true"
-                           Disabled="LoadingService.Loading"
-                           OnClick="HandleGoogleLogin">
-                    Sign in with Google
-                </MudButton>
-            </MudForm>
-        </MudPaper>
-    </MudItem>
-</MudGrid>
+        <MudText Typo="Typo.body2" Align="Align.Center">
+            Don't have an account?
+            <MudLink Href="/auth/register" Typo="Typo.body2">Create one</MudLink>
+        </MudText>
+    </MudForm>
+</AuthShell>
 
 @code {
     private const string SyncKey = "Auth:Login";
 
-    private MudForm? _form;
+    [SupplyParameterFromQuery]
+    public bool? EmailConfirmed { get; set; }
 
-    private static IEnumerable<string> PasswordStrength(string pw)
-    {
-        if (string.IsNullOrWhiteSpace(pw))
-        {
-            yield return "Password is required!";
-            yield break;
-        }
-        if (pw.Length < 8)
-            yield return "Password must be at least of length 8";
-        if (!Regex.IsMatch(pw, @"[A-Z]"))
-            yield return "Password must contain at least one capital letter";
-        if (!Regex.IsMatch(pw, @"[a-z]"))
-            yield return "Password must contain at least one lowercase letter";
-        if (!Regex.IsMatch(pw, @"[0-9]"))
-            yield return "Password must contain at least one digit";
-    }
+    [SupplyParameterFromQuery]
+    public bool? PasswordReset { get; set; }
+
+    private MudForm? _form;
 
     private LoginWithPasswordModel _model = new();
 
+    private LoginAlert? _alert;
+
+    private record LoginAlert(Severity Severity, string Message, bool OfferResend = false);
+
+    protected override void OnParametersSet()
+    {
+        _alert = (EmailConfirmed, PasswordReset) switch
+        {
+            (true, _) => new(Severity.Success, "Email confirmed. You can sign in now."),
+            (false, _) => new(Severity.Error, "The confirmation link is invalid or has expired. Enter your email and request a new one.", OfferResend: true),
+            (_, true) => new(Severity.Success, "Password changed. Sign in with your new password."),
+            _ => _alert
+        };
+    }
+
+    private async Task SubmitOnEnter(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+            await HandleLogin();
+    }
+
     private async Task HandleLogin()
     {
+        await _form!.Validate();
+
+        if (!_form.IsValid)
+            return;
+
         try
         {
             LoadingService.Show(SyncKey);
-
-            await _form!.Validate();
-
-            if (!_form.IsValid)
-            {
-                Snackbar.Add("Login failed. Invalid valie in required fields");
-                return;
-            }
 
             var result = await AuthService.Login(_model);
 
             if (result.IsFailure)
             {
-                Snackbar.Add("Login failed. Please check you email and password.", Severity.Error);
+                _alert = result.Errors[0].Code switch
+                {
+                    AuthErrorCodes.EmailNotConfirmed => new(Severity.Warning, "Your email is not confirmed yet. Check your inbox or request a new link.", OfferResend: true),
+                    AuthErrorCodes.LockedOut => new(Severity.Error, "Too many failed attempts. Try again in a minute."),
+                    AuthErrorCodes.InvalidCredentials => new(Severity.Error, "Incorrect email or password."),
+                    _ => new(Severity.Error, "Sign in failed. Please try again later.")
+                };
                 return;
             }
 
@@ -144,43 +147,23 @@
         }
     }
 
-    private async Task HandleGoogleLogin()
+    private async Task<bool> ResendConfirmation()
     {
-        string? clientId = Configuration["Auth:Google:ClientId"];
-
-        if (clientId is null)
+        if (string.IsNullOrWhiteSpace(_model.Username))
         {
-            Snackbar.Add("Google login failed. Please set proper google client Id.", Severity.Error);
-            return;
+            Snackbar.Add("Enter your email first.", Severity.Warning);
+            return false;
         }
 
+        var result = await AccountService.ResendConfirmationEmail(_model.Username);
 
-        var token = await JS.InvokeAsync<string>("googleLogin", clientId);
-
-        if (string.IsNullOrEmpty(token))
+        if (result.IsFailure)
         {
-            Snackbar.Add("Google login failed. Failed to get account for user.", Severity.Error);
-            return;
+            Snackbar.Add("Couldn't send the email. Please try again.", Severity.Error);
+            return false;
         }
 
-        try
-        {
-            LoadingService.Show(SyncKey);
-
-            var result = await AuthService.Login(token);
-
-            if (result.IsSuccess)
-            {
-                Navigation.NavigateTo("/");
-            }
-            else
-            {
-                Snackbar.Add("Google login failed", Severity.Error);
-            }
-        }
-        finally
-        {
-            LoadingService.Hide(SyncKey);
-        }
+        Snackbar.Add("If the account exists and is not confirmed, we sent a new link.", Severity.Info);
+        return true;
     }
 }

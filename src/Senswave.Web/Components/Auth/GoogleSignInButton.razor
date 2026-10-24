@@ -1,0 +1,63 @@
+@using Senswave.Web.Shared.Services
+@using Senswave.Web.Users.Auth.Services
+
+@inject IAuthenticationService AuthService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@inject ILoadingService LoadingService
+@inject IJSRuntime JS
+@inject IConfiguration Configuration
+
+<MudButton Variant="Variant.Outlined"
+           StartIcon="@Icons.Custom.Brands.Google"
+           FullWidth="true"
+           Disabled="LoadingService.Loading"
+           OnClick="HandleGoogleLogin">
+    @Text
+</MudButton>
+
+@code {
+    private const string SyncKey = "Auth:Google";
+
+    [Parameter]
+    public string Text { get; set; } = "Sign in with Google";
+
+    private async Task HandleGoogleLogin()
+    {
+        var clientId = Configuration["Auth:Google:ClientId"];
+
+        if (string.IsNullOrEmpty(clientId))
+        {
+            Snackbar.Add("Google sign-in is not configured.", Severity.Error);
+            return;
+        }
+
+        var token = await JS.InvokeAsync<string>("googleLogin", clientId);
+
+        if (string.IsNullOrEmpty(token))
+        {
+            Snackbar.Add("Google sign-in was cancelled or blocked by the browser.", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+            LoadingService.Show(SyncKey);
+
+            var result = await AuthService.Login(token);
+
+            if (result.IsSuccess)
+            {
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                Snackbar.Add("Google sign-in failed. Please try again.", Severity.Error);
+            }
+        }
+        finally
+        {
+            LoadingService.Hide(SyncKey);
+        }
+    }
+}

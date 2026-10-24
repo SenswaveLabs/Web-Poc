@@ -1,0 +1,84 @@
+@implements IDisposable
+
+@* Text button that calls OnResend and then stays disabled for a cooldown, so users cannot spam emails. *@
+<MudButton Variant="Variant.Text"
+           Color="Color.Primary"
+           Disabled="@(_secondsLeft > 0 || _sending)"
+           OnClick="Resend">
+    @(_secondsLeft > 0 ? $"{Text} ({_secondsLeft}s)" : Text)
+</MudButton>
+
+@code {
+    [Parameter, EditorRequired]
+    public Func<Task<bool>> OnResend { get; set; } = default!;
+
+    [Parameter]
+    public string Text { get; set; } = "Resend";
+
+    [Parameter]
+    public int CooldownSeconds { get; set; } = 30;
+
+    /// <summary>
+    /// Starts with the cooldown running, for use right after the first email was sent.
+    /// </summary>
+    [Parameter]
+    public bool StartCooldown { get; set; }
+
+    private int _secondsLeft;
+
+    private bool _sending;
+
+    private CancellationTokenSource? _cts;
+
+    protected override void OnInitialized()
+    {
+        if (StartCooldown)
+            _ = RunCooldown();
+    }
+
+    private async Task Resend()
+    {
+        _sending = true;
+
+        try
+        {
+            if (await OnResend())
+                _ = RunCooldown();
+        }
+        finally
+        {
+            _sending = false;
+        }
+    }
+
+    private async Task RunCooldown()
+    {
+        _cts?.Cancel();
+        _cts = new CancellationTokenSource();
+        var token = _cts.Token;
+
+        _secondsLeft = CooldownSeconds;
+        StateHasChanged();
+
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
+
+        try
+        {
+            while (_secondsLeft > 0 && await timer.WaitForNextTickAsync(token))
+            {
+                _secondsLeft--;
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Component disposed or cooldown restarted.
+        }
+    }
+
+    public void Dispose()
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
+    }
+}
