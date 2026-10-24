@@ -15,20 +15,11 @@
 @inject NavigationManager Navigation
 @inject ILiveUpdateService LiveUpdateService
 @inject IDialogService DialogService
-@inject IErrorFactory ErrorFactory
+@inject IDeviceIntegrationService DeviceIntegrationService
 
 @implements IDisposable
 
 <PageTitle>@PageName()</PageTitle>
-
-<style>
-    /* MudCarousel has internal wrappers that don't always stretch. This fixes it. */
-    .mud-carousel-item-container {
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-    }
-</style>
 
 <SensPage Loading="@_loading" FailedToLoad="@_failedToLoad" RefreshContent="@RefreshPage" Breadcrumbs="@Breadcrumbs">
     <LoadingContent>
@@ -47,111 +38,95 @@
 
     </LoadingContent>
     <Content>
-        <MudContainer MaxWidth="MaxWidth.Small"
-                      Class="d-flex flex-column p-0"
-                      Style="height: calc(100vh - 80px); overflow: hidden;">
+        <MudContainer MaxWidth="MaxWidth.Medium" Class="d-flex flex-column gap-3 p-0">
+
+            <div class="d-flex flex-wrap align-center justify-space-between gap-2">
+                <div class="d-flex align-center gap-3" style="min-width:0;">
+                    @if (Device is not null)
+                    {
+                        <SensIcon Icon="@Device.Icon" Size="Size.Large" />
+                    }
+                    <div class="d-flex flex-column" style="min-width:0;">
+                        <MudText Typo="Typo.h5" HtmlTag="h1" Class="text-truncate">@DeviceName()</MudText>
+                        @if (EditMode)
+                        {
+                            <MudText Typo="Typo.caption">
+                                @(SelectionMode ? "Resize the selection, then place a widget." : "Pick an empty cell to place a widget, or delete one.")
+                            </MudText>
+                        }
+                    </div>
+                </div>
+
+                <div class="d-flex align-center gap-1">
+                    @if (EditMode)
+                    {
+                        @if (SelectionMode)
+                        {
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Rounded.Check"
+                                       OnClick="CreateWidget">
+                                Place widget
+                            </MudButton>
+                        }
+                        <MudButton Variant="Variant.Outlined"
+                                   StartIcon="@Icons.Material.Rounded.EditOff"
+                                   OnClick="ToogleEditMode">
+                            Done
+                        </MudButton>
+                    }
+                    else
+                    {
+                        <MudTooltip Text="Refresh">
+                            <MudIconButton Icon="@Icons.Material.Rounded.Refresh" aria-label="Refresh" OnClick="RefreshPage" />
+                        </MudTooltip>
+                        <MudTooltip Text="Edit layout">
+                            <MudIconButton Icon="@Icons.Material.Rounded.Edit" aria-label="Edit layout" OnClick="ToogleEditMode" />
+                        </MudTooltip>
+                        <MudButton Variant="Variant.Text"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Rounded.Tune"
+                                   OnClick="DeviceDetails">
+                            Configure
+                        </MudButton>
+                    }
+                </div>
+            </div>
+
+            @if (Dashboards.Count > 1)
+            {
+                <MudTabs ActivePanelIndex="_currentIndex"
+                         ActivePanelIndexChanged="OnClick"
+                         Elevation="0"
+                         Border="false"
+                         MinimumTabWidth="80px"
+                         Color="Color.Transparent"
+                         SliderColor="Color.Primary"
+                         Rounded="false">
+                    @foreach (var dashboard in Dashboards)
+                    {
+                        <MudTabPanel Text="@dashboard.Name" Disabled="@EditMode" />
+                    }
+                </MudTabs>
+            }
+
             @if (CurrentConfiguration != null)
             {
-                <MudCarousel ShowArrows="false"
-                             ShowBullets="false"
-                             EnableSwipeGesture="false"
-                             AutoCycle="false"
-                             TData="object"
-                             Class="flex-grow-1"
-                             Style="height: calc(100% - var(--mud-appbar-height));">
-                    <MudCarouselItem Transition="Transition.Slide">
-                        <div class="d-flex flex-column mud-height-full mud-width-full">
-                            <SensDashboard Rows="CurrentConfiguration.Rows"
-                                           Id="@CurrentDashboard!.Id"
-                                           Name="@(CurrentDashboard?.Name ?? string.Empty)"
-                                           @bind-EditMode="EditMode"
-                                           @bind-SelectionMode="SelectionMode"
-                                           @bind-Row="Row"
-                                           @bind-Column="Column"
-                                           @bind-RowSpan="RowSpan"
-                                           @bind-ColumnSpan="ColumnSpan"
-                                           Columns="CurrentConfiguration.Columns"
-                                           PositionedWidgets="@CurrentConfiguration.PositionedWidgets"
-                                           CalculatedWidgets="@CurrentConfiguration.CalculatedWidgets"
-                                           OnUnlinkWidget="UnlinkWidget"/>
-                        </div>
-                    </MudCarouselItem>
-                </MudCarousel>
-                
-                <div class="d-flex align-center justify-center gap-3 py-2" style="min-height: 64px!important;">
-                    <MudIconButton Title="go back" Icon="@Icons.Material.Filled.ChevronLeft"
-                                   OnClick="Previous"
-                                   Class="pr-0"
-                                   Disabled="@(_currentIndex == 0)" />
-
-                  
-                    @for (int i = 0; i < Dashboards.Count; i++)
-                    {
-                        var index = i;
-                        <MudIcon Icon="@(index == _currentIndex ? Icons.Material.Filled.Circle : Icons.Material.Filled.RadioButtonUnchecked)"
-                                 Size="Size.Small"
-                                 @onclick="() => OnClick(index)"
-                                 Style="cursor: pointer;"
-                                 Color="@(index == _currentIndex ? Color.Primary : Color.Default)" />
-                    }
-
-                    <MudIconButton Title="next"  Icon="@Icons.Material.Filled.ChevronRight"
-                                   OnClick="Next"
-                                   Class="pl-0"
-                                   Disabled="@(_currentIndex == Dashboards.Count - 1)" />
-                </div> 
-            }
-
-
-            @if(EditMode)
-            {
-                <MudFabMenu Class="position-absolute m-3 m-lg-4"
-                            Style="right:0;bottom:0;"
-                            StartIcon="@Icons.Material.Rounded.MoreVert"
-                            Title="menu"
-                            Color="Color.Secondary"
-                            Open="true" Fixed="@_fixed">
-
-                    <MudFabMenuItem StartIcon="@Icons.Material.Filled.EditOff"
-                                    Title="editoff"
-                                    Color="Color.Secondary"
-                                    OnClick="ToogleEditMode" />
-
-                    @if (SelectionMode)
-                    {
-                        <MudFabMenuItem StartIcon="@Icons.Material.Filled.Check"
-                                        Title="check"
-                                        Color="Color.Secondary"
-                                        OnClick="CreateWidget" />
-                    }
-
-                </MudFabMenu>
-            }
-            else
-            {
-                <MudFabMenu Class="position-absolute m-3 m-lg-4"
-                            Style="right:0;bottom:0;"
-                            StartIcon="@Icons.Material.Rounded.MoreVert"
-                            Title="menu"
-                            Color="Color.Secondary"
-                            @bind-Open="@_open" Fixed="@_fixed">
-
-                    <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Refresh"
-                                    Title="refresh"
-                                    Color="Color.Secondary"
-                                    OnClick="RefreshPage" />
-
-                    <MudFabMenuItem StartIcon="@Icons.Material.Rounded.OpenInNew"
-                                    Title="open"
-                                    Color="Color.Secondary"
-                                    OnClick="DeviceDetails" />
-
-                    <MudFabMenuItem StartIcon="@Icons.Material.Filled.Edit"
-                                    Title="edit"
-                                    Color="Color.Secondary"
-                                    OnClick="ToogleEditMode" />
-
-                </MudFabMenu>
+                <div class="d-flex flex-column" style="@(EditMode ? "height: calc(100vh - 220px); min-height: 360px;" : string.Empty)">
+                    <SensDashboard Rows="CurrentConfiguration.Rows"
+                                   Id="@CurrentDashboard!.Id"
+                                   Name="@(CurrentDashboard?.Name ?? string.Empty)"
+                                   @bind-EditMode="EditMode"
+                                   @bind-SelectionMode="SelectionMode"
+                                   @bind-Row="Row"
+                                   @bind-Column="Column"
+                                   @bind-RowSpan="RowSpan"
+                                   @bind-ColumnSpan="ColumnSpan"
+                                   Columns="CurrentConfiguration.Columns"
+                                   PositionedWidgets="@CurrentConfiguration.PositionedWidgets"
+                                   CalculatedWidgets="@CurrentConfiguration.CalculatedWidgets"
+                                   OnUnlinkWidget="UnlinkWidget"/>
+                </div>
             }
 
         </MudContainer>
@@ -167,28 +142,16 @@
 
     private List<BreadcrumbItem> Breadcrumbs => [
         new("Home Dashboard", "/devices", false, $"{Icons.Material.Filled.Dashboard}"),
-        new($"{PageName()}", $"/devices/dashboard/{Id}", false, $"{Icons.Material.Filled.SpaceDashboard}")
+        new(DeviceName(), $"/devices/dashboard/{Id}", false, $"{Icons.Material.Filled.SpaceDashboard}")
     ];
 
-    private string PageName() => CurrentDashboard?.Name ?? "Device Dashboard";
+    private string PageName() => Device is null ? "Device Dashboard" : $"{Device.Name} - {CurrentDashboard?.Name}";
+
+    private string DeviceName() => Device?.Name ?? "Device";
+
+    private DeviceDto? Device { get; set; }
 
     private int _currentIndex = 0;
-
-    private void Next()
-    {
-        if (Dashboards.Count == 0) return;
-
-        _currentIndex = Math.Min(Dashboards.Count - 1, _currentIndex + 1);
-        UpdateActiveDashboard();
-    }
-
-    private void Previous()
-    {
-        if (Dashboards.Count == 0) return;
-
-        _currentIndex = Math.Max(0, _currentIndex - 1);
-        UpdateActiveDashboard();
-    }
 
     private void OnClick(int index)
     {
@@ -208,8 +171,6 @@
             _currentIndex, CurrentDashboard?.Name);
     }
 
-    private bool _open;
-    private bool _fixed;
     private bool _loading = true;
     private bool _failedToLoad = true;
 
@@ -352,13 +313,22 @@
         await RefreshPage();
     }
 
-    private async Task DeviceDetails()
+    private void DeviceDetails()
     {
         Navigation.NavigateTo($"/devices/details/{Id}");
     }
 
     private async Task RefreshPage()
     {
+        try
+        {
+            Device = await DeviceIntegrationService.GetDeviceAsync(Id);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Failed to load device {DeviceId} for dashboard header", Id);
+        }
+
         try
         {
             var dashboards = await DashboardIntegrationService.DisplayDashboardsAsync(Id);

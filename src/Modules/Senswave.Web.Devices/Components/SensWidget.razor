@@ -35,8 +35,8 @@
         @switch (Widget.Type)
         {
             case "Button":
-                <MudButton Variant="Variant.Filled"
-                Color="Color.Surface"
+                <MudButton Variant="Variant.Outlined"
+                Color="Color.Default"
                 FullWidth
                 Disabled="@(Disabled || _loading)"
                 Class="mud-height-full rounded-lg"
@@ -53,7 +53,7 @@
                 break;
 
             case "Display":
-                <MudPaper Elevation="2"
+                <MudPaper Outlined="true"
                 Class="d-flex align-center justify-center mud-height-full rounded-lg"
                 @oncontextmenu:preventDefault
                 @oncontextmenu="OnLongPress">
@@ -78,42 +78,37 @@
                         {
                             <MudIcon Icon="@Icons.Material.Filled.PowerSettingsNew" Size="Size.Large" Color="Color.Inherit" />
                         }
-                        <MudText Typo="Typo.caption" Class="px-2 text-center" Color="Color.Inherit">@Widget.Name</MudText>
+                        <MudText Typo="Typo.subtitle2" Class="px-2 text-center" Color="Color.Inherit">@Widget.Name</MudText>
+                        <MudText Typo="Typo.caption" Class="px-2 text-center" Color="Color.Inherit">@(IsChecked() ? "On" : "Off")</MudText>
                     </div>
                 </MudButton>
                 break;
 
             case "Slider":
-                <MudPaper Elevation="2"
-                Class="pa-2 d-flex flex-column mud-height-full rounded-lg justify-center">
+                <MudPaper Outlined="true"
+                Class="pa-3 d-flex flex-column mud-height-full rounded-lg justify-center gap-1">
 
-                    <MudText Typo="Typo.caption">@($"{Widget.Name} ({GetSliderValue()})")</MudText>
+                    <div class="d-flex align-center justify-space-between gap-2">
+                        <MudText Typo="Typo.subtitle2" Class="text-truncate">@Widget.Name</MudText>
+                        <MudText Typo="Typo.h6" Style="font-variant-numeric: tabular-nums;">@FormatSliderValue(GetSliderValue())@(Widget.Configuration?.Unit)</MudText>
+                    </div>
 
-                    <div class="d-flex flex-row align-center gap-3">
+                    <MudSlider T="double"
+                    Value="@GetSliderValue()"
+                    Min="@GetSliderMin()"
+                    Max="@GetSliderMax()"
+                    Step="@GetSliderStep()"
+                    ValueChanged="HandleSliderChange"
+                    TickMarks="false"
+                    Size="Size.Large"
+                    Disabled="@(Disabled || _loading)"
+                    Color="Color.Primary"
+                    aria-label="@Widget.Name"
+                    Class="ma-0" />
 
-                        <MudText Typo="Typo.h6" Class="flex-none">
-                            @GetSliderMin()
-                        </MudText>
-
-                        <div class="flex-grow-1 d-flex align-center">
-                            <MudSlider T="double"
-                            ValueLabel="true"
-                            Value="@GetSliderValue()"
-                            Min="@GetSliderMin()"
-                            Max="@GetSliderMax()"
-                            Step="@GetSliderStep()"
-                            ValueChanged="HandleSliderChange"
-                            TickMarks="false"
-                            Size="Size.Large"
-                            Disabled="@(Disabled || _loading)"
-                            Color="Color.Primary"
-                            Class="ma-0" />
-                        </div>
-
-                        <MudText Typo="Typo.h6" Class="flex-none">
-                            @GetSliderMax()
-                        </MudText>
-
+                    <div class="d-flex justify-space-between">
+                        <MudText Typo="Typo.caption" Class="mud-text-secondary">@FormatSliderValue(GetSliderMin())</MudText>
+                        <MudText Typo="Typo.caption" Class="mud-text-secondary">@FormatSliderValue(GetSliderMax())</MudText>
                     </div>
                 </MudPaper>
                 break;
@@ -133,7 +128,7 @@
                 break;
 
             case "Radio":
-                <MudPaper Elevation="2" Class="mud-height-full rounded-lg d-flex flex-row align-center overflow-x-auto pa-1">
+                <MudPaper Outlined="true" Class="mud-height-full rounded-lg d-flex flex-row align-center overflow-x-auto pa-1">
                     @foreach (var option in GetRadioOptions())
                     {
                         <MudButton Variant="@(IsSelected(option) ? Variant.Filled: Variant.Outlined)"
@@ -208,8 +203,8 @@
     private bool IsChecked() => GetRuntimeValue()?.ToLower() == "true";
 
     private string GetSwitchStyle() => IsChecked()
-    ? "background-color: var(--mud-palette-success); color: white;"
-    : "background-color: var(--mud-palette-error); color: white;";
+    ? "background-color: var(--mud-palette-primary); color: var(--mud-palette-primary-text);"
+    : "background-color: var(--mud-palette-surface); color: var(--mud-palette-text-primary); border: 1px solid var(--mud-palette-lines-default);";
 
     #endregion
 
@@ -225,6 +220,15 @@
             return runtimeValue.AsValue().GetValue<double>();   
         
         return 0;
+    }
+
+    // A 0..1 range is shown as a percentage, other ranges as plain numbers.
+    private string FormatSliderValue(double value)
+    {
+        if (GetSliderMin() == 0 && GetSliderMax() == 1 && string.IsNullOrEmpty(Widget.Configuration?.Unit))
+            return $"{Math.Round(value * 100)}%";
+
+        return value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
     }
 
     private double GetSliderMin()
