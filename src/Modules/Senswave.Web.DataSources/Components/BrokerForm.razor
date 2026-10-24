@@ -18,9 +18,9 @@
                       RequiredError="Name is required" />
         </MudItem>
 
-        <MudItem xs="12" md="6">
+        <MudItem xs="12" md="8">
             <MudTextField T="string"
-                          Label="Url Domain"
+                          Label="Host"
                           For="@(() => Model.Url)"
                           @bind-value="Model.Url"
                           ReadOnly="@Edit"
@@ -30,7 +30,7 @@
                           RequiredError="Domain is required" />
         </MudItem>
 
-        <MudItem xs="12" md="6">
+        <MudItem xs="12" md="4">
             <MudNumericField T="int"
                              Label="Port"
                              For="@(() => Model.Port)"
