@@ -22,9 +22,9 @@ test.describe('home dashboard', () => {
 
     // An account without a home is sent from /devices to /homes/list after the dashboard starts loading.
     const addDevice = page.getByRole('button', { name: 'Device', exact: true });
-    const joinHome = page.getByText('Join Home', { exact: true });
-    await expect(addDevice.or(joinHome)).toBeVisible({ timeout: 30_000 });
-    test.skip(await joinHome.isVisible(), 'Test account has no home');
+    const homesPage = page.getByRole('heading', { name: /^(Welcome to Senswave|My homes)$/ });
+    await expect(addDevice.or(homesPage)).toBeVisible({ timeout: 30_000 });
+    test.skip(await homesPage.isVisible(), 'Test account has no home');
 
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Refresh devices' })).toBeVisible();
