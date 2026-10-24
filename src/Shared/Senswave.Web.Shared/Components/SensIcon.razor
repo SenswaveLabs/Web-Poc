@@ -24,45 +24,5 @@
     [Parameter]
     public Color Color { get; set; } = Color.Primary;
 
-    private string ResolveIcon()
-    {
-        if (Icon.Contains("-outline") ||Icon.Contains("-outlined") || Icon.Contains("-filled") || Icon.Contains("-sharp"))
-            return Icon.TranslateIcon();
-        
-        return IconToIconTranslator[Icon];
-    }
-
-    public Dictionary<string, string> IconToIconTranslator = new Dictionary<string, string>
-    {
-        ["home"] = Icons.Material.Rounded.Home,
-        ["work"] = Icons.Material.Rounded.HomeRepairService,
-        ["flat"] = Icons.Material.Rounded.HomeWork,
-        ["settings"] = Icons.Material.Rounded.Settings,
-        ["info"] = Icons.Material.Rounded.Info,
-        ["add"] = Icons.Material.Rounded.Add,
-        ["delete"] = Icons.Material.Rounded.Delete,
-        ["edit"] = Icons.Material.Rounded.Edit,
-        ["refresh"] = Icons.Material.Rounded.Refresh,
-        ["search"] = Icons.Material.Rounded.Search,
-        ["account-circle"] = Icons.Material.Rounded.AccountCircle,
-        ["notifications"] = Icons.Material.Rounded.Notifications,
-        ["help"] = Icons.Material.Rounded.Help,
-        ["data-source"] = Icons.Material.Rounded.DeviceHub,
-        ["thermostat"] = Icons.Material.Rounded.Thermostat,
-        ["lightbulb"] = Icons.Material.Rounded.Lightbulb,
-        ["camera"] = Icons.Material.Rounded.Videocam,
-        ["lock"] = Icons.Material.Rounded.Lock,
-        ["alarm"] = Icons.Material.Rounded.Alarm,
-        ["fan"] = Icons.Material.Rounded.Toys,
-        ["speaker"] = Icons.Material.Rounded.Speaker,
-        ["music"] = Icons.Material.Rounded.MusicNote,
-        ["printer"] = Icons.Material.Rounded.Print,
-        ["tv"] = Icons.Material.Rounded.Tv,
-        ["desktop"] = Icons.Material.Rounded.DesktopMac,
-        ["tablet"] = Icons.Material.Rounded.TabletMac,
-        ["watch"] = Icons.Material.Rounded.Watch,
-        ["server"] = Icons.Material.Rounded.Dns,
-        ["cloud"] = Icons.Material.Rounded.Cloud,
-        ["sensor"] = Icons.Material.Rounded.Sensors
-    };
+    private string ResolveIcon() => Icon.TranslateIcon();
 }
