@@ -19,6 +19,13 @@ It is served by nginx in a Docker container.
   docker compose stop
   ```
 
+- Run the unit tests (bUnit, `tests/Senswave.Web.Tests`) and add tests for components you add or change. CI runs them in the `test` job:
+
+  ```sh
+  dotnet test tests/Senswave.Web.Tests/Senswave.Web.Tests.csproj
+  ```
+
+  Render components through `ComponentTestBase` (MudBlazor services, loose JS interop, popover provider) and substitute services with NSubstitute.
 - Run the E2E tests (Playwright, `tests/e2e`) for UI changes. CI runs them against the Docker container in the `e2e` job. By default they start the app with `dotnet run`; set `E2E_BASE_URL=http://localhost:7162` to test the running Docker container:
 
   ```sh

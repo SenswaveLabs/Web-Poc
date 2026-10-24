@@ -58,6 +58,14 @@ docker compose up -d --build
 
 The app is available at `http://localhost:7162`.
 
+### Unit Tests
+
+Component tests use [bUnit](https://bunit.dev) and live in `tests/Senswave.Web.Tests`. They render components with MudBlazor services and substitute API clients with NSubstitute, so they need no API or browser.
+
+```bash
+dotnet test tests/Senswave.Web.Tests/Senswave.Web.Tests.csproj
+```
+
 ### E2E Tests
 
 Playwright tests live in `tests/e2e`. They point the app at the test API by themselves (override with `E2E_API_URL`), so they do not depend on `API_BASE_ADDRESS`.
@@ -70,7 +78,7 @@ npx playwright test                                     # starts the app with do
 E2E_BASE_URL=http://localhost:7162 npx playwright test  # tests the running Docker container
 ```
 
-Most tests mock calls that create accounts or send email. The signed-in test (`session.spec.ts`) uses a real account on the test API and is skipped when no account is configured.
+Most tests mock calls that create accounts or send email. The signed-in tests (`signed-in.spec.ts`) use a real account on the test API and is skipped when no account is configured.
 
 #### Test account for local runs
 
