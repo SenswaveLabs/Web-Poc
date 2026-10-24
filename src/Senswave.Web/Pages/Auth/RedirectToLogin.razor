@@ -4,6 +4,10 @@
 @code {
     protected override void OnInitialized()
     {
-        Navigation.NavigateToLogin("/auth/login");
+        // Keep the requested page so sign in can return to it.
+        var path = "/" + Navigation.ToBaseRelativePath(Navigation.Uri);
+        var target = path == "/" ? "/auth/login" : $"/auth/login?returnUrl={Uri.EscapeDataString(path)}";
+
+        Navigation.NavigateTo(target);
     }
 }

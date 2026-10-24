@@ -82,10 +82,12 @@
 
     bool _drawerOpen = true;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        base.OnInitialized();
         HomeService.OnChange += Rerender;
+
+        // Menu items depend on the current home, also when the app starts on a page other than the dashboard.
+        await HomeService.Initialize();
     }
 
     public void Dispose()

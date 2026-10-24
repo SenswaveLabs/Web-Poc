@@ -1,14 +1,18 @@
-@inject NavigationManager Navigation
+﻿@inject NavigationManager Navigation
 
 @* Shared layout for anonymous auth pages: hero image on wide screens, form card on the right. *@
 <MudGrid Class="d-flex h-100 p-0 m-0">
     <MudHidden Breakpoint="Breakpoint.SmAndDown">
-        <MudItem xs="0" sm="0" md="6" lg="7" Class="d-flex align-center justify-center mud-theme-primary p-0">
+        <MudItem xs="0" sm="0" md="6" lg="7" Class="d-flex flex-column align-center justify-center gap-6 mud-theme-primary p-0">
             <MudPaper Elevation="6" Class="hero-card overflow-hidden d-flex align-items-center justify-content-center p-0 m-0 rounded-lg">
                 <MudImage Src="icon-192.png"
                           Alt="Senswave logo"
                           Class="p-0 m-0 rounded-lg" />
             </MudPaper>
+            <div class="d-flex flex-column align-center gap-1 px-6" style="text-align: center; max-width: 420px;">
+                <MudText Typo="Typo.h4">Senswave</MudText>
+                <MudText Typo="Typo.body1">Control the devices you built yourself, from any screen, and share them with your household.</MudText>
+            </div>
         </MudItem>
     </MudHidden>
 
@@ -42,8 +46,11 @@
 
         var state = await AuthenticationState;
 
-        if (state.User.Identity?.IsAuthenticated == true)
-            Navigation.NavigateTo("/");
+        // Only leave while still on a sign in page; after sign in the app may already be on the requested page.
+        var path = "/" + Navigation.ToBaseRelativePath(Navigation.Uri);
+
+        if (state.User.Identity?.IsAuthenticated == true && (path.StartsWith("/auth", StringComparison.OrdinalIgnoreCase) || path.StartsWith("/login", StringComparison.OrdinalIgnoreCase)))
+            Navigation.NavigateTo(AuthRedirect.SafeReturnUrl(Navigation));
     }
 
     /// <summary>

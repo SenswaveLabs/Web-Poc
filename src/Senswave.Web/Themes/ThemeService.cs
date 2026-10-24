@@ -68,8 +68,15 @@ internal sealed class ThemeService(
         };
     }
 
+    // Sentence case buttons read better than MudBlazor's default upper case.
+    private static Typography SentenceCaseButtons() => new()
+    {
+        Button = new ButtonTypography { TextTransform = "none", FontWeight = "500" }
+    };
+
     public static MudTheme Light = new()
     {
+        Typography = SentenceCaseButtons(),
         PaletteLight = new PaletteLight()
         {
             Primary = "#C88900",              
@@ -97,6 +104,7 @@ internal sealed class ThemeService(
 
     public static MudTheme Dark = new()
     {
+        Typography = SentenceCaseButtons(),
         PaletteLight = new PaletteDark()
         {
             Primary = "#FFC107",     
@@ -125,6 +133,7 @@ internal sealed class ThemeService(
 
     public static MudTheme HighContrast = new()
     {
+        Typography = SentenceCaseButtons(),
         PaletteLight = new PaletteDark()
         {
             Primary = "#B200B2",      

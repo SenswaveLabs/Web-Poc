@@ -280,6 +280,8 @@
             _loading = true;
 
             await UserService.Initialize();
+            // The page can be opened directly (reload, link), before the dashboard loaded the home.
+            await HomeService.Initialize();
             await HomeService.RefreshCurrentHome();
 
             Current = HomeService.CurrentHome;

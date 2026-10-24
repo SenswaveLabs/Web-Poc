@@ -39,7 +39,7 @@
                         <MudButton style="@($"grid-row: {row + 1}; grid-column: {col + 1};")"
                                    class="d-flex align-center justify-center border-2 border-dashed mud-border-lines-default rounded-lg"
                                    OnClick="() => StartAddWidget(row, col)">
-                            <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Primary" Opacity="0.5" />
+                            <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Primary" Style="opacity: 0.5;" />
                         </MudButton>
                     }
                 }
@@ -56,7 +56,7 @@
                 <div class="internal-handle-right d-flex flex-column justify-center gap-2">
                     @if (CanExpand(true))
                     {
-                        <MudIconButton Title="adjust span"  Icon="@Icons.Material.Filled.Add"
+                        <MudIconButton aria-label="Wider"  Icon="@Icons.Material.Filled.Add"
                                        Size="Size.Small"
                                        Variant="Variant.Filled"
                                        Color="Color.Primary"
@@ -64,7 +64,7 @@
                     }
                     @if (ColumnSpan > 1)
                     {
-                        <MudIconButton Title="adjust span"  
+                        <MudIconButton aria-label="Narrower"  
                                     Icon="@Icons.Material.Filled.Remove"
                                        Size="Size.Small"
                                        Variant="Variant.Filled"
@@ -77,7 +77,7 @@
                 <div class="internal-handle-bottom d-flex justify-center gap-2">
                     @if (CanExpand(false))
                     {
-                        <MudIconButton Title="adjust span"  Icon="@Icons.Material.Filled.Add"
+                        <MudIconButton aria-label="Taller"  Icon="@Icons.Material.Filled.Add"
                                        Size="Size.Small"
                                        Variant="Variant.Filled"
                                        Color="Color.Primary"
@@ -85,7 +85,7 @@
                     }
                     @if (RowSpan > 1)
                     {
-                        <MudIconButton Title="adjust span" 
+                        <MudIconButton aria-label="Shorter" 
                             Icon="@Icons.Material.Filled.Remove"
                                        Size="Size.Small"
                                        Variant="Variant.Filled"

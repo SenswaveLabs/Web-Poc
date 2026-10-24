@@ -17,6 +17,7 @@
 @inject IDashboardIntegrationService DashboardIntegrationService
 @inject IDeviceDetailsService DeviceService
 @inject IRoomService RoomService
+@inject IHomeService HomeService
 @inject ISnackbar Snackbar
 @inject ILogger<AddDeviceDialog> Logger
 @inject IDialogService DialogService
@@ -302,6 +303,9 @@
         _loading = true;
         try
         {
+            // Rooms belong to the current home, which is not loaded yet when the page is opened directly.
+            await HomeService.Initialize();
+
             Rooms = [];
             Rooms.Add(new(null, "No Room"));
             await RoomService.LoadRooms();
@@ -583,7 +587,7 @@
                 ["DeviceId"] = Id
             };
 
-        var dialog = await DialogService.ShowAsync<AddDashboardDialog>("Create Dasboard",
+        var dialog = await DialogService.ShowAsync<AddDashboardDialog>("Create screen",
             parameters,
             new DialogOptions
             {
