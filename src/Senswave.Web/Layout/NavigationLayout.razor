@@ -12,43 +12,20 @@
 
 @* Mobile Navigation *@
 <MudHidden Breakpoint="Breakpoint.Xs" Invert="true">
-    <MudAppBar>
-        <MudIconButton Title="toogle" Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+    <MudAppBar Dense="true" Elevation="1">
+        <MudImage Src="icon-192.png" Width="32" Height="32" Alt="Senswave" Class="rounded mr-3" />
+        <HomeSwitcher Color="Color.Inherit" />
         <MudSpacer />
     </MudAppBar>
-    <MudDrawer @bind-Open="_drawerOpen">
-        <MudDrawerHeader Class="justify-content-center pt-6 pb-10">
-            <MudPaper Elevation="6" Class="hero-card overflow-hidden d-flex align-items-center justify-content-center p-0 m-0 rounded-lg">
-                <MudImage Src="icon-192.png"
-                          Width="128"
-                          Alt="icon"
-                          Class="p-0 m-0 rounded-lg" />
-            </MudPaper>
-        </MudDrawerHeader>
-        @if (HomeService.CurrentHome is not null)
-        {
-            <div class="d-flex justify-center py-2">
-                <MudChip T="string"
-                         Icon="@HomeService.CurrentHome!.Icon.TranslateIcon()"
-                         Color="Color.Secondary"
-                         Variant="Variant.Outlined"
-                         Size="Size.Medium">
-                    @HomeService.CurrentHome!.Name
-                </MudChip>
-            </div>
-        }
-        <NavigationMenu />
-        <MudItem Class="text-center p-2 pb-4">
-            <MudText Typo="Typo.subtitle2">© 2026 Senswave</MudText>
-        </MudItem>
-    </MudDrawer>
+    <BottomNavigation />
 </MudHidden>
 
 @* Tablet Navigation *@
 <MudHidden Breakpoint="Breakpoint.Xs">
     <MudHidden Breakpoint="Breakpoint.LgAndUp">
         <MudAppBar Class="pl-0">
-            <MudIconButton Title="toogle" Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+            <MudIconButton aria-label="Toggle navigation" Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+            <HomeSwitcher Color="Color.Inherit" />
             <MudSpacer />
         </MudAppBar>
         <MudDrawer Fixed="true" 
@@ -86,26 +63,13 @@
                    Variant="DrawerVariant.Persistent"
                    Elevation="1">
 
-            <MudDrawerHeader Class="justify-content-center pt-6 pb-10">
-                <MudPaper Elevation="6" Class="hero-card overflow-hidden d-flex align-items-center justify-content-center p-0 m-0 rounded-lg">
-                    <MudImage Src="icon-192.png"
-                              Width="128"
-                              Alt="icon"
-                              Class="p-0 m-0 rounded-lg" />
-                </MudPaper>
+            <MudDrawerHeader Class="d-flex align-center gap-2 px-4 pt-4 pb-2">
+                <MudImage Src="icon-192.png" Width="32" Height="32" Alt="" Class="rounded" />
+                <MudText Typo="Typo.h6">Senswave</MudText>
             </MudDrawerHeader>
-            @if (HomeService.CurrentHome is not null)
-            {
-                <div class="d-flex justify-center py-2">
-                    <MudChip T="string"
-                             Icon="@HomeService.CurrentHome!.Icon.TranslateIcon()"
-                             Color="Color.Secondary"
-                             Variant="Variant.Outlined"
-                             Size="Size.Medium">
-                        @HomeService.CurrentHome!.Name
-                    </MudChip>
-                </div>
-            }
+            <div class="px-3 pb-3">
+                <HomeSwitcher FullWidth="true" />
+            </div>
             <NavigationMenu/>
             <MudItem Class="text-center p-2 pb-4">
                 <MudText Typo="Typo.subtitle2">© 2026 Senswave</MudText>

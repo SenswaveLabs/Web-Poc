@@ -1,0 +1,48 @@
+@using Senswave.Web.Homes.Services
+
+@implements IDisposable
+
+@inject IHomeService HomeService
+
+<nav class="bottom-nav" aria-label="Main">
+    @if (HomeService.CurrentHome is not null)
+    {
+        <NavLink class="bottom-nav__item" href="/devices" Match="NavLinkMatch.Prefix">
+            <MudIcon Icon="@Icons.Material.Rounded.Dashboard" />
+            <span>Dashboard</span>
+        </NavLink>
+        <NavLink class="bottom-nav__item" href="/homes/details" Match="NavLinkMatch.Prefix">
+            <MudIcon Icon="@Icons.Material.Rounded.Home" />
+            <span>Home</span>
+        </NavLink>
+    }
+    else
+    {
+        <NavLink class="bottom-nav__item" href="/homes/list" Match="NavLinkMatch.Prefix">
+            <MudIcon Icon="@Icons.Material.Rounded.Home" />
+            <span>Homes</span>
+        </NavLink>
+    }
+    <NavLink class="bottom-nav__item" href="/datasources" Match="NavLinkMatch.Prefix">
+        <MudIcon Icon="@Icons.Material.Rounded.Hub" />
+        <span>Sources</span>
+    </NavLink>
+    <NavLink class="bottom-nav__item" href="/users/details" Match="NavLinkMatch.Prefix">
+        <MudIcon Icon="@Icons.Material.Rounded.Settings" />
+        <span>Settings</span>
+    </NavLink>
+</nav>
+
+@code {
+    protected override void OnInitialized()
+    {
+        HomeService.OnChange += Rerender;
+    }
+
+    private void Rerender() => InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        HomeService.OnChange -= Rerender;
+    }
+}

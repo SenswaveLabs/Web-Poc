@@ -1,0 +1,128 @@
+@using Senswave.Web.Homes.Models
+@using Senswave.Web.Homes.Services
+@using Senswave.Web.Shared.Extensions
+
+@implements IDisposable
+
+@inject IHomeService HomeService
+@inject NavigationManager Navigation
+@inject ILogger<HomeSwitcher> Logger
+
+@if (HomeService.CurrentHome is null)
+{
+    <MudButton Variant="Variant.Outlined"
+               Color="@Color"
+               FullWidth="@FullWidth"
+               StartIcon="@Icons.Material.Rounded.Home"
+               Href="/homes/list">
+        Choose home
+    </MudButton>
+}
+else
+{
+    <MudMenu FullWidth="@FullWidth"
+             AnchorOrigin="Origin.BottomLeft"
+             TransformOrigin="Origin.TopLeft"
+             AriaLabel="Switch home">
+        <ActivatorContent>
+            <div class="home-switcher d-flex align-center gap-2 px-2 py-1 cursor-pointer" style="@($"color: {(Color == Color.Inherit ? "inherit" : "var(--mud-palette-text-primary)")}; {(FullWidth ? "width: 100%;" : string.Empty)}")">
+                <MudIcon Icon="@HomeService.CurrentHome.Icon.TranslateIcon()" Color="@(Color == Color.Inherit ? Color.Inherit : Color.Primary)" Size="Size.Small" />
+                <div class="d-flex flex-column flex-grow-1" style="min-width:0; line-height:1.2;">
+                    <span class="home-switcher__label">Home</span>
+                    <span class="text-truncate" style="font-weight:500;">@HomeService.CurrentHome.Name</span>
+                </div>
+                <MudIcon Icon="@Icons.Material.Rounded.UnfoldMore" Size="Size.Small" Color="Color.Inherit" />
+            </div>
+        </ActivatorContent>
+        <ChildContent>
+            @foreach (var home in _homes)
+            {
+                var id = home.Id;
+                <MudMenuItem Icon="@home.Icon.TranslateIcon()" OnClick="() => SwitchHome(id)">
+                    <div class="d-flex align-center gap-2">
+                        <span>@home.Name</span>
+                        @if (home.Id == HomeService.CurrentHome?.Id)
+                        {
+                            <MudIcon Icon="@Icons.Material.Rounded.Check" Size="Size.Small" Color="Color.Primary" />
+                        }
+                    </div>
+                </MudMenuItem>
+            }
+            <MudDivider Class="my-1" />
+            <MudMenuItem Icon="@Icons.Material.Rounded.SwapHoriz" Href="/homes/list">All homes</MudMenuItem>
+        </ChildContent>
+    </MudMenu>
+}
+
+<style>
+    .home-switcher {
+        border-radius: 8px;
+        border: 1px solid var(--mud-palette-lines-default);
+        min-height: 44px;
+    }
+
+    .home-switcher__label {
+        font-size: 0.7rem;
+        opacity: 0.75;
+    }
+</style>
+
+@code {
+    [Parameter]
+    public bool FullWidth { get; set; }
+
+    [Parameter]
+    public Color Color { get; set; } = Color.Default;
+
+    private List<Home> _homes = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        HomeService.OnChange += Rerender;
+        await LoadHomes();
+    }
+
+    private async Task LoadHomes()
+    {
+        var result = await HomeService.GetHomes();
+
+        if (result.IsFailure)
+        {
+            Logger.LogWarning("Failed to load homes for the home switcher.");
+            return;
+        }
+
+        _homes = result.Value;
+    }
+
+    private async Task SwitchHome(string id)
+    {
+        if (id == HomeService.CurrentHome?.Id)
+            return;
+
+        var result = await HomeService.ChangeHome(id);
+
+        if (result.IsFailure)
+        {
+            Logger.LogError("Failed to change home to {HomeId}", id);
+            return;
+        }
+
+        // Pages load data for the current home on init; "/" redirects to the dashboard and recreates it.
+        Navigation.NavigateTo("/");
+    }
+
+    private void Rerender()
+    {
+        _ = InvokeAsync(async () =>
+        {
+            await LoadHomes();
+            StateHasChanged();
+        });
+    }
+
+    public void Dispose()
+    {
+        HomeService.OnChange -= Rerender;
+    }
+}

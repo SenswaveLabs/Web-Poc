@@ -176,7 +176,7 @@
             : displayRooms.FirstOrDefault(r => r.Id == _selectedRoomId);
 
     private List<BreadcrumbItem> Breadcrumbs => [
-        new("Home Dashboard", "/devices", false, $"{Icons.Material.Filled.Dashboard}")
+        new("Dashboard", "/devices", false, $"{Icons.Material.Filled.Dashboard}")
     ];
 
     protected override async Task OnInitializedAsync()

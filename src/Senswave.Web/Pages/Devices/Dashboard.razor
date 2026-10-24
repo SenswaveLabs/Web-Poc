@@ -141,7 +141,7 @@
     public int ColumnSpan { get; set; }
 
     private List<BreadcrumbItem> Breadcrumbs => [
-        new("Home Dashboard", "/devices", false, $"{Icons.Material.Filled.Dashboard}"),
+        new("Dashboard", "/devices", false, $"{Icons.Material.Filled.Dashboard}"),
         new(DeviceName(), $"/devices/dashboard/{Id}", false, $"{Icons.Material.Filled.SpaceDashboard}")
     ];
 

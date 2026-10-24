@@ -126,3 +126,9 @@ code {
     color: var(--mud-palette-text-primary);
     opacity: 1
 }
+/* Leave room for the bottom navigation on phones. */
+@media (max-width: 599.98px) {
+    .main-layout .mud-main-content {
+        padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    }
+}
