@@ -132,3 +132,9 @@ code {
         padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
     }
 }
+
+/* Page-level tabs sit on the page background with a divider instead of a filled bar. */
+.sens-tabs .mud-tabs-tabbar {
+    background-color: transparent;
+    border-bottom: 1px solid var(--mud-palette-lines-default);
+}

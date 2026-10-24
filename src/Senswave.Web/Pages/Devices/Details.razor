@@ -44,202 +44,184 @@
 
     </LoadingContent>
     <Content>
-        <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column pb-3">
-            <MudGrid Spacing="3" Class="p-0 d-flex flex-row flex-wrap" Style="padding-bottom: 64px!important;">
+        <MudContainer MaxWidth="MaxWidth.Large" Gutters="false" Class="d-flex flex-column gap-3 pb-3">
 
-                <MudItem xs="12" md="6">
-                    <MudStack>
+            <div class="d-flex flex-wrap align-center justify-space-between gap-2">
+                <div class="d-flex flex-column">
+                    <MudText Typo="Typo.h5" HtmlTag="h1">Configure @PageName()</MudText>
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                        @OperationGroups.Count operation(s) · @Dashboards.Count screen(s)
+                    </MudText>
+                </div>
 
-                        <MudPaper Class="pa-4">
-                            <MudText Typo="Typo.h6" Class="mb-3">General</MudText>
+                <div class="d-flex align-center gap-2">
+                    <MudButton Variant="Variant.Text"
+                               StartIcon="@Icons.Material.Rounded.SpaceDashboard"
+                               Href="@($"/devices/dashboard/{Id}")">
+                        Open controls
+                    </MudButton>
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Rounded.Check"
+                               Disabled="@(!HasChanges())"
+                               OnClick="SaveChanges">
+                        Save
+                    </MudButton>
+                </div>
+            </div>
 
+            <MudTabs Class="sens-tabs" Elevation="0" Border="false" Rounded="false" Color="Color.Transparent" SliderColor="Color.Primary" KeepPanelsAlive="true">
+
+                <MudTabPanel Text="General">
+                    <div class="d-flex flex-column gap-4 pt-4" style="max-width: 720px;">
+                        <MudPaper Outlined="true" Class="pa-4 rounded-lg">
                             <DeviceForm @ref="DeviceForm"
-                                Model="DeviceModel"
-                                Operations="@Operations"
-                                Rooms="@Rooms"
-                                Edit="true" />
+                                        Model="DeviceModel"
+                                        Operations="@Operations"
+                                        Rooms="@Rooms"
+                                        Edit="true"
+                                        OnChange="StateHasChanged" />
+                            <MudText Typo="Typo.caption" Class="mud-text-secondary mt-3 d-block">
+                                Tile type and tile operation decide what the device tile shows on the dashboard. A Switch tile needs a Boolean operation.
+                            </MudText>
                         </MudPaper>
 
-                        <MudPaper Class="pa-4">
-                            <MudText Typo="Typo.h6">Dashboards</MudText>
-
-                            @if (Dashboards.Count == 0)
-                            {
-                                <MudText Class="mt-3">No dashboards for device.</MudText>
-                            }
-
+                        <MudPaper Outlined="true" Class="pa-4 rounded-lg" Style="border-color: var(--mud-palette-error);">
+                            <div class="d-flex flex-wrap align-center gap-3">
+                                <div class="flex-grow-1">
+                                    <MudText Typo="Typo.subtitle1" Color="Color.Error">Delete device</MudText>
+                                    <MudText Typo="Typo.body2" Class="mud-text-secondary">Removes its operations, widgets and screens. This cannot be undone.</MudText>
+                                </div>
+                                <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="DeleteDevice">Delete device</MudButton>
+                            </div>
                         </MudPaper>
+                    </div>
+                </MudTabPanel>
 
-                        @if(Dashboards.Count != 0)
-                        {
-                            <MudTable Items="Dashboards" Dense="true" Hover="true" Breakpoint="Breakpoint.None">
-                                <HeaderContent>
-                                    <MudTh>Name</MudTh>
-                                    <MudTh>Rows</MudTh>
-                                    <MudTh>Columns</MudTh>
-                                    <MudTh Class="text-end">Actions</MudTh>
-                                </HeaderContent>
-
-                                <RowTemplate>
-                                    <MudTd>
-                                        <MudTextField T="string"
-                                                      Value="@context.Name"
-                                                      ValueChanged="@(v => OnDashboardNameChanged(context, v))"
-                                                      Immediate="true"/>
-                                    </MudTd>
-
-                                    <MudTd>
-                                        <MudText>@context.Rows</MudText>
-                                    </MudTd>
-
-                                    <MudTd>
-                                        <MudText>@context.Columns</MudText>
-                                    </MudTd>
-
-                                    <MudTd Class="text-end">
-                                        <MudIconButton Icon="@Icons.Material.Rounded.Delete"
-                                                       Color="Color.Error"
-                                                       Title="delete"
-                                                       OnClick="@(() => DeleteDashboard(context))"/>
-
-                                        @if (context.IsDirty)
-                                        {
-                                            <MudIconButton Icon="@Icons.Material.Rounded.Save"
-                                                           Title="save"
-                                                           Color="Color.Success"
-                                                           OnClick="@(() => UpdateDashboard(context))" />
-                                        }
-                                    </MudTd>
-                                </RowTemplate>
-                            </MudTable>
-                        }
-
-
-                        @if (Dashboards.Count < 3)
-                        {
-                            <MudStack Row="true">
-                                <MudButton Variant="Variant.Filled"
-                                           Color="Color.Primary"
-                                           OnClick="AddDashboard">
-                                    Add Dashboard
-                                </MudButton>
-                            </MudStack>
-                        }
-
-                    </MudStack>
-                </MudItem>
-
-                <MudItem xs="12" md="6">
-                    <MudStack>
-                        <MudPaper Class="pa-3">
-                            <MudText Typo="Typo.h6">Device Operations and Widgets</MudText>
-
-                            @if (OperationGroups.Count == 0)
-                            {
-                                <MudText Class="mt-3">No operations configured for this device.</MudText>
-                            }
-                        </MudPaper>
-
-                        <MudStack Row="true">
-                            <MudButton Variant="Variant.Filled"
+                <MudTabPanel Text="@($"Operations ({OperationGroups.Count})")">
+                    <div class="d-flex flex-column gap-3 pt-4" style="max-width: 900px;">
+                        <div class="d-flex flex-wrap align-center gap-2">
+                            <MudText Typo="Typo.body2" Class="mud-text-secondary flex-grow-1">
+                                An operation is an MQTT topic with a value type. Widgets are the controls that show or change it.
+                            </MudText>
+                            <MudButton Variant="Variant.Outlined"
                                        Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Rounded.Add"
                                        OnClick="AddOperation">
-                                Add Operation
+                                Operation
                             </MudButton>
-                        </MudStack>
+                        </div>
+
+                        @if (OperationGroups.Count == 0)
+                        {
+                            <MudPaper Outlined="true" Class="pa-6 rounded-lg d-flex flex-column align-center gap-1">
+                                <MudText Typo="Typo.subtitle1">No operations yet</MudText>
+                                <MudText Typo="Typo.body2" Class="mud-text-secondary">Add an operation for each value the device sends or accepts.</MudText>
+                            </MudPaper>
+                        }
 
                         @foreach (var group in OperationGroups)
                         {
-                            <MudPaper Class="pa-3 mt-4">
+                            <MudPaper Outlined="true" Class="rounded-lg overflow-hidden">
+                                <div class="d-flex flex-wrap align-center gap-2 px-4 py-2" style="background-color: var(--mud-palette-action-default-hover);">
+                                    <MudText Typo="Typo.subtitle1">@group.Operation.Name</MudText>
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@group.Operation.Type</MudChip>
+                                    @if (group.Operation.Id == DeviceModel.TileOperationId)
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Text">Dashboard tile</MudChip>
+                                    }
+                                    <MudSpacer />
+                                    <MudButton Variant="Variant.Text"
+                                               Size="Size.Small"
+                                               Color="Color.Primary"
+                                               StartIcon="@Icons.Material.Rounded.Add"
+                                               OnClick="() => AddWidget(group.Operation)">
+                                        Widget
+                                    </MudButton>
+                                    <MudMenu Icon="@Icons.Material.Rounded.MoreVert" Size="Size.Small" AriaLabel="@($"{group.Operation.Name} options")">
+                                        <MudMenuItem Icon="@Icons.Material.Rounded.Delete"
+                                                     IconColor="Color.Error"
+                                                     Disabled="@(group.Widgets.Count != 0)"
+                                                     OnClick="@(() => DeleteOperation(group.Operation.Id))">
+                                            @(group.Widgets.Count == 0 ? "Delete operation" : "Delete its widgets first")
+                                        </MudMenuItem>
+                                    </MudMenu>
+                                </div>
 
-                                <MudStack Row="true">
-                                    <MudStack Spacing="0" Class="flex-1">
-                                        <MudText Typo="Typo.subtitle1">@($"Operation: {group.Operation.Name}")</MudText>
-                                        <MudText Typo="Typo.caption" Class="mud-text-secondary">
-                                            Type: @group.Operation.Type
-                                        </MudText>
-                                    </MudStack>
-
+                                <div class="px-4 py-1">
                                     @if (group.Widgets.Count == 0)
                                     {
-                                        <MudIconButton Title="delete"  Icon="@Icons.Material.Rounded.Delete"
-                                                       Color="Color.Error"
-                                                       OnClick="@(() => DeleteOperation(group.Operation.Id))" />
+                                        <MudText Typo="Typo.body2" Class="mud-text-secondary py-2">No widgets. Add one to control this operation from a screen.</MudText>
                                     }
-                                </MudStack>
-
+                                    @foreach (var widget in group.Widgets)
+                                    {
+                                        <div class="d-flex align-center gap-2 py-1">
+                                            <MudChip T="string" Size="Size.Small">@widget.Type</MudChip>
+                                            <MudText Typo="Typo.body2" Class="flex-grow-1">@widget.Name</MudText>
+                                            <MudIconButton Icon="@Icons.Material.Rounded.Delete"
+                                                           Size="Size.Small"
+                                                           aria-label="@($"Delete widget {widget.Name}")"
+                                                           OnClick="@(() => DeleteWidget(widget.Id))" />
+                                        </div>
+                                    }
+                                </div>
                             </MudPaper>
-
-                            <MudStack Row="true">
-                                <MudButton Variant="Variant.Filled"
-                                           Color="Color.Primary"
-                                           OnClick="() => AddWidget(group.Operation)">
-                                    @($"Add Widget to Operation: {group.Operation.Name}")
-                                </MudButton>
-                            </MudStack>
-
-                            @if (group.Widgets.Count == 0)
-                            {
-                                <MudPaper Class="pa-3">
-                                    <MudText>@($"No widgets configured for opertaion: {group.Operation.Name}.")</MudText>
-                                </MudPaper>
-                            }
-                            else
-                            {
-                                <MudTable Items="group.Widgets" Dense="true" Hover="true" Breakpoint="Breakpoint.None">
-
-                                    <HeaderContent>
-                                        <MudTh>Name</MudTh>
-                                        <MudTh>Type</MudTh>
-                                        <MudTh Class="text-end">Actions</MudTh>
-                                    </HeaderContent>
-
-                                    <RowTemplate>
-                                        <MudTd>@context.Name</MudTd>
-                                        <MudTd>@context.Type</MudTd>
-                                        <MudTd Class="text-end">
-                                            <MudIconButton Title="delete" 
-                                                            Icon="@Icons.Material.Rounded.Delete"
-                                                           Color="Color.Error"
-                                                           OnClick="@(() => DeleteWidget(context.Id))" />
-                                        </MudTd>
-                                    </RowTemplate>
-
-                                </MudTable>
-                            }
                         }
-                    </MudStack>
-                </MudItem>
-            </MudGrid>
+                    </div>
+                </MudTabPanel>
 
-            @if (HasChanges())
-            {
-                <MudFab Color="Color.Secondary"
-                        StartIcon="@Icons.Material.Filled.Save"
-                        Class="position-absolute m-3 m-lg-4"
-                        Style="right:0;bottom:0;"
-                        OnClick="SaveChanges" />
-            }
-            else
-            {
-                <MudFabMenu Class="position-absolute m-3 m-lg-4"
-                            Style="right:0;bottom:0;"
-                            Title="menu"
-                            StartIcon="@Icons.Material.Rounded.MoreVert"
-                            Color="Color.Secondary"
-                            @bind-Open="@_open" Fixed="@_fixed">
+                <MudTabPanel Text="@($"Screens ({Dashboards.Count})")">
+                    <div class="d-flex flex-column gap-3 pt-4" style="max-width: 720px;">
+                        <div class="d-flex flex-wrap align-center gap-2">
+                            <MudText Typo="Typo.body2" Class="mud-text-secondary flex-grow-1">
+                                Screens hold the widgets you see when you open the device. Up to 3 per device.
+                            </MudText>
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Rounded.Add"
+                                       Disabled="@(Dashboards.Count >= 3)"
+                                       OnClick="AddDashboard">
+                                Screen
+                            </MudButton>
+                        </div>
 
-                    <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Refresh"
-                                    Title="refresh"
-                                    Color="Color.Secondary"
-                                    OnClick="RefreshPage" />
+                        @if (Dashboards.Count == 0)
+                        {
+                            <MudPaper Outlined="true" Class="pa-6 rounded-lg d-flex flex-column align-center gap-1">
+                                <MudText Typo="Typo.subtitle1">No screens yet</MudText>
+                                <MudText Typo="Typo.body2" Class="mud-text-secondary">Add a screen, then place widgets on it from Open controls.</MudText>
+                            </MudPaper>
+                        }
 
-                    <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Delete"
-                                    Title="delete"
-                                    Color="Color.Secondary"
-                                    OnClick="DeleteDevice" />
-                </MudFabMenu>
-            }
+                        @foreach (var dashboard in Dashboards)
+                        {
+                            <MudPaper Outlined="true" Class="pa-3 rounded-lg d-flex flex-wrap align-center gap-3">
+                                <MudTextField T="string"
+                                              Label="Name"
+                                              Value="@dashboard.Name"
+                                              ValueChanged="@(v => OnDashboardNameChanged(dashboard, v))"
+                                              Immediate="true"
+                                              Class="flex-grow-1"
+                                              Style="min-width: 160px;" />
+                                <MudText Typo="Typo.caption" Class="mud-text-secondary">@dashboard.Rows × @dashboard.Columns grid</MudText>
+                                @if (dashboard.IsDirty)
+                                {
+                                    <MudButton Variant="Variant.Filled"
+                                               Color="Color.Primary"
+                                               Size="Size.Small"
+                                               OnClick="@(() => UpdateDashboard(dashboard))">
+                                        Save name
+                                    </MudButton>
+                                }
+                                <MudIconButton Icon="@Icons.Material.Rounded.Delete"
+                                               aria-label="@($"Delete screen {dashboard.Name}")"
+                                               OnClick="@(() => DeleteDashboard(dashboard))" />
+                            </MudPaper>
+                        }
+                    </div>
+                </MudTabPanel>
+
+            </MudTabs>
         </MudContainer>
     </Content>
 </SensPage>
@@ -247,13 +229,12 @@
 @code {
     private List<BreadcrumbItem> Breadcrumbs => [
         new("Dashboard", "/devices", false, $"{Icons.Material.Filled.Dashboard}"),
-        new($"{PageName()}", $"/devices/details/{Id}", false, $"{Icons.Material.Filled.PermDeviceInformation}")
+        new($"{PageName()}", $"/devices/dashboard/{Id}", false, $"{Icons.Material.Filled.PermDeviceInformation}"),
+        new("Configure", $"/devices/details/{Id}", false, $"{Icons.Material.Filled.Tune}")
     ];
 
     private string PageName() => DeviceModel?.Name ?? "Device";
 
-    private bool _open;
-    private bool _fixed;
     private bool _loading = true;
     private bool _failedToLoad = true;
 
@@ -671,7 +652,11 @@
         }
         catch
         {
-            Snackbar.Add("Failed to remove dashboard", Severity.Error);
+            Snackbar.Add("Failed to update dashboard", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
         }
     }
 
