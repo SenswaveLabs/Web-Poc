@@ -29,7 +29,7 @@
         }
         else if (FailedToLoad)
         {
-            if (Breadcrumbs.Count != 0)
+            if (Breadcrumbs.Count > 1)
             {
                 <MudBreadcrumbs Style="padding-left: 0;" Separator=">" Items="Breadcrumbs"></MudBreadcrumbs>
             }
@@ -38,7 +38,8 @@
         }
         else
         {
-            if (Breadcrumbs.Count != 0)
+            // A single item only repeats the page title, so breadcrumbs start at the second level.
+            if (Breadcrumbs.Count > 1)
             {
                 <MudBreadcrumbs Style="padding-left: 0;" Separator=">" Items="Breadcrumbs"></MudBreadcrumbs>
             }

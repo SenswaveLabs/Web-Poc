@@ -75,14 +75,14 @@
 
             <div class="d-flex flex-wrap align-center justify-space-between gap-2">
                 <div class="d-flex flex-column">
-                    <MudText Typo="Typo.h5" HtmlTag="h1">@HomeService.CurrentHome?.Name</MudText>
+                    <MudText Typo="Typo.h5" HtmlTag="h1">Devices</MudText>
                     <div class="d-flex align-center gap-2">
                         <MudIcon Icon="@Icons.Material.Rounded.Circle"
                                  Size="Size.Small"
                                  Style="font-size:10px;"
                                  Color="@(LiveUpdateService.IsConnected ? Color.Success : Color.Default)" />
                         <MudText Typo="Typo.caption">
-                            @(LiveUpdateService.IsConnected ? "Live updates on" : "Live updates off")
+                            @HomeService.CurrentHome?.Name · @(LiveUpdateService.IsConnected ? "live updates on" : "live updates off")
                         </MudText>
                     </div>
                 </div>

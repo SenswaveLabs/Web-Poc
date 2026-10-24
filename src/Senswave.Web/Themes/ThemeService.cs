@@ -136,7 +136,9 @@ internal sealed class ThemeService(
         Typography = SentenceCaseButtons(),
         PaletteLight = new PaletteDark()
         {
-            Primary = "#B200B2",      
+            // #B200B2 had 3.3:1 contrast on black; this keeps the magenta and passes WCAG AA (7.8:1).
+            Primary = "#FF4DFF",
+            PrimaryContrastText = "#000000",
             Secondary = "#00E5FF",    
             Tertiary = "#7C4DFF",
 
