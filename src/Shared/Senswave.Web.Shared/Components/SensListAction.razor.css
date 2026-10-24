@@ -1,0 +1,14 @@
+.sens-list-action {
+    height: 100%;
+    width: 100%;
+    min-height: 72px;
+    border-radius: 12px;
+    border: 1px dashed var(--mud-palette-lines-inputs);
+    color: var(--mud-palette-text-secondary);
+    transition: border-color .15s ease;
+}
+
+.sens-list-action:hover,
+.sens-list-action:focus-visible {
+    border-color: var(--mud-palette-primary);
+}

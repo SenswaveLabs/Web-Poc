@@ -71,99 +71,93 @@
         
     </LoadingContent>
     <Content>
-        <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column pb-3">
+        <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column gap-3 pb-3">
 
-            <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="m-0 pb-1">
-                <MudContainer Class="d-inline-flex align-items-center w-auto p-0">
-                    <MudText Typo="Typo.subtitle1" Class="me-1">Rooms</MudText>
+            <div class="d-flex flex-wrap align-center justify-space-between gap-2">
+                <div class="d-flex flex-column">
+                    <MudText Typo="Typo.h5" HtmlTag="h1">@HomeService.CurrentHome?.Name</MudText>
+                    <div class="d-flex align-center gap-2">
+                        <MudIcon Icon="@Icons.Material.Rounded.Circle"
+                                 Size="Size.Small"
+                                 Style="font-size:10px;"
+                                 Color="@(LiveUpdateService.IsConnected ? Color.Success : Color.Default)" />
+                        <MudText Typo="Typo.caption">
+                            @(LiveUpdateService.IsConnected ? "Live updates on" : "Live updates off")
+                        </MudText>
+                    </div>
+                </div>
 
-                    <MudTooltip Text="This is list of rooms in home. You can filter devices by selecting Rooms" Placement="Placement.Bottom">
-                        <MudIconButton Title="info" Icon="@Icons.Material.Filled.Info" Size="Size.Small" Edge="Edge.End" Color="Color.Primary" Style="padding: 0;" />
+                <div class="d-flex align-center gap-2">
+                    <MudTooltip Text="Refresh devices">
+                        <MudIconButton Icon="@Icons.Material.Rounded.Refresh"
+                                       aria-label="Refresh devices"
+                                       OnClick="RefreshPage" />
                     </MudTooltip>
-                </MudContainer>
-            </MudContainer>
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Rounded.Add"
+                               OnClick="AddDeviceDialogHandler">
+                        Device
+                    </MudButton>
+                </div>
+            </div>
 
-            <div class="mb-4 overflow-auto">
-                <MudChipSet Class="d-flex flex-row flex-wrap"  T="string" SelectionMode="SelectionMode.SingleSelection" CheckMark="true" @bind-SelectedValue="_selectedRoomId" Color="Color.Primary" Variant="Variant.Text">
-
-                    <MudIconButton Title="add room" 
-                            Icon="@Icons.Material.Filled.AddHomeWork"
-                                   OnClick="AddRoomDialogHandler"
-                                   Color="Color.Secondary"
-                                   Size="Size.Medium" />
-
-                    <MudDivider Vertical="true" FlexItem="true" Class="mx-2 my-2" />
-
-                    <MudChip Value="@(string.Empty)" Text="All Rooms" Default="true" Size="Size.Medium" />
+            <div class="d-flex flex-wrap align-center gap-1">
+                <MudChipSet T="string"
+                            Class="d-flex flex-row flex-wrap"
+                            SelectionMode="SelectionMode.SingleSelection"
+                            CheckMark="false"
+                            @bind-SelectedValue="_selectedRoomId"
+                            Color="Color.Primary"
+                            Variant="Variant.Text">
+                    <MudChip Value="@(string.Empty)" Default="true" Size="Size.Medium">
+                        All <span class="ml-1 mud-text-secondary">@displayDevices.Count</span>
+                    </MudChip>
                     @foreach (var room in displayRooms)
                     {
                         <MudChip Value="@room.Id" Size="Size.Medium">
-                            <div class="d-flex align-center">
-                                <span>@room.Name</span>
-
-                                <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                               Size="Size.Small"
-                                               Title="Edit room"
-                                               Class="ml-1"
-                                               OnClick="@(() => ManageRoomDialog(room))" />
-                            </div>
+                            @room.Name <span class="ml-1 mud-text-secondary">@displayDevices.Count(d => d.RoomId == room.Id)</span>
                         </MudChip>
                     }
                 </MudChipSet>
+
+                @if (SelectedRoom is not null)
+                {
+                    <MudIconButton Icon="@Icons.Material.Rounded.Edit"
+                                   Size="Size.Small"
+                                   aria-label="@($"Edit room {SelectedRoom.Name}")"
+                                   OnClick="@(() => ManageRoomDialog(SelectedRoom))" />
+                }
+
+                <MudButton Variant="Variant.Text"
+                           Color="Color.Primary"
+                           Size="Size.Small"
+                           StartIcon="@Icons.Material.Rounded.Add"
+                           OnClick="AddRoomDialogHandler">
+                    Room
+                </MudButton>
             </div>
 
-            <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="m-0 pb-1">
-                <MudContainer Class="d-inline-flex align-items-center w-auto p-0">
-                    <MudText Typo="Typo.subtitle1" Class="me-1">Devices</MudText>
-
-                    <MudTooltip Text="This is list of devices in home that are available to interact." Placement="Placement.Bottom">
-                        <MudIconButton Title="info" Icon="@Icons.Material.Filled.Info" Size="Size.Small" Edge="Edge.End" Color="Color.Primary" Style="padding: 0;" />
-                    </MudTooltip>
-                </MudContainer>
-            </MudContainer>
-
-            <MudGrid Spacing="3" Class="p-0 d-flex flex-row flex-wrap" Style="padding-bottom: 64px!important;">
+            <MudGrid Spacing="3" Class="p-0 d-flex flex-row flex-wrap">
 
                 @foreach (var device in FilteredDevices)
                 {
-                    <MudItem xs="12" sm="12" md="6" lg="4" xl="3" xxl="3">
+                    <MudItem xs="12" sm="6" md="6" lg="4" xl="3" xxl="3">
                         <SensDevice Device="@device" OnClick="() => OpenDevice(device.Id)" />
                     </MudItem>
                 }
 
-                <MudItem xs="6" sm="6" md="6" lg="4" xl="3" xxl="3">
-                    <SensListAction Title="Create Device" OnClick="AddDeviceDialogHandler" />
+                <MudItem xs="12" sm="6" md="6" lg="4" xl="3" xxl="3">
+                    <SensListAction Title="Add device" OnClick="AddDeviceDialogHandler" />
                 </MudItem>
 
             </MudGrid>
-
-            <MudFabMenu Class="position-absolute m-3 m-lg-4"
-                        Style="right:0;bottom:0;"
-                        Title="menu"
-                        StartIcon="@Icons.Material.Rounded.MoreVert"
-                        Color="Color.Secondary"
-                        @bind-Open="@_open" Fixed="@_fixed">
-
-                <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Refresh"
-                                Title="refresh"
-                                Color="Color.Secondary"
-                                OnClick="RefreshPage" />
-
-                <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Add"
-                                Title="add"
-                                Color="Color.Secondary"
-                                OnClick="AddDeviceDialogHandler" />
-
-
-            </MudFabMenu>
 
         </MudContainer>
     </Content>
 </SensPage>
 
 @code {
-    private bool _open;
-    private bool _fixed;
     private bool _loading = true;
     private bool _failedToLoad = true;
     private string? _selectedRoomId;
@@ -175,6 +169,11 @@
         string.IsNullOrEmpty(_selectedRoomId)
             ? displayDevices
             : displayDevices.Where(d => d.RoomId == _selectedRoomId);
+
+    private RoomDto? SelectedRoom =>
+        string.IsNullOrEmpty(_selectedRoomId)
+            ? null
+            : displayRooms.FirstOrDefault(r => r.Id == _selectedRoomId);
 
     private List<BreadcrumbItem> Breadcrumbs => [
         new("Home Dashboard", "/devices", false, $"{Icons.Material.Filled.Dashboard}")
