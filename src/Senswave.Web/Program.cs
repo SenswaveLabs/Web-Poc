@@ -39,6 +39,7 @@ builder.Services.AddSingleton<IThemeService, ThemeService>();
 // Modules - Users
 builder.Services.AddUsers(builder.Configuration);
 builder.Services.AddSingleton<IUserService, UserService>();
+builder.Services.AddScoped<IAccountService, AccountService>();
 
 builder.Services.AddAuthorizationCore();
 builder.Services.AddSingleton<SenswaveAuthenticationProvider>();

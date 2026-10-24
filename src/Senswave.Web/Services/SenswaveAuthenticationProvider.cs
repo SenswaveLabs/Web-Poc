@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Refit;
 using Senswave.Web.Shared.Resulting;
 using Senswave.Web.Shared.Services;
 using Senswave.Web.Users.Auth.Integration;
@@ -79,7 +80,15 @@ public class SenswaveAuthenticationProvider(
             logger.LogInformation("User {Username} logged in successfully. Access token expires at {ExpiresIn}. Remember me: {RememberMe}", model.Username, _expiresIn, model.RememberMe);
             return Result.Success();
         }
-        catch (Exception ex) 
+        catch (ApiException ex)
+        {
+            var errors = await IdentityProblemDetails.ToErrors(ex);
+
+            logger.LogWarning("Login failed for user {Username}. Reason: {Reason}", model.Username, errors[0].Code);
+
+            return Result.Failure(errors);
+        }
+        catch (Exception ex)
         {
             logger.LogError(ex, "Login failed for user {Username}", model.Username);
 

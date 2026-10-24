@@ -1,0 +1,53 @@
+@inject NavigationManager Navigation
+
+@* Shared layout for anonymous auth pages: hero image on wide screens, form card on the right. *@
+<MudGrid Class="d-flex h-100 p-0 m-0">
+    <MudHidden Breakpoint="Breakpoint.SmAndDown">
+        <MudItem xs="0" sm="0" md="6" lg="7" Class="d-flex align-center justify-center mud-theme-primary p-0">
+            <MudPaper Elevation="6" Class="hero-card overflow-hidden d-flex align-items-center justify-content-center p-0 m-0 rounded-lg">
+                <MudImage Src="icon-192.png"
+                          Alt="Senswave logo"
+                          Class="p-0 m-0 rounded-lg" />
+            </MudPaper>
+        </MudItem>
+    </MudHidden>
+
+    <MudItem xs="12" sm="12" md="6" lg="5" Class="d-flex align-center justify-center pa-4" Style="overflow-y:auto;">
+        <MudPaper Elevation="6"
+                  Class="pa-6 rounded-lg left-shadow"
+                  Style="width:100%;max-width:420px;">
+            <h1 class="mud-typography mud-typography-h5 mb-4" tabindex="-1" @ref="_heading">@Title</h1>
+
+            @ChildContent
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = string.Empty;
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private ElementReference _heading;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AuthenticationState is null)
+            return;
+
+        var state = await AuthenticationState;
+
+        if (state.User.Identity?.IsAuthenticated == true)
+            Navigation.NavigateTo("/");
+    }
+
+    /// <summary>
+    /// Moves focus to the heading so screen readers announce a changed step.
+    /// </summary>
+    public ValueTask FocusHeading() => _heading.FocusAsync();
+}

@@ -19,6 +19,16 @@ It is served by nginx in a Docker container.
   docker compose stop
   ```
 
+- Run the E2E tests (Playwright, `tests/e2e`) for UI changes. CI runs them against the Docker container in the `e2e` job. By default they start the app with `dotnet run`; set `E2E_BASE_URL=http://localhost:7162` to test the running Docker container:
+
+  ```sh
+  cd tests/e2e
+  npm install
+  npx playwright install chromium
+  npx playwright test
+  ```
+
+  Tests use the shared test API (`https://apisenswave.psplace.dev`, override with `E2E_API_URL`). Never create real accounts or send email to real people: mock mutating calls with `page.route` and use `@example.com` addresses. Signed-in tests use the test account from `E2E_USER_EMAIL` / `E2E_USER_PASSWORD` (GitHub secrets in CI) and skip when these are not set.
 - The Docker build uses `Release` configuration on Linux. Paths and file names are case-sensitive there.
 - Build this checkout, not another copy. Keep project paths in `Senswave.Web.slnx` and `.csproj` files relative.
 - When you add a project, also add its `.csproj` `COPY` line to `src/Senswave.Web/dockerfile`, or restore fails in Docker.
