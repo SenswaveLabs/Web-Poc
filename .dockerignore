@@ -1,0 +1,9 @@
+# Local build output must not reach the image: publish would reuse stale files
+# (for example scoped CSS built on Windows) instead of building them on Linux.
+**/bin/
+**/obj/
+**/node_modules/
+.git/
+.vs/
+tests/
+docker/.env

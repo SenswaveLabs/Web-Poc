@@ -2,13 +2,11 @@
 @using MudBlazor
 @using Senswave.Web.Shared.Components.Enums
 
-<MudPaper Class="d-flex flex-grow-1 align-items-center p-3 gap-3 cursor-pointer"
-          Style="height:100%; width:100%;"
-          Elevation="1"
-          tabindex="0"
-          @onkeydown="(e) => OnKeyDown(e)"
-          @onclick="HandleClick"
-           >
+<div class="sens-list-action d-flex flex-grow-1 align-items-center p-3 gap-3 cursor-pointer"
+     tabindex="0"
+     role="button"
+     @onkeydown="(e) => OnKeyDown(e)"
+     @onclick="HandleClick">
 
     <MudIcon Icon="@GetIcon()" Color="Color.Primary" Size="Size.Large" />
 
@@ -23,7 +21,7 @@
         }
     </div>
 
-</MudPaper>
+</div>
 
 @code {
 

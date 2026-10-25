@@ -10,7 +10,7 @@
             <MudStack Spacing="3">
 
                 <MudText Typo="Typo.body2">
-                    Enter the email address and select permission level.
+                    Enter their email and choose what they can do. You get a code to send them.
                 </MudText>
 
                 <!-- EMAIL -->
@@ -21,22 +21,21 @@
                               Immediate="true" 
                               Validation="@(new EmailAddressAttribute { ErrorMessage = @"The email address is invalid" })" />
 
-                <!-- ROLE SELECT -->
-                <MudSelect T="string"
-                           Label="Permission"
-                           @bind-Value="_role"
-                           Required="true"
-                           RequiredError="Permission is required">
-
-                    <MudSelectItem Value="@("Display")">
-                        Display and Use Home
-                    </MudSelectItem>
-
-                    <MudSelectItem Value="@("Manage")">
-                        Manage, Display and Use Home
-                    </MudSelectItem>
-
-                </MudSelect>
+                <MudText Typo="Typo.subtitle2">Permission</MudText>
+                <MudRadioGroup T="string" @bind-Value="_role" Required="true" RequiredError="Permission is required">
+                    <MudRadio T="string" Value="@("Display")" Color="Color.Primary">
+                        <div class="d-flex flex-column">
+                            <span>Use</span>
+                            <MudText Typo="Typo.caption" Class="mud-text-secondary">Sees devices and controls them</MudText>
+                        </div>
+                    </MudRadio>
+                    <MudRadio T="string" Value="@("Manage")" Color="Color.Primary">
+                        <div class="d-flex flex-column">
+                            <span>Manage</span>
+                            <MudText Typo="Typo.caption" Class="mud-text-secondary">Can also add and change devices and rooms</MudText>
+                        </div>
+                    </MudRadio>
+                </MudRadioGroup>
 
             </MudStack>
 
@@ -62,7 +61,7 @@
             }
             else
             {
-                <span>Invite</span>
+                <span>Create invitation</span>
             }
 
         </MudButton>

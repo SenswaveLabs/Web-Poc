@@ -9,6 +9,9 @@
   <Folder Name="/Shared/">
     <Project Path="src/Shared/Senswave.Web.Shared/Senswave.Web.Shared.csproj" Id="5db18ab8-9252-47cb-9ea6-a4ea04698f68" />
   </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="tests/Senswave.Web.Tests/Senswave.Web.Tests.csproj" />
+  </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
     <File Path=".gitignore" />

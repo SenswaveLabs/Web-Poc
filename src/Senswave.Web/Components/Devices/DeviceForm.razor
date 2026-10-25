@@ -3,9 +3,10 @@
 @using Senswave.Web.Devices.Integration
 @using Senswave.Web.Homes.Integration
 @using Senswave.Web.Shared.Components
+@using Senswave.Web.Shared.Extensions
 
 
-<MudForm @ref="_form" Model="Model">
+<MudForm @ref="_form" Model="Model" FieldChanged="@(_ => OnChange.InvokeAsync())">
 
     <MudGrid Spacing="3">
 
@@ -23,7 +24,15 @@
 
         <!-- Icon Selector -->
         <MudItem xs="12" md="6">
-            <MudSelect T="string" Label="Icon" For="@(() => Model.Icon)" @bind-Value="Model.Icon">
+            <MudSelect T="string"
+                       Label="Icon"
+                       For="@(() => Model.Icon)"
+                       @bind-Value="Model.Icon"
+                       ToStringFunc="IconLabel">
+                @if (!string.IsNullOrEmpty(Model.Icon) && !KnownIcons.Contains(Model.Icon))
+                {
+                    <MudSelectItem Value="@Model.Icon"><SensIcon Icon="@Model.Icon" Class="mr-2" /> @IconLabel(Model.Icon)</MudSelectItem>
+                }
                 <MudSelectItem Value="@("thermostat")"><SensIcon Icon="thermostat" Class="mr-2" /> Thermostat</MudSelectItem>
                 <MudSelectItem Value="@("lightbulb")"><SensIcon Icon="lightbulb" Class="mr-2" /> Lightbulb</MudSelectItem>
                 <MudSelectItem Value="@("camera")"><SensIcon Icon="camera" Class="mr-2" /> Camera</MudSelectItem>
@@ -95,7 +104,19 @@
     [Parameter]
     public List<OperationDto> Operations { get; set; } = new();
 
+    [Parameter]
+    public EventCallback OnChange { get; set; }
+
     private readonly string[] TileTypeOptions = new[] { "Default", "Switch" };
+
+    private static readonly string[] KnownIcons =
+    [
+        "thermostat", "lightbulb", "camera", "lock", "alarm", "fan", "speaker", "music",
+        "printer", "tv", "desktop", "tablet", "watch", "server", "cloud", "sensor"
+    ];
+
+    // Icons set in the mobile app use Ionicons names such as "radio-outline".
+    private static string IconLabel(string? icon) => icon.ToIconLabel();
 
     public async Task<bool> Validate()
     {

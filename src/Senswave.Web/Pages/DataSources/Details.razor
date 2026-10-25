@@ -37,100 +37,95 @@
         
     </LoadingContent>
     <Content>
-        <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column pb-3">
+        <MudContainer MaxWidth="MaxWidth.Large" Gutters="false" Class="d-flex flex-column gap-3 pb-3">
 
-            <MudGrid Style="padding-bottom: 64px!important;">
-                <MudItem xs="12" md ="6">
-                    <MudStack>
-                        <SensDataSourceState ConnectionStatus="@ConnectionState" Name="@EditableModel.Name" Port="@EditableModel.Port" Server="@EditableModel.Url" />
-                        
-                        <MudPaper>
-                            <MudText Typo="Typo.subtitle2" Class="pa-4">Client Connection Management</MudText>
+            <div class="d-flex flex-wrap align-center justify-space-between gap-2">
+                <div class="d-flex flex-column">
+                    <MudText Typo="Typo.h5" HtmlTag="h1">@PageName()</MudText>
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                        MQTT broker · belongs only to your account, do not share its credentials
+                    </MudText>
+                </div>
+
+                <div class="d-flex align-center gap-2">
+                    <MudTooltip Text="Refresh">
+                        <MudIconButton Icon="@Icons.Material.Rounded.Refresh" aria-label="Refresh" OnClick="RefreshPage" />
+                    </MudTooltip>
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Rounded.Check"
+                               Disabled="@(!HasChanges())"
+                               OnClick="SaveChanges">
+                        Save
+                    </MudButton>
+                </div>
+            </div>
+
+            <MudGrid Spacing="3">
+                <MudItem xs="12" md="6">
+                    <MudStack Spacing="3">
+                        <SensDataSourceState ConnectionStatus="@ConnectionState" Name="@EditableModel.Name" Port="@EditableModel.Port" Server="@EditableModel.Url">
+                            <Actions>
+                                @if (IsRunning)
+                                {
+                                    <MudButton Variant="Variant.Outlined"
+                                               StartIcon="@Icons.Material.Rounded.Refresh"
+                                               OnClick="OnRestart">
+                                        Restart
+                                    </MudButton>
+                                }
+                                else
+                                {
+                                    <MudButton Variant="Variant.Filled"
+                                               Color="Color.Primary"
+                                               StartIcon="@Icons.Material.Rounded.PlayArrow"
+                                               OnClick="OnStart"
+                                               Disabled="@(ConnectionState == "Loading")">
+                                        Start client
+                                    </MudButton>
+                                }
+                            </Actions>
+                        </SensDataSourceState>
+
+                        <MudPaper Outlined="true" Class="pa-4 rounded-lg" Style="border-color: var(--mud-palette-error);">
+                            <MudStack Spacing="3">
+                                @if (IsRunning)
+                                {
+                                    <div class="d-flex flex-wrap align-center gap-3">
+                                        <div class="flex-grow-1">
+                                            <MudText Typo="Typo.subtitle1" Color="Color.Error">Stop client</MudText>
+                                            <MudText Typo="Typo.body2" Class="mud-text-secondary">Devices in homes using this source stop receiving commands.</MudText>
+                                        </div>
+                                        <MudButton Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Rounded.Stop" OnClick="OnStop">Stop</MudButton>
+                                    </div>
+                                    <MudDivider />
+                                }
+                                <div class="d-flex flex-wrap align-center gap-3">
+                                    <div class="flex-grow-1">
+                                        <MudText Typo="Typo.subtitle1" Color="Color.Error">Delete data source</MudText>
+                                        <MudText Typo="Typo.body2" Class="mud-text-secondary">Homes linked to it lose their connection. This cannot be undone.</MudText>
+                                    </div>
+                                    <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="DeleteDataSource">Delete</MudButton>
+                                </div>
+                            </MudStack>
                         </MudPaper>
-
-                        <MudAlert Severity="Severity.Info" Class="pa-2" Variant="Variant.Outlined">
-                            One data source belongs only to one user account. Do not share credentials.
-                        </MudAlert>
-
-                        <MudStack Spacing="2">
-                            <MudButton Variant="Variant.Filled"
-                                       Color="Color.Success"
-                                       FullWidth="true"
-                                       StartIcon="@Icons.Material.Rounded.PlayArrow"
-                                       OnClick="OnStart"
-                                       Disabled="@(ConnectionState == "Working")">
-                                Start Client
-                            </MudButton>
-
-                            <MudButton Variant="Variant.Filled"
-                                       Color="Color.Warning"
-                                       FullWidth="true"
-                                       StartIcon="@Icons.Material.Rounded.Refresh"
-                                       OnClick="OnRestart"
-                                       Disabled="@(ConnectionState == "NotStarted" || ConnectionState == "Stopped")">
-                                Restart
-                            </MudButton>
-
-                            <MudButton Variant="Variant.Filled"
-                                       Color="Color.Error"
-                                       FullWidth="true"
-                                       StartIcon="@Icons.Material.Rounded.Stop"
-                                       OnClick="OnStop"
-                                       Disabled="@(ConnectionState == "Stopped" || ConnectionState == "NotStarted")">
-                                Stop Client
-                            </MudButton>
-                        </MudStack>
                     </MudStack>
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                        
-                    <MudPaper Class="pa-6">
-                        <MudText Typo="Typo.h6" Class="mb-4">Configuration</MudText>
+                    <MudPaper Outlined="true" Class="pa-4 rounded-lg">
+                        <MudText Typo="Typo.subtitle1">Connection</MudText>
+                        <MudText Typo="Typo.caption" Class="mud-text-secondary d-block mb-2">Only the name can be changed. Create a new data source to use another broker.</MudText>
                         <BrokerForm @ref="_form" Model="EditableModel" Edit="true" NameChanged="@(_ => StateHasChanged())" />
                     </MudPaper>
                 </MudItem>
             </MudGrid>
-
-
-            @if(HasChanges())
-            {
-                <MudFab Color="Color.Secondary"
-                        StartIcon="@Icons.Material.Filled.Save"
-                        Class="position-absolute m-3 m-lg-4"
-                        Style="right:0;bottom:0;"
-                        OnClick="SaveChanges" />
-            }
-            else
-            {
-                <MudFabMenu Class="position-absolute m-3 m-lg-4"
-                            Style="right:0;bottom:0;"
-                            Title="menu"
-                            StartIcon="@Icons.Material.Rounded.MoreVert" 
-                            Color="Color.Secondary"
-                            @bind-Open="@_open" Fixed="@_fixed">
-
-                    <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Refresh"
-                                    Title="refresh"
-                                    Color="Color.Secondary"
-                                    OnClick="RefreshPage" />
-
-                    <MudFabMenuItem StartIcon="@Icons.Material.Rounded.Delete"
-                                    Title="delete"
-                                    Color="Color.Secondary"
-                                    OnClick="DeleteDataSource" />
-
-                </MudFabMenu>
-            }
 
         </MudContainer>
     </Content>
 </SensPage>
 
 @code {
-
-    private bool _open;
-    private bool _fixed;
 
     private bool _loading = true;
     private bool _failedToLoad = true;
@@ -146,8 +141,10 @@
 
     private string ConnectionState = "Loading";
 
+    private bool IsRunning => ConnectionState is "Working" or "Restarting";
+
     private List<BreadcrumbItem> Breadcrumbs => [
-        new("Data Sources", "/datasources", false, $"{Icons.Material.Filled.Hub}"),
+        new("Data sources", "/datasources", false, $"{Icons.Material.Filled.Hub}"),
         new($"{PageName()}", $"/datasources/details/{Id}", false, $"{Icons.Material.Filled.DeviceHub}")
     ];
 

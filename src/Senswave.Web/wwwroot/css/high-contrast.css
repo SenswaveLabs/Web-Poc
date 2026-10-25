@@ -1,4 +1,4 @@
-﻿:root {
+:root {
     --hc-border-color: #FF00FF;
 }
 
@@ -8,8 +8,40 @@
 .high-contrast .mud-drawer-content,
 .high-contrast .mud-toolbar,
 .high-contrast a.mud-nav-link.mud-ripple.active,
-.high-contrast .mud-input-control {
+.high-contrast .mud-input-control:not(.mud-input-control-boolean-input),
+.high-contrast .mud-chip {
     border: 1px solid var(--hc-border-color);
+}
+
+/* App components use scoped CSS that loads after this file, so the selectors repeat the class to win. */
+.high-contrast .sens-device.sens-device,
+.high-contrast .home-switcher.home-switcher,
+.high-contrast .bottom-nav.bottom-nav {
+    border: 1px solid var(--hc-border-color);
+}
+
+/* Elements that only need a top or bottom edge. */
+.high-contrast .bottom-nav.bottom-nav {
+    border-width: 1px 0 0 0;
+}
+
+.high-contrast .sens-tabs .mud-tabs-tabbar {
+    border-bottom-color: var(--hc-border-color);
+}
+
+/* Dashed outlines stay dashed, only the color changes. */
+.high-contrast .sens-list-action.sens-list-action {
+    border-color: var(--hc-border-color);
+}
+
+/* Switched-on device tiles get a thicker edge so state does not rely on color alone. */
+.high-contrast .sens-device.sens-device--on {
+    border-width: 2px;
+}
+
+/* The switch widget sets its colors inline, so its border needs !important here. */
+.high-contrast .sens-widget-switch {
+    border: 1px solid var(--hc-border-color) !important;
 }
 
 .high-contrast :focus-visible {

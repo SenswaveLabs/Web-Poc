@@ -81,3 +81,10 @@
         overflow-y: auto;
     }
 }
+
+/* Takes the free space in the app bar; the switcher inside truncates long home names. */
+.app-bar-switcher {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+}

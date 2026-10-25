@@ -4,8 +4,17 @@
 
 <MudContainer MaxWidth="MaxWidth.Medium"
               Style="height: 100%; display: flex; flex-direction: column; padding: 0">
+    @if (!EditMode && PositionedWidgets.Count == 0)
+    {
+        <div class="d-flex flex-column align-center justify-center gap-2 pa-8" style="text-align:center;">
+            <MudIcon Icon="@Icons.Material.Rounded.Widgets" Size="Size.Large" Color="Color.Default" />
+            <MudText Typo="Typo.subtitle1">No controls on this screen yet</MudText>
+            <MudText Typo="Typo.body2" Class="mud-text-secondary">Choose Edit layout and pick an empty cell to place a widget.</MudText>
+        </div>
+    }
+
     <div style="@GetGridStyle()" class="flex-grow-1">
-        @foreach (var posWidget in PositionedWidgets)
+        @foreach (var posWidget in DisplayWidgets)
         {
             var calcWidget = CalculatedWidgets.FirstOrDefault(w => w.Id == posWidget.WidgetId);
             if (calcWidget == null) continue;
@@ -30,7 +39,7 @@
                         <MudButton style="@($"grid-row: {row + 1}; grid-column: {col + 1};")"
                                    class="d-flex align-center justify-center border-2 border-dashed mud-border-lines-default rounded-lg"
                                    OnClick="() => StartAddWidget(row, col)">
-                            <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Primary" Opacity="0.5" />
+                            <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Primary" Style="opacity: 0.5;" />
                         </MudButton>
                     }
                 }
@@ -47,7 +56,7 @@
                 <div class="internal-handle-right d-flex flex-column justify-center gap-2">
                     @if (CanExpand(true))
                     {
-                        <MudIconButton Title="adjust span"  Icon="@Icons.Material.Filled.Add"
+                        <MudIconButton aria-label="Wider"  Icon="@Icons.Material.Filled.Add"
                                        Size="Size.Small"
                                        Variant="Variant.Filled"
                                        Color="Color.Primary"
@@ -55,7 +64,7 @@
                     }
                     @if (ColumnSpan > 1)
                     {
-                        <MudIconButton Title="adjust span"  
+                        <MudIconButton aria-label="Narrower"  
                                     Icon="@Icons.Material.Filled.Remove"
                                        Size="Size.Small"
                                        Variant="Variant.Filled"
@@ -68,7 +77,7 @@
                 <div class="internal-handle-bottom d-flex justify-center gap-2">
                     @if (CanExpand(false))
                     {
-                        <MudIconButton Title="adjust span"  Icon="@Icons.Material.Filled.Add"
+                        <MudIconButton aria-label="Taller"  Icon="@Icons.Material.Filled.Add"
                                        Size="Size.Small"
                                        Variant="Variant.Filled"
                                        Color="Color.Primary"
@@ -76,7 +85,7 @@
                     }
                     @if (RowSpan > 1)
                     {
-                        <MudIconButton Title="adjust span" 
+                        <MudIconButton aria-label="Shorter" 
                             Icon="@Icons.Material.Filled.Remove"
                                        Size="Size.Small"
                                        Variant="Variant.Filled"
@@ -163,7 +172,33 @@
     [Parameter]
     public Func<string, CalculatedWidgetDto, Task> OnUnlinkWidget { get; set; } = default!;
 
-    private string GetGridStyle() => $@"
+    // Outside edit mode empty rows are skipped, so controls are not separated by blank space.
+    private List<int> OccupiedRows => Enumerable.Range(0, Rows)
+        .Where(r => PositionedWidgets.Any(w => r >= w.Row && r < w.Row + w.RowSpan))
+        .ToList();
+
+    private IEnumerable<PositionedWidgetDto> DisplayWidgets
+    {
+        get
+        {
+            if (EditMode)
+                return PositionedWidgets;
+
+            var rows = OccupiedRows;
+            return PositionedWidgets.Select(w => w with { Row = rows.IndexOf(w.Row) });
+        }
+    }
+
+    private string GetGridStyle() => EditMode ? GetEditGridStyle() : $@"
+        display: grid;
+        grid-template-rows: repeat({Math.Max(1, OccupiedRows.Count)}, minmax(96px, auto));
+        grid-template-columns: repeat({Columns}, 1fr);
+        gap: 6px;
+        width: 100%;
+        position: relative;
+    ";
+
+    private string GetEditGridStyle() => $@"
         display: grid;
         grid-template-rows: repeat({Rows}, 1fr);
         grid-template-columns: repeat({Columns}, 1fr);

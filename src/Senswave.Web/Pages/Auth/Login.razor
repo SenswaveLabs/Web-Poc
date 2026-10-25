@@ -119,6 +119,9 @@
         if (!_form.IsValid)
             return;
 
+        // Read the target before signing in: the auth shell may already leave this page once the state changes.
+        var returnUrl = AuthRedirect.SafeReturnUrl(Navigation);
+
         try
         {
             LoadingService.Show(SyncKey);
@@ -139,7 +142,7 @@
 
             await UserService.Initialize();
 
-            Navigation.NavigateTo("/");
+            Navigation.NavigateTo(returnUrl);
         }
         finally
         {

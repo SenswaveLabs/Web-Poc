@@ -14,19 +14,20 @@
 
     @if (HomeService.CurrentHome is not null)
     {
-        <MudNavLink Match="NavLinkMatch.Prefix" Href="/devices" Icon="@Icons.Material.Filled.Dashboard">Home Dashboard</MudNavLink>
-        <MudNavLink Match="NavLinkMatch.Prefix" Href="/homes/details" Icon="@Icons.Material.Filled.Info">Home Details</MudNavLink>
-
-        <MudDivider Class="my-1" />
+        <MudNavLink Match="NavLinkMatch.Prefix" Href="/devices" Icon="@Icons.Material.Rounded.Dashboard">Dashboard</MudNavLink>
+        <MudNavLink Match="NavLinkMatch.Prefix" Href="/homes/details" Icon="@Icons.Material.Rounded.Home">Home &amp; sharing</MudNavLink>
+    }
+    else
+    {
+        <MudNavLink Match="NavLinkMatch.Prefix" Href="/homes/list" Icon="@Icons.Material.Rounded.Home">My homes</MudNavLink>
     }
 
-    <MudNavLink Match="NavLinkMatch.Prefix" Href="/homes/list" Icon="@Icons.Material.Filled.SwapHoriz">Switch Home</MudNavLink>
-    <MudNavLink Match="NavLinkMatch.Prefix" Href="/datasources" Icon="@Icons.Material.Filled.Hub">Data Sources</MudNavLink>
-    <MudNavLink Match="NavLinkMatch.Prefix" Href="/users/details" Icon="@Icons.Material.Filled.Settings">Settings</MudNavLink>
+    <MudNavLink Match="NavLinkMatch.Prefix" Href="/datasources" Icon="@Icons.Material.Rounded.Hub">Data sources</MudNavLink>
+    <MudNavLink Match="NavLinkMatch.Prefix" Href="/users/details" Icon="@Icons.Material.Rounded.Settings">Settings</MudNavLink>
 
     <MudDivider Class="my-1" />
 
-    <MudNavLink IconColor="Color.Error" Icon="@Icons.Material.Filled.Logout" OnClick="HandleLogout">Logout</MudNavLink>
+    <MudNavLink IconColor="Color.Error" Icon="@Icons.Material.Rounded.Logout" OnClick="HandleLogout">Logout</MudNavLink>
 </MudNavMenu>
 
 <MudSpacer/>

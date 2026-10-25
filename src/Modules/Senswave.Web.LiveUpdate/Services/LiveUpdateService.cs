@@ -19,22 +19,35 @@ internal sealed class LiveUpdateService(
 {
     private HubConnection? _connection;
 
+    private string _connectionToken = string.Empty;
+
     public event Func<UpdateEvent, Task>? OnUpdate;
 
     public bool IsConnected => _connection?.State == HubConnectionState.Connected;
 
     public async Task Initialize(string homeId)
     {
+        var token = await tokenStore.GetBearerToken();
+        var bearer = token.IsSuccess ? token.Value : string.Empty;
+
+        // A new token means a new login (possibly another user), so the old connection must not be reused.
+        if (_connection is not null && bearer != _connectionToken)
+        {
+            logger.LogInformation("Access token changed - reconnecting live updates.");
+            await _connection.DisposeAsync();
+            _connection = null;
+        }
+
         if (_connection == null || _connection.State == HubConnectionState.Disconnected)
         {
             var hubUrl = Path.Combine(configuration["Api:BaseUrl"]!, "signalr/liveupdates/live");
             var builder = new HubConnectionBuilder();
-            var token = await tokenStore.GetBearerToken();
+            _connectionToken = bearer;
 
             _connection = builder
                 .WithUrl(hubUrl, options =>
                 {
-                    options.AccessTokenProvider = () => Task.FromResult(token.Value);
+                    options.AccessTokenProvider = () => Task.FromResult<string?>(bearer);
                 })
                 .WithAutomaticReconnect()
                 .Build();

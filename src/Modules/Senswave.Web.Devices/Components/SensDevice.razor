@@ -13,72 +13,66 @@
 @inject IDeviceDetailsService DeviceDetailsService
 @inject NavigationManager Navigation
 
-<MudPaper Class="d-flex align-items-center p-3 gap-3 cursor-pointer"
-          tabindex="0"
-          Style="width:100%; height:100%;"
-          Elevation="1"
-          @onkeydown="(e) => OnKeyDown(e)"
-          @onclick="HandleClick">
+<div class="@($"sens-device pa-3 cursor-pointer {(IsOn ? "sens-device--on" : string.Empty)}")"
+     tabindex="0"
+     role="button"
+     aria-label="@($"Open {Device.Name}")"
+     @onkeydown="(e) => OnKeyDown(e)"
+     @onclick="HandleClick">
 
-    <!-- Icon -->
-    <SensIcon Icon="@Device.Icon"
-              Size="Size.Large"
-              Color="Color.Primary" />
+    <div class="d-flex align-center gap-3">
 
-    <!-- Content -->
-    <div class="d-flex flex-column flex-grow-1">
-
-        <MudText Typo="Typo.subtitle1" Class="fw-bold">@Device.Name</MudText>
-
-        <div class="d-flex flex-wrap gap-0 mt-1">
-
-            @if (HasRoomName())
-            {
-                <MudTooltip Text="@($"Device is in room {RoomName}.")">
-                    <MudChip T="string"
-                             Size="Size.Small"
-                             Color="Color.Secondary"
-                             Variant="Variant.Outlined"
-                             Icon="@Icons.Material.Rounded.MyLocation">
-                        @RoomName
-                    </MudChip>
-                </MudTooltip>
-
-            }
-            else
-            {
-                <MudTooltip Text="Device is not assibned to any room.">
-                    <MudChip T="string"
-                             Size="Size.Small"
-                             Color="Color.Secondary"
-                             Variant="Variant.Outlined"
-                             Icon="@Icons.Material.Rounded.MyLocation">
-                        Unknown
-                    </MudChip>
-                </MudTooltip>
-            }
-
+        <div class="sens-device__icon">
+            <SensIcon Icon="@Device.Icon" Color="@(IsOn ? Color.Primary : Color.Default)" />
         </div>
 
+        <div class="d-flex flex-column flex-grow-1" style="min-width:0;">
+            <MudText Typo="Typo.subtitle1" Class="fw-bold text-truncate">@Device.Name</MudText>
+            <MudText Typo="Typo.caption" Class="sens-device__muted text-truncate">
+                @(HasRoomName() ? RoomName : "No room")
+            </MudText>
+        </div>
+
+        <div @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
+            <MudMenu Icon="@Icons.Material.Rounded.MoreVert"
+                     AriaLabel="@($"{Device.Name} options")"
+                     Size="Size.Small"
+                     AnchorOrigin="Origin.BottomRight"
+                     TransformOrigin="Origin.TopRight">
+                <MudMenuItem Icon="@Icons.Material.Rounded.Tune" OnClick="NavigateToDetails">Configure</MudMenuItem>
+            </MudMenu>
+        </div>
     </div>
 
+    <div class="d-flex align-center justify-space-between gap-2 mt-2" style="min-height:36px;">
+        @if (IsSwitch)
+        {
+            <MudText Typo="Typo.body2">
+                <b>@StateLabel</b>
+            </MudText>
 
-    @if (Device?.Tile?.Type == "Switch")
-    {
-        <MudStack>
-            @if (_action)
-            {
-                <MudProgressCircular Size="Size.Small" Indeterminate="true" />
-            }
-            else
-            {
-                <MudIconButton Title="update state" OnClick="HandleStateUpdate" Icon="@Icons.Material.Rounded.PowerSettingsNew" Variant="Variant.Outlined" Color="GetColor()" Size="Size.Medium" />
-            }
-        </MudStack>
-    }
-
-    <MudIconButton OnClick="NavigateToDetails" Title="details" Icon="@Icons.Material.Rounded.Info" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" />
-</MudPaper>
+            <div @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
+                @if (_action)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-3" />
+                }
+                else
+                {
+                    <MudSwitch T="bool"
+                               Value="@IsOn"
+                               ValueChanged="HandleStateUpdate"
+                               Color="Color.Primary"
+                               aria-label="@($"Turn {Device.Name} {(IsOn ? "off" : "on")}")" />
+                }
+            </div>
+        }
+        else
+        {
+            <MudText Typo="Typo.body2" Class="sens-device__muted">Open controls</MudText>
+            <MudIcon Icon="@Icons.Material.Rounded.ChevronRight" Class="sens-device__muted" />
+        }
+    </div>
+</div>
 
 @code {
 
@@ -91,6 +85,17 @@
     private string RoomName { get; set; } = string.Empty;
 
     private bool _action = false;
+
+    private bool IsSwitch => Device?.Tile?.Type == "Switch";
+
+    private bool IsOn => IsSwitch && Device?.Tile?.Value?.GetValueKind() == JsonValueKind.True;
+
+    private string StateLabel => Device?.Tile?.Value?.GetValueKind() switch
+    {
+        JsonValueKind.True => "On",
+        JsonValueKind.False => "Off",
+        _ => "No data"
+    };
 
     protected override async Task OnParametersSetAsync()
     {
@@ -106,14 +111,13 @@
         }
     }
 
-    private async Task HandleStateUpdate()
+    private async Task HandleStateUpdate(bool toSend)
     {
         try
         {
             _action = true;
             StateHasChanged();
 
-            var toSend = !(Device?.Tile?.Value?.AsValue().GetValueKind() == JsonValueKind.True);
             var request = new DeviceTileActionRequest(JsonValue.Create(toSend));
 
             await DeviceIntegrationService.ExecuteDeviceTileActionAsync(Device!.Id, request);
@@ -136,14 +140,6 @@
     private void NavigateToDetails()
     {
         Navigation.NavigateTo($"/devices/details/{Device.Id}");
-    }
-
-    private Color GetColor()
-    {
-        if (Device?.Tile?.Value?.AsValue().GetValueKind() == JsonValueKind.True)
-            return Color.Success;
-
-        return Color.Error;
     }
 
     private async Task HandleClick()

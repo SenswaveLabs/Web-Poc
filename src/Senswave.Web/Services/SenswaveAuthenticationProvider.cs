@@ -240,10 +240,18 @@ public class SenswaveAuthenticationProvider(
 
         logger.LogInformation("Token refresh on initialization completed. Success: {Success}", result.IsSuccess);
 
-        if (result.IsSuccess)
+        // Stay on the requested page after a reload; only leave the sign in pages.
+        if (result.IsSuccess && IsAuthPage())
         {
             navigation.NavigateTo("/");
         }
+    }
+
+    private bool IsAuthPage()
+    {
+        var path = "/" + navigation.ToBaseRelativePath(navigation.Uri);
+        return path.StartsWith("/auth", StringComparison.OrdinalIgnoreCase)
+            || path.StartsWith("/login", StringComparison.OrdinalIgnoreCase);
     }
 
     private async Task InitializeSession(string accessToken, string refreshToken, int expiresIn, bool rememberMe)

@@ -1,56 +1,45 @@
 ﻿@using MudBlazor
 
-<MudPaper Elevation="2" Class="pa-4">
+<MudPaper Outlined="true" Class="pa-4 rounded-lg" Style="min-width:0; overflow:hidden;">
 
     <MudStack Spacing="3">
         @if (HomeMode)
         {
-            <MudText Typo="Typo.h6" Class="mb-3">Data Source</MudText>
+            <MudText Typo="Typo.subtitle1">Data source</MudText>
         }
 
-        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Style="min-width:0;">
 
             <MudIcon Icon="@Icons.Material.Rounded.Dns"
                      Size="Size.Large"
                      Color="Color.Primary" />
 
-            <MudStack Spacing="0">
-                <MudText Typo="Typo.h6">@Name</MudText>
+            <MudStack Spacing="0" Style="min-width:0;">
+                <MudText Typo="Typo.h6" Class="text-truncate">@Name</MudText>
 
-                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                <MudText Typo="Typo.body2" Class="mud-text-secondary" Style="overflow-wrap:anywhere;">
                     @Server:@Port
                 </MudText>
             </MudStack>
 
         </MudStack>
 
-        <MudPaper Elevation="0" Class="pa-3 d-flex align-center justify-space-between">
+        <div class="d-flex flex-wrap align-center gap-3 pa-3 rounded-lg" style="@StatusStyle" role="status">
 
-            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudIcon Icon="@ChipIcon"
+                     Color="@ChipColor"
+                     Size="Size.Medium" />
 
-                <MudIcon Icon="@ChipIcon"
-                         Color="@ChipColor"
-                         Size="Size.Medium" />
-
-                <MudStack Spacing="0">
-                    <MudText Typo="Typo.subtitle2">@Message</MudText>
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">
-                        @Description
-                    </MudText>
-                </MudStack>
-
+            <MudStack Spacing="0" Class="flex-grow-1">
+                <MudText Typo="Typo.subtitle2">@Message</MudText>
+                <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                    @Description
+                </MudText>
             </MudStack>
 
-            <MudChip T="string"
-                     Color="@ChipColor"
-                     Variant="Variant.Filled"
-                     Size="Size.Medium">
+            @Actions
 
-                @ConnectionStatus
-
-            </MudChip>
-
-        </MudPaper>
+        </div>
 
     </MudStack>
 
@@ -73,11 +62,22 @@
     [Parameter]
     public int Port { get; set; }
 
+    [Parameter]
+    public RenderFragment? Actions { get; set; }
+
+    private string StatusStyle => ConnectionStatus switch
+    {
+        "Working" => "background-color: rgba(var(--mud-palette-success-rgb), 0.12);",
+        "Restarting" => "background-color: rgba(var(--mud-palette-warning-rgb), 0.12);",
+        "Stopped" or "Invalid" => "background-color: rgba(var(--mud-palette-error-rgb), 0.10);",
+        _ => "background-color: var(--mud-palette-action-default-hover);"
+    };
+
     private string Message => ConnectionStatus switch
     {
         "Loading" => "Loading",
         "Invalid" => "Invalid",
-        "Working" => "Working",
+        "Working" => "Connected",
         "Restarting" => "Restarting",
         "Stopped" => "Stopped",
         "NotStarted" => "Not started",
