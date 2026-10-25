@@ -21,21 +21,24 @@
 else
 {
     <MudMenu FullWidth="@FullWidth"
+             Class="@($"home-switcher-menu {(FullWidth ? "home-switcher-menu--full" : string.Empty)}")"
              AnchorOrigin="Origin.BottomLeft"
              TransformOrigin="Origin.TopLeft"
+             PopoverClass="home-switcher-popover"
              AriaLabel="Switch home">
         <ActivatorContent>
             <button type="button"
                     class="@($"home-switcher {(Color == Color.Inherit ? "home-switcher--flat" : string.Empty)} d-flex align-center gap-2 px-2 py-1 cursor-pointer")"
                     aria-label="@($"Home: {HomeService.CurrentHome.Name}. Switch home")"
                     @onclick="context.ToggleAsync"
-                    style="@($"color: {(Color == Color.Inherit ? "inherit" : "var(--mud-palette-text-primary)")}; {(FullWidth ? "width: 100%;" : string.Empty)}")">
-                <MudIcon Icon="@HomeService.CurrentHome.Icon.TranslateIcon()" Color="@(Color == Color.Inherit ? Color.Inherit : Color.Primary)" Size="Size.Small" />
+                    title="@HomeService.CurrentHome.Name"
+                    style="@($"color: {(Color == Color.Inherit ? "inherit" : "var(--mud-palette-text-primary)")};")">
+                <MudIcon Icon="@HomeService.CurrentHome.Icon.TranslateIcon()" Color="@(Color == Color.Inherit ? Color.Inherit : Color.Primary)" Size="Size.Small" Class="flex-shrink-0" />
                 <span class="d-flex flex-column flex-grow-1" style="min-width:0; line-height:1.2;">
                     <span class="home-switcher__label">Home</span>
                     <span class="home-switcher__name text-truncate" style="font-weight:500;">@HomeService.CurrentHome.Name</span>
                 </span>
-                <MudIcon Icon="@Icons.Material.Rounded.UnfoldMore" Size="Size.Small" Color="Color.Inherit" />
+                <MudIcon Icon="@Icons.Material.Rounded.UnfoldMore" Size="Size.Small" Color="Color.Inherit" Class="flex-shrink-0" />
             </button>
         </ActivatorContent>
         <ChildContent>
@@ -43,11 +46,11 @@ else
             {
                 var id = home.Id;
                 <MudMenuItem Icon="@home.Icon.TranslateIcon()" OnClick="() => SwitchHome(id)">
-                    <div class="d-flex align-center gap-2">
-                        <span>@home.Name</span>
+                    <div class="d-flex align-center gap-2" style="min-width:0;">
+                        <span class="home-switcher__name" title="@home.Name">@home.Name</span>
                         @if (home.Id == HomeService.CurrentHome?.Id)
                         {
-                            <MudIcon Icon="@Icons.Material.Rounded.Check" Size="Size.Small" Color="Color.Primary" />
+                            <MudIcon Icon="@Icons.Material.Rounded.Check" Size="Size.Small" Color="Color.Primary" Class="flex-shrink-0" />
                         }
                     </div>
                 </MudMenuItem>
@@ -59,7 +62,22 @@ else
 }
 
 <style>
+    /* The menu and its button never grow past the space they get, so long names are truncated. */
+    .home-switcher-menu {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .home-switcher-menu--full {
+        display: flex;
+        width: 100%;
+    }
+
     .home-switcher {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        overflow: hidden;
         background: transparent;
         font: inherit;
         text-align: left;
@@ -70,7 +88,6 @@ else
 
     .home-switcher--flat {
         border-color: transparent;
-        max-width: 70vw;
     }
 
     .home-switcher--flat:hover {
@@ -79,6 +96,28 @@ else
 
     .home-switcher--flat .home-switcher__name {
         font-size: 1.05rem;
+    }
+
+    .home-switcher__name {
+        display: block;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    /* The list opens below the switcher and must fit on narrow phones too. */
+    .mud-popover.home-switcher-popover {
+        max-width: calc(100vw - 32px) !important;
+        overflow: hidden;
+    }
+
+    .home-switcher-popover .mud-menu-list {
+        min-width: 0;
+    }
+
+    .home-switcher-popover .mud-menu-item,
+    .home-switcher-popover .mud-menu-item-text {
+        min-width: 0;
     }
 
     .home-switcher__label {

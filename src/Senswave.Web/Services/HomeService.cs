@@ -1,4 +1,5 @@
-﻿using Refit;
+﻿using Microsoft.AspNetCore.Components.Authorization;
+using Refit;
 using Senswave.Web.Homes.Integration;
 using Senswave.Web.Homes.Models;
 using Senswave.Web.Homes.Services;
@@ -7,18 +8,39 @@ using System.Net;
 
 namespace Senswave.Web.Services;
 
-public class HomeService(
-    IErrorFactory errorFactory,
-    IRoomsIntegrationServcice roomsIntegrationService,
-    IHomesIntegrationService integrationService,
-    IHomesSharingIntegrationService sharingIntegrationService,
-    ILogger<HomeService> logger) : IHomeService, IRoomService
+public class HomeService : IHomeService, IRoomService, IDisposable
 {
+    private readonly AuthenticationStateProvider authenticationStateProvider;
+    private readonly IErrorFactory errorFactory;
+    private readonly IRoomsIntegrationServcice roomsIntegrationService;
+    private readonly IHomesIntegrationService integrationService;
+    private readonly IHomesSharingIntegrationService sharingIntegrationService;
+    private readonly ILogger<HomeService> logger;
+
     private HomeDetails? _currentHome;
 
     private List<RoomDto> _rooms = [];
 
     private readonly SemaphoreSlim _initLock = new(1, 1);
+
+    public HomeService(
+        AuthenticationStateProvider authenticationStateProvider,
+        IErrorFactory errorFactory,
+        IRoomsIntegrationServcice roomsIntegrationService,
+        IHomesIntegrationService integrationService,
+        IHomesSharingIntegrationService sharingIntegrationService,
+        ILogger<HomeService> logger)
+    {
+        this.authenticationStateProvider = authenticationStateProvider;
+        this.errorFactory = errorFactory;
+        this.roomsIntegrationService = roomsIntegrationService;
+        this.integrationService = integrationService;
+        this.sharingIntegrationService = sharingIntegrationService;
+        this.logger = logger;
+
+        // Login or logout means a different (or no) user, so the home of the previous user must not be kept.
+        authenticationStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
+    }
 
     public HomeDetails? CurrentHome
     {
@@ -429,6 +451,19 @@ public class HomeService(
                 Name = r.Name
             }).ToList() ?? []
         };
+    }
+
+    private void OnAuthenticationStateChanged(Task<AuthenticationState> state)
+    {
+        logger.LogInformation("Authentication changed - clearing current home.");
+
+        _rooms = [];
+        CurrentHome = null;
+    }
+
+    public void Dispose()
+    {
+        authenticationStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
     }
 
     #region IRoomService

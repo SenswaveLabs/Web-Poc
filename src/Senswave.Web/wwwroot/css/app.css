@@ -138,3 +138,52 @@ code {
     background-color: transparent;
     border-bottom: 1px solid var(--mud-palette-lines-default);
 }
+
+/* Room chips never grow wider than the screen; long room names are truncated. */
+.room-chips {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.room-chips .mud-chip-container,
+.room-chips .mud-chip {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.room-chips .mud-chip-content {
+    min-width: 0;
+}
+
+.room-chips__name {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* Long page names (e.g. a home name) are truncated instead of widening the page. */
+.mud-breadcrumbs {
+    flex-wrap: nowrap;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.mud-breadcrumb-item {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.mud-breadcrumb-item > a {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* User-entered names without spaces (homes, rooms, devices) wrap instead of widening the page. */
+.mud-main-content {
+    overflow-wrap: anywhere;
+    /* A flex item grows to its widest child by default; keep the page as wide as the screen. */
+    min-width: 0;
+}

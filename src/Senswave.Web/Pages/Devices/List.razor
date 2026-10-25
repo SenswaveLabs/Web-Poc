@@ -74,14 +74,14 @@
         <MudContainer MaxWidth="MaxWidth.False" Gutters="false" Class="d-flex flex-column gap-3 pb-3">
 
             <div class="d-flex flex-wrap align-center justify-space-between gap-2">
-                <div class="d-flex flex-column">
+                <div class="d-flex flex-column" style="min-width:0; max-width:100%;">
                     <MudText Typo="Typo.h5" HtmlTag="h1">Devices</MudText>
-                    <div class="d-flex align-center gap-2">
+                    <div class="d-flex align-center gap-2" style="min-width:0;">
                         <MudIcon Icon="@Icons.Material.Rounded.Circle"
                                  Size="Size.Small"
                                  Style="font-size:10px;"
                                  Color="@(LiveUpdateService.IsConnected ? Color.Success : Color.Default)" />
-                        <MudText Typo="Typo.caption">
+                        <MudText Typo="Typo.caption" Class="text-truncate">
                             @HomeService.CurrentHome?.Name · @(LiveUpdateService.IsConnected ? "live updates on" : "live updates off")
                         </MudText>
                     </div>
@@ -102,9 +102,9 @@
                 </div>
             </div>
 
-            <div class="d-flex flex-wrap align-center gap-1">
+            <div class="d-flex flex-wrap align-center gap-1" style="min-width:0;">
                 <MudChipSet T="string"
-                            Class="d-flex flex-row flex-wrap"
+                            Class="room-chips d-flex flex-row flex-wrap"
                             SelectionMode="SelectionMode.SingleSelection"
                             CheckMark="false"
                             @bind-SelectedValue="_selectedRoomId"
@@ -116,7 +116,7 @@
                     @foreach (var room in displayRooms)
                     {
                         <MudChip Value="@room.Id" Size="Size.Medium">
-                            @room.Name <span class="ml-1 mud-text-secondary">@displayDevices.Count(d => d.RoomId == room.Id)</span>
+                            <span class="room-chips__name" title="@room.Name">@room.Name</span><span class="ml-1 mud-text-secondary">@displayDevices.Count(d => d.RoomId == room.Id)</span>
                         </MudChip>
                     }
                 </MudChipSet>
