@@ -22,6 +22,9 @@ git clone https://github.com/SenswaveLabs/Backend.git
 git clone https://github.com/SenswaveLabs/Web-Poc.git
 ```
 
+Obrazy budujemy zawsze z gałęzi `main` w obu repozytoriach. `git clone` pobiera `main` domyślnie.
+Jeśli repozytorium było już pobrane, przed budowaniem wykonaj w nim `git checkout main` i `git pull`.
+
 ## 2. Zbuduj obrazy backendu
 
 ```sh
@@ -54,7 +57,8 @@ cp .env.template .env
 
 Plik [`docker-compose.yml`](docker-compose.yml) uruchamia: web, API, seed, PostgreSQL i smtp4dev. Bez RabbitMQ i bez workera.
 Używa obrazów z kroków 2 i 3, niczego nie buduje. Nazwy obrazów są w `.env` (`API_IMAGE`, `SEED_IMAGE`, `WEB_IMAGE`).
-Wartości domyślne działają bez zmian. Plik `.env` jest w `.gitignore`.
+Wartości domyślne działają bez zmian, poza logowaniem Google. Plik `.env` jest w `.gitignore`.
+
 
 ## 5. Uruchom
 
@@ -73,7 +77,7 @@ Przebieg seeda:
 docker logs Senswave.Local.Seed
 ```
 
-Ostatnia linia „Initial seed finished successfully.” oznacza, że wszystko się udało.
+Linie „Initial seed finished successfully.” i „Initial seed finished.” na końcu logu oznaczają, że wszystko się udało.
 
 Konta po seedzie:
 
