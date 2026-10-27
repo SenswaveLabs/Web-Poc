@@ -47,7 +47,7 @@
                     </MudText>
                 </div>
 
-                <div class="d-flex align-center gap-2">
+                <div class="d-flex align-center gap-2 no-print">
                     <MudTooltip Text="Refresh">
                         <MudIconButton Icon="@Icons.Material.Rounded.Refresh" aria-label="Refresh" OnClick="RefreshPage" />
                     </MudTooltip>
@@ -87,7 +87,7 @@
                             </Actions>
                         </SensDataSourceState>
 
-                        <MudPaper Outlined="true" Class="pa-4 rounded-lg" Style="border-color: var(--mud-palette-error);">
+                        <MudPaper Outlined="true" Class="pa-4 rounded-lg no-print" Style="border-color: var(--mud-palette-error);">
                             <MudStack Spacing="3">
                                 @if (IsRunning)
                                 {

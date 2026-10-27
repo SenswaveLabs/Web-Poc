@@ -187,3 +187,79 @@ code {
     /* A flex item grows to its widest child by default; keep the page as wide as the screen. */
     min-width: 0;
 }
+
+/* Print view: show data, hide controls. Mark page-level controls with "no-print"; "print-only" shows text that replaces them. */
+.print-only {
+    display: none;
+}
+
+@media print {
+    @page {
+        size: A4;
+        margin: 14mm;
+    }
+
+    .mud-drawer,
+    .mud-appbar,
+    .bottom-nav,
+    .mud-overlay,
+    .mud-snackbar-provider,
+    .mud-popover-provider,
+    .mud-tooltip-root > .mud-popover,
+    .mud-tabs-tabbar,
+    .sens-list-action,
+    body .no-print {
+        display: none !important;
+    }
+
+    /* "body" outweighs MudBlazor utility classes such as d-flex, which also use !important. */
+    body .print-only {
+        display: block !important;
+    }
+
+    .print-header {
+        border-bottom: 1px solid #000;
+        padding-bottom: 4px;
+        margin-bottom: 12px;
+    }
+
+    /* The layout is a full-height scroll container; let the content flow over several pages instead. */
+    body .main-layout,
+    body .mud-main-content,
+    body .sens-page {
+        display: block !important;
+        height: auto !important;
+        overflow: visible !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* Configure prints all of its tabs, one after another. */
+    .print-all-panels .mud-tabs-panels > * {
+        display: block !important;
+    }
+
+    .mud-paper {
+        box-shadow: none !important;
+        break-inside: avoid;
+    }
+
+    .mud-input-outlined-border {
+        border: none !important;
+    }
+
+    .mud-select .mud-input-adornment {
+        display: none !important;
+    }
+
+    .sens-widget-switch {
+        background: none !important;
+        color: inherit !important;
+        border: 1px solid #999;
+    }
+
+    .sens-widget-color {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}

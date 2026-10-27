@@ -48,6 +48,18 @@ public class SensDataSourceStateTests : ComponentTestBase
     }
 
     [Fact]
+    public void Actions_are_hidden_on_print()
+    {
+        RenderFragment actions = builder => builder.AddMarkupContent(0, "<button id=\"restart\">Restart</button>");
+
+        var cut = Render<SensDataSourceState>(p => p
+            .Add(x => x.ConnectionStatus, "Working")
+            .Add(x => x.Actions, actions));
+
+        Assert.NotNull(cut.Find(".no-print #restart"));
+    }
+
+    [Fact]
     public void Home_mode_shows_section_title()
     {
         var cut = Render<SensDataSourceState>(p => p.Add(x => x.HomeMode, true));

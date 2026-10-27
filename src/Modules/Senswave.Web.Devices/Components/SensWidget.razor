@@ -9,7 +9,8 @@
 @inject IErrorFactory ErrorFactory
 @inject IDialogService DialogService
 
-<div style="@GetWidgetGridStyle()" class="pa-1">
+@* A Button widget has no state to show on paper. *@
+<div style="@GetWidgetGridStyle()" class="@(!EditMode && Widget.Type == "Button" ? "pa-1 no-print" : "pa-1")">
 
     @if (EditMode)
     {
@@ -76,7 +77,7 @@
                         }
                         else
                         {
-                            <MudIcon Icon="@Icons.Material.Filled.PowerSettingsNew" Size="Size.Large" Color="Color.Inherit" />
+                            <MudIcon Icon="@Icons.Material.Filled.PowerSettingsNew" Size="Size.Large" Color="Color.Inherit" Class="no-print" />
                         }
                         <MudText Typo="Typo.subtitle2" Class="px-2 text-center" Color="Color.Inherit">@Widget.Name</MudText>
                         <MudText Typo="Typo.caption" Class="px-2 text-center" Color="Color.Inherit">@(IsChecked() ? "On" : "Off")</MudText>
@@ -104,7 +105,7 @@
                     Disabled="@(Disabled || _loading)"
                     Color="Color.Primary"
                     aria-label="@Widget.Name"
-                    Class="ma-0" />
+                    Class="ma-0 no-print" />
 
                     <div class="d-flex justify-space-between">
                         <MudText Typo="Typo.caption" Class="mud-text-secondary">@FormatSliderValue(GetSliderMin())</MudText>
@@ -114,7 +115,7 @@
                 break;
             case "Color":
                 <MudButton Style="@($"background-color: {GetRuntimeValue() ?? "#000000"}; color: {GetContrastColor(GetRuntimeValue())}; cursor: pointer;")"
-                Class="d-flex align-center justify-center mud-height-full rounded-lg w-100"
+                Class="sens-widget-color d-flex align-center justify-center mud-height-full rounded-lg w-100"
                 OnClick="OpenColorDialog">
                     <div class="d-flex flex-column align-center">
                         <MudText Typo="Typo.button" Style="color: inherit">
@@ -134,7 +135,7 @@
                         <MudButton Variant="@(IsSelected(option) ? Variant.Filled: Variant.Outlined)"
                         Color="@(IsSelected(option) ? Color.Primary : Color.Default)"
                         OnClick="@(() => HandleRadioChange(option.OptionName))"
-                        Class="mx-1 flex-grow-1"
+                        Class="@(IsSelected(option) ? "mx-1 flex-grow-1" : "mx-1 flex-grow-1 no-print")"
                         Disabled="@(Disabled || _loading)"
                         Size="Size.Small">
                             @option.DisplayName

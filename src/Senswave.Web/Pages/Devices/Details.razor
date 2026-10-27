@@ -55,7 +55,7 @@
                     </MudText>
                 </div>
 
-                <div class="d-flex align-center gap-2">
+                <div class="d-flex align-center gap-2 no-print">
                     <MudButton Variant="Variant.Text"
                                StartIcon="@Icons.Material.Rounded.SpaceDashboard"
                                Href="@($"/devices/dashboard/{Id}")">
@@ -71,10 +71,11 @@
                 </div>
             </div>
 
-            <MudTabs Class="sens-tabs" Elevation="0" Border="false" Rounded="false" Color="Color.Transparent" SliderColor="Color.Primary" KeepPanelsAlive="true">
+            <MudTabs Class="sens-tabs print-all-panels" Elevation="0" Border="false" Rounded="false" Color="Color.Transparent" SliderColor="Color.Primary" KeepPanelsAlive="true">
 
                 <MudTabPanel Text="General">
                     <div class="d-flex flex-column gap-4 pt-4" style="max-width: 720px;">
+                        <MudText Typo="Typo.h6" HtmlTag="h2" Class="print-only">General</MudText>
                         <MudPaper Outlined="true" Class="pa-4 rounded-lg">
                             <DeviceForm @ref="DeviceForm"
                                         Model="DeviceModel"
@@ -87,7 +88,7 @@
                             </MudText>
                         </MudPaper>
 
-                        <MudPaper Outlined="true" Class="pa-4 rounded-lg" Style="border-color: var(--mud-palette-error);">
+                        <MudPaper Outlined="true" Class="pa-4 rounded-lg no-print" Style="border-color: var(--mud-palette-error);">
                             <div class="d-flex flex-wrap align-center gap-3">
                                 <div class="flex-grow-1">
                                     <MudText Typo="Typo.subtitle1" Color="Color.Error">Delete device</MudText>
@@ -101,7 +102,8 @@
 
                 <MudTabPanel Text="@($"Operations ({OperationGroups.Count})")">
                     <div class="d-flex flex-column gap-3 pt-4" style="max-width: 900px;">
-                        <div class="d-flex flex-wrap align-center gap-2">
+                        <MudText Typo="Typo.h6" HtmlTag="h2" Class="print-only">Operations (@OperationGroups.Count)</MudText>
+                        <div class="d-flex flex-wrap align-center gap-2 no-print">
                             <MudText Typo="Typo.body2" Class="mud-text-secondary flex-grow-1">
                                 An operation is an MQTT topic with a value type. Widgets are the controls that show or change it.
                             </MudText>
@@ -136,10 +138,11 @@
                                                Size="Size.Small"
                                                Color="Color.Primary"
                                                StartIcon="@Icons.Material.Rounded.Add"
+                                               Class="no-print"
                                                OnClick="() => AddWidget(group.Operation)">
                                         Widget
                                     </MudButton>
-                                    <MudMenu Icon="@Icons.Material.Rounded.MoreVert" Size="Size.Small" AriaLabel="@($"{group.Operation.Name} options")">
+                                    <MudMenu Class="no-print" Icon="@Icons.Material.Rounded.MoreVert" Size="Size.Small" AriaLabel="@($"{group.Operation.Name} options")">
                                         <MudMenuItem Icon="@Icons.Material.Rounded.Delete"
                                                      IconColor="Color.Error"
                                                      Disabled="@(group.Widgets.Count != 0)"
@@ -161,6 +164,7 @@
                                             <MudText Typo="Typo.body2" Class="flex-grow-1">@widget.Name</MudText>
                                             <MudIconButton Icon="@Icons.Material.Rounded.Delete"
                                                            Size="Size.Small"
+                                                           Class="no-print"
                                                            aria-label="@($"Delete widget {widget.Name}")"
                                                            OnClick="@(() => DeleteWidget(widget.Id))" />
                                         </div>
@@ -173,7 +177,8 @@
 
                 <MudTabPanel Text="@($"Screens ({Dashboards.Count})")">
                     <div class="d-flex flex-column gap-3 pt-4" style="max-width: 720px;">
-                        <div class="d-flex flex-wrap align-center gap-2">
+                        <MudText Typo="Typo.h6" HtmlTag="h2" Class="print-only">Screens (@Dashboards.Count)</MudText>
+                        <div class="d-flex flex-wrap align-center gap-2 no-print">
                             <MudText Typo="Typo.body2" Class="mud-text-secondary flex-grow-1">
                                 Screens hold the widgets you see when you open the device. Up to 3 per device.
                             </MudText>
@@ -210,11 +215,13 @@
                                     <MudButton Variant="Variant.Filled"
                                                Color="Color.Primary"
                                                Size="Size.Small"
+                                               Class="no-print"
                                                OnClick="@(() => UpdateDashboard(dashboard))">
                                         Save name
                                     </MudButton>
                                 }
                                 <MudIconButton Icon="@Icons.Material.Rounded.Delete"
+                                               Class="no-print"
                                                aria-label="@($"Delete screen {dashboard.Name}")"
                                                OnClick="@(() => DeleteDashboard(dashboard))" />
                             </MudPaper>

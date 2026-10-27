@@ -78,4 +78,47 @@ public class SensWidgetTests : ComponentTestBase
 
         Assert.Contains("Invalid: Gauge", cut.Markup);
     }
+
+    [Fact]
+    public void Button_widget_is_hidden_on_print()
+    {
+        var cut = RenderWidget("Button", JsonValue.Create(""));
+
+        Assert.Contains("no-print", cut.Find("div").ClassList);
+    }
+
+    [Fact]
+    public void Button_widget_in_edit_mode_stays_on_print()
+    {
+        var cut = RenderWidget("Button", JsonValue.Create(""), editMode: true);
+
+        Assert.DoesNotContain("no-print", cut.Find("div").ClassList);
+    }
+
+    [Fact]
+    public void Slider_on_print_hides_the_slider_and_keeps_the_value()
+    {
+        var cut = RenderWidget("Slider", JsonValue.Create(21.5), new WidgetRangeDto(10, 30), "°C");
+
+        Assert.Contains("no-print", cut.Find(".mud-slider").ClassList);
+        Assert.DoesNotContain("no-print", cut.Find(".mud-typography-h6").ClassList);
+    }
+
+    [Fact]
+    public void Radio_on_print_keeps_only_the_selected_option()
+    {
+        var options = new List<RadioOption>
+        {
+            new("auto", "Auto", ""),
+            new("eco", "Eco", ""),
+            new("off", "Off", ""),
+        };
+        var cut = Render<SensWidget>(p => p
+            .Add(x => x.Widget, new CalculatedWidgetDto("w1", "Mode", "Radio",
+                new WidgetDetailsDto(null, null, null, options, new WidgetRuntimeDto(JsonValue.Create("eco"))), DateTime.UtcNow))
+            .Add(x => x.Position, new PositionedWidgetDto("w1", 0, 0, 1, 4)));
+
+        var printed = cut.FindAll("button").Where(b => !b.ClassList.Contains("no-print")).Select(b => b.TextContent.Trim());
+        Assert.Equal(["Eco"], printed);
+    }
 }

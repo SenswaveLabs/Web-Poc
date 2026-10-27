@@ -87,7 +87,7 @@
                     </div>
                 </div>
 
-                <div class="d-flex align-center gap-2">
+                <div class="d-flex align-center gap-2 no-print">
                     <MudTooltip Text="Refresh devices">
                         <MudIconButton Icon="@Icons.Material.Rounded.Refresh"
                                        aria-label="Refresh devices"
@@ -102,7 +102,9 @@
                 </div>
             </div>
 
-            <div class="d-flex flex-wrap align-center gap-1" style="min-width:0;">
+            <MudText Typo="Typo.body2" Class="print-only">Room: @(SelectedRoom?.Name ?? "All")</MudText>
+
+            <div class="d-flex flex-wrap align-center gap-1 no-print" style="min-width:0;">
                 <MudChipSet T="string"
                             Class="room-chips d-flex flex-row flex-wrap"
                             SelectionMode="SelectionMode.SingleSelection"
@@ -147,7 +149,7 @@
                     </MudItem>
                 }
 
-                <MudItem xs="12" sm="6" md="6" lg="4" xl="3" xxl="3">
+                <MudItem xs="12" sm="6" md="6" lg="4" xl="3" xxl="3" Class="no-print">
                     <SensListAction Title="Add device" OnClick="AddDeviceDialogHandler" />
                 </MudItem>
 

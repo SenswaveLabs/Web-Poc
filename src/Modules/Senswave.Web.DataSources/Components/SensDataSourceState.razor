@@ -37,7 +37,10 @@
                 </MudText>
             </MudStack>
 
-            @Actions
+            @if (Actions is not null)
+            {
+                <div class="no-print">@Actions</div>
+            }
 
         </div>
 

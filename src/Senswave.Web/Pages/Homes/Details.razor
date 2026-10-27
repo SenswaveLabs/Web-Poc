@@ -55,7 +55,7 @@
                     </div>
                 </div>
 
-                <div class="d-flex align-center gap-2">
+                <div class="d-flex align-center gap-2 no-print">
                     <MudTooltip Text="Refresh">
                         <MudIconButton Icon="@Icons.Material.Rounded.Refresh" aria-label="Refresh" OnClick="RefreshPage" />
                     </MudTooltip>
@@ -127,6 +127,7 @@
                                                      HomeMode="true">
                                     <Actions>
                                         <MudButton Variant="Variant.Text"
+                                                   Class="no-print"
                                                    EndIcon="@Icons.Material.Rounded.ChevronRight"
                                                    Href="@($"/datasources/details/{Current?.DataSource?.Id}")">
                                             Open
@@ -141,7 +142,7 @@
                                     <MudText Typo="Typo.body2" Class="mud-text-secondary">
                                         This home has no MQTT broker, so devices cannot send or receive data.
                                     </MudText>
-                                    <div>
+                                    <div class="no-print">
                                         <MudButton Variant="Variant.Filled"
                                                    Color="Color.Primary"
                                                    StartIcon="@Icons.Material.Rounded.Link"
@@ -168,6 +169,7 @@
                                                Color="Color.Primary"
                                                Size="Size.Small"
                                                StartIcon="@Icons.Material.Rounded.PersonAdd"
+                                               Class="no-print"
                                                OnClick="InviteToHome">
                                         Invite
                                     </MudButton>
@@ -188,6 +190,7 @@
                                         <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@SharingLabel(sharing.SharingType)</MudChip>
                                         <MudIconButton Icon="@Icons.Material.Rounded.PersonRemove"
                                                        Size="Size.Small"
+                                                       Class="no-print"
                                                        aria-label="@($"Remove {sharing.FriendEmail}")"
                                                        OnClick="() => RemoveSharing(sharing.SharingId)" />
                                     </div>
@@ -202,7 +205,7 @@
                             </MudPaper>
                         }
 
-                        <MudPaper Outlined="true" Class="pa-4 rounded-lg" Style="border-color: var(--mud-palette-error);">
+                        <MudPaper Outlined="true" Class="pa-4 rounded-lg no-print" Style="border-color: var(--mud-palette-error);">
                             <MudStack Spacing="3">
                                 @if (IsOwner)
                                 {

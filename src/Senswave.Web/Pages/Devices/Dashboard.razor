@@ -57,7 +57,7 @@
                     </div>
                 </div>
 
-                <div class="d-flex align-center gap-1">
+                <div class="d-flex align-center gap-1 no-print">
                     @if (EditMode)
                     {
                         @if (SelectionMode)
@@ -95,7 +95,9 @@
 
             @if (Dashboards.Count > 1)
             {
-                <MudTabs Class="sens-tabs"
+                <MudText Typo="Typo.subtitle1" Class="print-only">Screen: @CurrentDashboard?.Name</MudText>
+
+                <MudTabs Class="sens-tabs no-print"
                          ActivePanelIndex="_currentIndex"
                          ActivePanelIndexChanged="OnClick"
                          Elevation="0"
