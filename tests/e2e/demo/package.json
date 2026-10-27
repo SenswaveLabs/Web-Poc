@@ -1,0 +1,12 @@
+{
+  "name": "senswave-web-demo-recording",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "demo": "playwright test --config playwright.config.ts"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "lighthouse": "13.5.0"
+  }
+}
