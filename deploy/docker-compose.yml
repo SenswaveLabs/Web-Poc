@@ -1,0 +1,79 @@
+# Runs Senswave locally: backend API, web client and seed, with PostgreSQL and a test SMTP server.
+# No RabbitMQ and no data source worker: the API uses an in-memory message bus and connects to MQTT brokers itself.
+# Uses images built with docker compose in the docker/ folder of each repository. See local-run.md.
+name: senswave-local
+
+services:
+  web:
+    image: ${WEB_IMAGE}
+    container_name: Senswave.Local.Web
+    env_file:
+      - .env
+    ports:
+      - ${WEB_PORT}:80
+    depends_on:
+      api:
+        condition: service_healthy
+
+  api:
+    image: ${API_IMAGE}
+    container_name: Senswave.Local.Api
+    hostname: api
+    env_file:
+      - .env
+    ports:
+      - ${API_PORT}:8080
+    depends_on:
+      database:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:5001/api/health | grep -q '\"status\":\"Healthy\"'"]
+      interval: 5s
+      timeout: 2s
+      retries: 20
+      start_period: 10s
+
+  database:
+    image: postgres:17.6
+    container_name: Senswave.Local.Database
+    hostname: database
+    environment:
+      - POSTGRES_DB=${PostgreSql__Database}
+      - POSTGRES_USER=${PostgreSql__Username}
+      - POSTGRES_PASSWORD=${PostgreSql__Password}
+    volumes:
+      - database-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-q", "-d", "${PostgreSql__Database}", "-U", "${PostgreSql__Username}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  smtp:
+    image: rnwood/smtp4dev
+    container_name: Senswave.Local.Smtp
+    hostname: smtp
+    environment:
+      - ServerOptions__Port=${Smtp__Port}
+    ports:
+      - ${SMTP_UI_PORT}:80
+
+  # Creates test users, a broker and a home once, then exits. See seed/run-seed.sh.
+  seed:
+    image: ${SEED_IMAGE}
+    container_name: Senswave.Local.Seed
+    env_file:
+      - .env
+    volumes:
+      - ./seed:/seed:ro
+      - seed-state:/seed-state
+    # tr strips Windows line endings that a Git checkout can add to the script.
+    entrypoint: ["sh", "-c", "tr -d '\\r' < /seed/run-seed.sh | sh"]
+    restart: "no"
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  database-data:
+  seed-state:
