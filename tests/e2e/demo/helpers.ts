@@ -106,13 +106,14 @@ export async function installOverlay(context: BrowserContext) {
           bar.id = '__demo_bar';
           bar.setAttribute('aria-hidden', 'true');
           bar.style.cssText = 'position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:2147483647;pointer-events:none;'
-            + 'display:flex;align-items:center;gap:14px;width:max-content;max-width:min(92vw,1200px);padding:12px 22px;border-radius:14px;'
+            + 'display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;width:max-content;max-width:min(92vw,1200px);padding:12px 22px;border-radius:14px;'
             + 'background:rgba(10,10,10,.88);color:#fff;font:600 min(24px,4.4vw)/1.3 "Liberation Sans",Arial,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.45);';
           const code = document.createElement('span');
           code.id = '__demo_code';
           code.style.cssText = 'flex:none;padding:4px 10px;border-radius:8px;background:#ffc107;color:#000;font-weight:800;';
           const lines = document.createElement('span');
-          lines.style.cssText = 'display:flex;flex-direction:column;gap:2px;';
+          // On a phone the badge takes its own row and the text wraps below it.
+          lines.style.cssText = 'display:flex;flex-direction:column;gap:2px;flex:1 1 260px;min-width:0;';
           const title = document.createElement('span');
           title.id = '__demo_title';
           const text = document.createElement('span');
@@ -144,7 +145,17 @@ export async function installOverlay(context: BrowserContext) {
         box.textContent = panel;
       }
     };
-    (window as any).__demoRender = render;
+    // The captions are not part of the page, so keep them off the print preview.
+    const printStyle = () => {
+      if (document.head && !document.getElementById('__demo_print')) {
+        const style = document.createElement('style');
+        style.id = '__demo_print';
+        style.textContent = '@media print { #__demo_bar, #__demo_panel { display: none !important; } }';
+        document.head.appendChild(style);
+      }
+    };
+    document.addEventListener('DOMContentLoaded', printStyle);
+    (window as any).__demoRender = () => { printStyle(); render(); };
     window.addEventListener('storage', render);
     document.addEventListener('DOMContentLoaded', render);
     new MutationObserver(() => {

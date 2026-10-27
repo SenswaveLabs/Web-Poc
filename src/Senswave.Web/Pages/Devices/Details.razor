@@ -71,7 +71,11 @@
                 </div>
             </div>
 
-            <MudTabs Class="sens-tabs print-all-panels" Elevation="0" Border="false" Rounded="false" Color="Color.Transparent" SliderColor="Color.Primary" KeepPanelsAlive="true">
+            @* Reserves its height while hidden, so showing it does not move the tabs. *@
+            <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="no-print" Style="@(_busy ? null : "visibility: hidden;")" />
+
+            <MudTabs Class="sens-tabs print-all-panels" Elevation="0" Border="false" Rounded="false" Color="Color.Transparent" SliderColor="Color.Primary" KeepPanelsAlive="true"
+                     @bind-ActivePanelIndex="_activeTab">
 
                 <MudTabPanel Text="General">
                     <div class="d-flex flex-column gap-4 pt-4" style="max-width: 720px;">
@@ -246,6 +250,11 @@
     private bool _loading = true;
     private bool _failedToLoad = true;
 
+    // Set while data reloads after a change. The page keeps its content, so the open tab and scroll position stay.
+    private bool _busy;
+
+    private int _activeTab;
+
     [Parameter]
     public string Id { get; set; } = string.Empty;
 
@@ -305,9 +314,27 @@
         return false;
     }
 
-    private async Task RefreshPage()
+    private Task RefreshPage() => LoadAsync();
+
+    /// <summary>Reloads the device after a change without the loading skeleton.</summary>
+    private async Task ReloadAsync()
     {
-        _loading = true;
+        _busy = true;
+        StateHasChanged();
+        try
+        {
+            await LoadAsync(showSkeleton: false);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task LoadAsync(bool showSkeleton = true)
+    {
+        if (showSkeleton)
+            _loading = true;
         try
         {
             // Rooms belong to the current home, which is not loaded yet when the page is opened directly.
@@ -405,7 +432,7 @@
 
         try
         {
-            _loading = true;
+            _busy = true;
             StateHasChanged();
 
             var result = await DeviceService.UpdateDevice(DeviceModel);
@@ -416,7 +443,7 @@
                 return;    
             }
 
-            await RefreshPage();
+            await LoadAsync(showSkeleton: false);
             Snackbar.Add("Device updated", Severity.Success);
         }
         catch
@@ -425,7 +452,7 @@
         }
         finally
         {
-            _loading = false;
+            _busy = false;
         }
     }
 
@@ -479,11 +506,7 @@
         var result = await dialog.Result;
 
         if (!result!.Canceled)
-        {
-            _loading = true;
-            StateHasChanged();
-            await RefreshPage();
-        }
+            await ReloadAsync();
     }
 
     private async Task DeleteOperation(string id)
@@ -505,13 +528,13 @@
 
         try
         {
-            _loading = true;
+            _busy = true;
             StateHasChanged();
 
             await OperationIntegrationService.DeleteOperationAsync(id);
             Snackbar.Add("Operation removed.", Severity.Success);
 
-            await RefreshPage();
+            await LoadAsync(showSkeleton: false);
         }
         catch (ApiException ex)
         {
@@ -520,7 +543,7 @@
         }
         finally
         {
-            _loading = false;
+            _busy = false;
         }
     }
 
@@ -543,11 +566,7 @@
         var result = await dialog.Result;
 
         if (!result!.Canceled)
-        {
-            _loading = true;
-            StateHasChanged();
-            await RefreshPage();
-        }
+            await ReloadAsync();
     }
 
     private async Task DeleteWidget(string id)
@@ -569,12 +588,12 @@
 
         try 
         {
-            _loading = true;
+            _busy = true;
             StateHasChanged();
 
             await WidgetIntegrationService.DeleteWidgetAsync(id);
             Snackbar.Add("Widget removed.", Severity.Success);
-            await RefreshPage();
+            await LoadAsync(showSkeleton: false);
         }
         catch (ApiException ex)
         {
@@ -583,7 +602,7 @@
         }
         finally
         {
-            _loading = false;
+            _busy = false;
         }
     }
 
@@ -606,11 +625,7 @@
         var result = await dialog.Result;
 
         if (!result!.Canceled)
-        {
-            _loading = true;
-            StateHasChanged();
-            await RefreshPage();
-        }
+            await ReloadAsync();
     }
 
     private async Task DeleteDashboard(EditableDashboard dto)
@@ -632,11 +647,11 @@
 
         try
         {
-            _loading = true;
+            _busy = true;
             StateHasChanged();
 
             await DashboardIntegrationService.DeleteDashboardAsync(dto.Id);
-            await RefreshPage();
+            await LoadAsync(showSkeleton: false);
             Snackbar.Add("Dashboard removed", Severity.Success);
         }
         catch
@@ -645,7 +660,7 @@
         }
         finally
         {
-            _loading = false;
+            _busy = false;
         }
     }
 
@@ -653,12 +668,12 @@
     {
         try
         {
-            _loading = true;
+            _busy = true;
 
             var request = new UpdateDashboardRequest(dto.Name, dto.Icon);
 
             await DashboardIntegrationService.UpdateDashboardAsync(dto.Id, request);
-            await RefreshPage();
+            await LoadAsync(showSkeleton: false);
             Snackbar.Add("Dashboard updated", Severity.Success);
         }
         catch
@@ -667,7 +682,7 @@
         }
         finally
         {
-            _loading = false;
+            _busy = false;
         }
     }
 

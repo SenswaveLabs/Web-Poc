@@ -1,4 +1,5 @@
 import { test, expect, chromium, type BrowserContext, type Page } from '@playwright/test';
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -420,9 +421,12 @@ test('Senswave – nagranie demonstracyjne', async () => {
 
     say.feature('Wymaganie niefunkcjonalne', 'Responsywny i intuicyjny interfejs: widok mobilny');
     await say.step(admin, '17', 'Widok mobilny: szerokość 360 px');
+    // Start from the home screen, so the phone layout shows the device list first.
+    await menu(admin, 'Dashboard').click();
+    await expect(admin.getByRole('button', { name: `Open ${DEVICE}` })).toBeVisible();
+    await pause(admin, 1000);
     await admin.setViewportSize({ width: 360, height: 740 });
     await pause(admin, 1500);
-    await openMobileMenuLink(admin, 'Dashboard');
     await mobileTour(admin);
 
     // ------------------------------------------------------------ 18. Lighthouse
@@ -442,18 +446,12 @@ test('Senswave – nagranie demonstracyjne', async () => {
     await pause(reportPage, 6000);
 
     // ------------------------------------------------------------ 19. Print view
-    say.feature('Wydruk', 'Widok wydruku strony głównej: zostają dane, znikają menu i elementy sterujące');
+    say.feature('Wydruk', 'Wydruk strony głównej: zostają dane, znikają menu i elementy sterujące');
     await admin.bringToFront();
     await say.step(admin, '19', 'Strona główna z listą urządzeń w zwykłym widoku', 500);
     await pause(admin, 2500);
-    await say.step(admin, '19', 'Ten sam ekran w widoku wydruku (A4, CSS @media print)', 500);
-    // A4 at 96 dpi is 794 px wide, so the layout matches the printed page.
-    await admin.setViewportSize({ width: 794, height: 760 });
-    await admin.emulateMedia({ media: 'print' });
-    await expect(admin.getByRole('button', { name: `Open ${DEVICE}` })).toBeVisible();
-    await pause(admin, 6000);
-    await admin.emulateMedia({ media: 'screen' });
-    await admin.setViewportSize({ width: 1536, height: 760 }).catch(() => {});
+    await say.step(admin, '19', 'Drukuj (Ctrl+P): podgląd wydruku do PDF');
+    await showPrintPreview(admin);
   } catch (error) {
     // Keep what every tab showed, the run is long and hard to repeat.
     for (const [i, page] of context.pages().entries()) {
@@ -491,14 +489,15 @@ function menu(page: Page, name: string) {
   return page.getByRole('complementary').getByRole('link', { name, exact: true });
 }
 
-/** Opens the lamp screen from the device list. Retries once if the screen failed to load. */
+/** Opens the lamp screen from the device list. Retries when the screen failed to load. */
 async function openLamp(page: Page) {
   await page.getByRole('button', { name: `Open ${DEVICE}` }).click();
   const heading = page.getByRole('heading', { name: DEVICE, level: 1 });
   const failed = page.getByRole('button', { name: 'Retry' });
-  await expect(heading.or(failed)).toBeVisible();
-  if (await failed.isVisible().catch(() => false)) {
-    await pause(page, 800);
+  for (let attempt = 0; attempt < 3; attempt++) {
+    await expect(heading.or(failed)).toBeVisible();
+    if (!(await failed.isVisible().catch(() => false))) break;
+    await page.waitForTimeout(1000);
     await failed.click();
   }
   await expect(heading).toBeVisible();
@@ -667,6 +666,23 @@ async function mobileTour(page: Page) {
 /** On a phone the side menu is replaced by the bottom navigation. */
 async function openMobileMenuLink(page: Page, name: string) {
   await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name, exact: true }).click();
+}
+
+/**
+ * Opens Chrome's print preview with Ctrl+P and closes it with Escape. The preview is browser UI that
+ * Playwright cannot drive, so the keys go to the X display. A headless dry run checks the print styles instead.
+ */
+async function showPrintPreview(page: Page) {
+  if (!process.env.DISPLAY || cfg.headless) {
+    await page.emulateMedia({ media: 'print' });
+    await expect(page.getByRole('button', { name: `Open ${DEVICE}` })).toBeVisible();
+    await page.emulateMedia({ media: 'screen' });
+    return;
+  }
+  execFileSync('xdotool', ['key', 'ctrl+p']);
+  await pause(page, 9000);
+  execFileSync('xdotool', ['key', 'Escape']);
+  await pause(page, 1500);
 }
 
 async function relogWithRememberMe(page: Page, say: Narrator) {
